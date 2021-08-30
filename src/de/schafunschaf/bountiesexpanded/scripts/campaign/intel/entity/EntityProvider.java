@@ -7,6 +7,7 @@ import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.assassinationbounty.AssassinationBountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.skirmish.SkirmishBountyEntity;
 import de.schafunschaf.bountylib.campaign.helper.credits.CreditCalculator;
 import de.schafunschaf.bountylib.campaign.helper.faction.HostileFactionPicker;
@@ -28,11 +29,12 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 public class EntityProvider {
 
     public static SkirmishBountyEntity fleetBountyEntity() {
-        int level = LevelPicker.pickLevel(2);
+        Difficulty difficulty = Difficulty.randomDifficulty();
+        int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
         float fractionToKill = (50 - new Random().nextInt(26)) / 100f;
-        int bountyCredits = CreditCalculator.vanillaCalculation(level, fractionToKill);
-        float fp = FleetPointCalculator.vanillaCalculation(level);
-        float qf = QualityCalculator.vanillaCalculation(level);
+        int bountyCredits = Math.round((int) ((CreditCalculator.vanillaCalculation(level, fractionToKill) * difficulty.getModifier()) / 1000)) * 1000;
+        float fp = FleetPointCalculator.vanillaCalculation(level) * difficulty.getModifier();
+        float qf = QualityCalculator.vanillaCalculation(level) * difficulty.getModifier();
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist());
@@ -45,13 +47,13 @@ public class EntityProvider {
 
         CampaignFleetAPI fleet = FleetGenerator.createAndSpawnFleet(fp, qf, null, hideout, person);
 
-        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, level);
+        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, difficulty);
     }
 
     public static AssassinationBountyEntity assassinationBountyEntity() {
         int level = LevelPicker.pickLevel(5);
         int bountyCredits = CreditCalculator.vanillaCalculation(level, 1f);
-        float fp = FleetPointCalculator.vanillaCalculation(level+1);
+        float fp = FleetPointCalculator.vanillaCalculation(level + 1);
         float qf = QualityCalculator.vanillaCalculation(level);
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();

@@ -8,6 +8,8 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
+import java.util.Random;
+
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
 
 public class SkirmishBountyManager extends BaseEventManager {
@@ -41,14 +43,18 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     @Override
     protected EveryFrameScript createEvent() {
-        SkirmishBountyEntity skirmishBountyEntity = EntityProvider.fleetBountyEntity();
-        if (isNull(skirmishBountyEntity))
-            return null;
-        CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
-        String fleetTypeName = "Skirmisher Fleet";
-        fleet.setName(fleetTypeName);
-        fleet.setTransponderOn(true);
+        if (Settings.SKIRMISH_ACTIVE && new Random().nextFloat() >= Settings.SKIRMISH_SPAWN_CHANCE) {
+            SkirmishBountyEntity skirmishBountyEntity = EntityProvider.fleetBountyEntity();
+            if (isNull(skirmishBountyEntity))
+                return null;
+            CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
+            String fleetTypeName = "Skirmisher Fleet";
+            fleet.setName(fleetTypeName);
+            fleet.setTransponderOn(true);
 
-        return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getHideout());
+            return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getHideout());
+        }
+
+        return null;
     }
 }

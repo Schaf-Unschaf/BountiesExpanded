@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class BountiesExpandedPlugin extends BaseModPlugin {
     public static Logger log = Global.getLogger(BountiesExpandedPlugin.class);
-    String SETTINGS_FILE = "BountiesExpanded.json";
+    String SETTINGS_FILE = "BountiesExpandedSettings.json";
 
     @Override
     public void onApplicationLoad() {
@@ -45,6 +45,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     private void loadSettings() throws IOException, JSONException {
         JSONObject settings = Global.getSettings().loadJSON(SETTINGS_FILE);
         Settings.SHEEP_DEBUG = settings.getBoolean("SHEEP_DEBUG");
+        Settings.SKIRMISH_ACTIVE = settings.getBoolean("SKIRMISH_ACTIVE");
         Settings.SKIRMISH_SPAWN_CHANCE = settings.getDouble("SKIRMISH_SPAWN_CHANCE");
         Settings.SKIRMISH_MAX_BOUNTIES = settings.getInt("SKIRMISH_MAX_BOUNTIES");
         Settings.SKIRMISH_MIN_BOUNTIES = settings.getInt("SKIRMISH_MIN_BOUNTIES");

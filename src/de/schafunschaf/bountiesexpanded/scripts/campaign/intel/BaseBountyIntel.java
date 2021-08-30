@@ -12,6 +12,7 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResult;
 import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResultType;
@@ -26,7 +27,9 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
 
     protected float elapsedDays = 0f;
+
     protected final float duration;
+    protected final Difficulty difficulty;
 
     protected BountyResult result;
     protected final CampaignFleetAPI fleet;
@@ -35,11 +38,12 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     protected final SectorEntityToken hideout;
 
     public BaseBountyIntel(BountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        entity = bountyEntity;
-        fleet = campaignFleetAPI;
-        hideout = sectorEntityToken;
-        person = personAPI;
-        duration = new Random().nextInt((Settings.SKIRMISH_MAX_DURATION - Settings.SKIRMISH_MIN_DURATION) + 1) + Settings.SKIRMISH_MIN_DURATION;
+        this.entity = bountyEntity;
+        this.fleet = campaignFleetAPI;
+        this.hideout = sectorEntityToken;
+        this.person = personAPI;
+        this.duration = new Random().nextInt((Settings.SKIRMISH_MAX_DURATION - Settings.SKIRMISH_MIN_DURATION) + 1) + Settings.SKIRMISH_MIN_DURATION;
+        this.difficulty = entity.getDifficulty();
 
         fleet.addEventListener(this);
         Misc.makeImportant(fleet, "pbe", duration + 20f);
@@ -107,7 +111,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             }
         }
 
-        int payment = (int) (entity.getBountyCredits() * battle.getPlayerInvolvementFraction());
+        int payment = (int) (entity.getBaseReward() * battle.getPlayerInvolvementFraction());
         if (payment <= 0) {
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0, null);
             cleanUp(true);
@@ -134,12 +138,12 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
     }
 
-    public float getDuration() {
-        return duration;
-    }
-
     public float getElapsedDays() {
         return elapsedDays;
+    }
+
+    public float getDuration() {
+        return duration;
     }
 
     public BountyResult getResult() {

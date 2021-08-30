@@ -23,9 +23,10 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
     private int numBattles = 0;
     private float playerInvolvement = 0f;
 
+
     public SkirmishBountyIntel(SkirmishBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
-        maxFleetSizeForCompletion = (int) (bountyEntity.getFleet().getFleetSizeCount() * bountyEntity.getFractionToKill());
+        this.maxFleetSizeForCompletion = bountyEntity.getFleet().getFleetSizeCount() - bountyEntity.shipsToDestroy;
         this.bountyEntity = bountyEntity;
         this.baseShipBounty = bountyEntity.baseShipBounty;
     }
@@ -45,8 +46,6 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             return;
         }
 
-        payment += bountyEntity.getBountyCredits();
-
         for (CampaignFleetAPI otherFleet : battle.getSnapshotSideFor(fleet)) {
             float bounty = 0;
             for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(otherFleet)) {
@@ -57,6 +56,9 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             payment += (bounty * battle.getPlayerInvolvementFraction());
         }
 
+        float playerInvolvedAverage = playerInvolvement / numBattles;
+        payment += bountyEntity.getBaseReward() * playerInvolvedAverage;
+
         if (payment <= 0) {
             result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_OTHER, 0, 0, null);
             cleanUp(true);
@@ -65,7 +67,6 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment);
-        float playerInvolvedAverage = playerInvolvement / numBattles;
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
                 bountyEntity.offeringFaction.getId());
