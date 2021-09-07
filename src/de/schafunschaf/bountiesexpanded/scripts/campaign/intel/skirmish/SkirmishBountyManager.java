@@ -16,14 +16,14 @@ public class SkirmishBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
     public static Logger log = Global.getLogger(SkirmishBountyManager.class);
 
-    public static SkirmishBountyManager getInstance() {
-        Object test = Global.getSector().getMemoryWithoutUpdate().get(KEY);
-        return (SkirmishBountyManager) test;
-    }
-
     public SkirmishBountyManager() {
         super();
         Global.getSector().getMemoryWithoutUpdate().set(KEY, this);
+    }
+
+    public static SkirmishBountyManager getInstance() {
+        Object test = Global.getSector().getMemoryWithoutUpdate().get(KEY);
+        return (SkirmishBountyManager) test;
     }
 
     @Override
@@ -43,8 +43,8 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     @Override
     protected EveryFrameScript createEvent() {
-        if (Settings.SKIRMISH_ACTIVE && new Random().nextFloat() >= Settings.SKIRMISH_SPAWN_CHANCE) {
-            SkirmishBountyEntity skirmishBountyEntity = EntityProvider.fleetBountyEntity();
+        if (Settings.SKIRMISH_ACTIVE && new Random().nextFloat() <= Settings.SKIRMISH_SPAWN_CHANCE) {
+            SkirmishBountyEntity skirmishBountyEntity = EntityProvider.skirmishBountyEntity();
             if (isNull(skirmishBountyEntity))
                 return null;
             CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
@@ -52,7 +52,7 @@ public class SkirmishBountyManager extends BaseEventManager {
             fleet.setName(fleetTypeName);
             fleet.setTransponderOn(true);
 
-            return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getHideout());
+            return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getStartingPoint());
         }
 
         return null;

@@ -18,17 +18,17 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 public class SkirmishBountyIntel extends BaseBountyIntel {
     private final int maxFleetSizeForCompletion;
     private final SkirmishBountyEntity bountyEntity;
-    private int payment = 0;
     private final int baseShipBounty;
+    private int payment = 0;
     private int numBattles = 0;
     private float playerInvolvement = 0f;
 
 
     public SkirmishBountyIntel(SkirmishBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
-        this.maxFleetSizeForCompletion = bountyEntity.getFleet().getFleetSizeCount() - bountyEntity.shipsToDestroy;
+        this.maxFleetSizeForCompletion = bountyEntity.getFleet().getFleetSizeCount() - bountyEntity.getShipsToDestroy();
         this.bountyEntity = bountyEntity;
-        this.baseShipBounty = bountyEntity.baseShipBounty;
+        this.baseShipBounty = bountyEntity.getBaseShipBounty();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         playerFleet.getCargo().getCredits().add(payment);
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
-                bountyEntity.offeringFaction.getId());
+                bountyEntity.getOfferingFaction().getId());
 
         result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_PLAYER_BOUNTY, payment, playerInvolvedAverage, rep);
         SharedData.getData().getPersonBountyEventData().reportSuccess();

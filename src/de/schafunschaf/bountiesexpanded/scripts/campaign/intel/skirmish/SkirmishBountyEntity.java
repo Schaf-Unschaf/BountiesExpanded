@@ -23,22 +23,21 @@ import java.util.List;
 
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.dayOrDays;
 
 public class SkirmishBountyEntity implements BountyEntity {
-    protected final int baseReward;
-    protected final int maxPayout;
-    protected final Difficulty difficulty;
-    protected final int baseShipBounty;
-
-    protected final float fractionToKill;
-    protected int shipsToDestroy;
-
-    protected final FactionAPI offeringFaction;
-
-    protected final FactionAPI targetedFaction;
-    protected final CampaignFleetAPI fleet;
-    protected final PersonAPI person;
-    protected final SectorEntityToken hideout;
+    private final int baseReward;
+    private final int maxPayout;
+    private final Difficulty difficulty;
+    private final int baseShipBounty;
+    private final float fractionToKill;
+    private final int shipsToDestroy;
+    private final FactionAPI offeringFaction;
+    private final FactionAPI targetedFaction;
+    private final CampaignFleetAPI fleet;
+    private final PersonAPI person;
+    private final SectorEntityToken hideout;
+    String[] creditsPerSize;
 
     public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, float fractionToKill, Difficulty difficulty) {
         this.baseReward = baseReward;
@@ -52,6 +51,10 @@ public class SkirmishBountyEntity implements BountyEntity {
         this.baseShipBounty = Math.round((int) (Settings.SKIRMISH_BASE_SHIP_BOUNTY * (1 - fractionToKill)) / 10f) * 10;
         this.shipsToDestroy = Math.max((int) (fleet.getFleetData().getMembersListCopy().size() * fractionToKill), 1);
         this.maxPayout = calculateMaxPayout();
+        this.creditsPerSize = new String[]{Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.FRIGATE)),
+                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.DESTROYER)),
+                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.CRUISER)),
+                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.CAPITAL_SHIP))};
     }
 
     private int calculateMaxPayout() {
@@ -61,12 +64,14 @@ public class SkirmishBountyEntity implements BountyEntity {
         return maxPayout + baseReward;
     }
 
-    protected float getFractionToKill() {
-        return fractionToKill;
-    }
-
+    @Override
     public FactionAPI getOfferingFaction() {
         return offeringFaction;
+    }
+
+    @Override
+    public FactionAPI getTargetedFaction() {
+        return targetedFaction;
     }
 
     @Override
@@ -80,8 +85,13 @@ public class SkirmishBountyEntity implements BountyEntity {
     }
 
     @Override
-    public SectorEntityToken getHideout() {
+    public SectorEntityToken getStartingPoint() {
         return hideout;
+    }
+
+    @Override
+    public SectorEntityToken getEndingPoint() {
+        return null;
     }
 
     @Override
@@ -141,12 +151,8 @@ public class SkirmishBountyEntity implements BountyEntity {
                         targetedFaction.getBaseUIColor(), targetedFaction.getDisplayName());
 
                 if (!baseBountyIntel.isEnding()) {
-                    int days = (int) (duration - elapsedDays);
-                    String daysStr = "days";
-                    if (days <= 1) {
-                        days = 1;
-                        daysStr = "day";
-                    }
+                    int days = Math.max((int) (duration - elapsedDays), 1);
+                    String daysStr = dayOrDays(days);
 
                     info.addPara("%s reward, %s " + daysStr + " remaining", 0f, bulletColor,
                             highlightColor, Misc.getDGSCredits(maxPayout), "" + days);
@@ -181,10 +187,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         Color[] factionColors = {offeringFaction.getColor(), targetedFaction.getColor()};
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
-        String[] creditsPerSize = {Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.FRIGATE)),
-                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.DESTROYER)),
-                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.CRUISER)),
-                Misc.getDGSCredits(baseShipBounty * Misc.getSizeNum(ShipAPI.HullSize.CAPITAL_SHIP))};
+
 
         info.addImages(width, 100, opad, opad, offeringFaction.getLogo(), targetedFaction.getLogo());
         info.addPara("%s officials have offered a reward for beating-up a hostile %s fleet.", opad,
@@ -221,5 +224,29 @@ public class SkirmishBountyEntity implements BountyEntity {
             info.addPara("They will also pay an additional %s / %s / %s / %s credits per kill as bonus on top of your reward.", opad, highlightColor, creditsPerSize);
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
         }
+    }
+
+    public String[] getCreditsPerSize() {
+        return creditsPerSize;
+    }
+
+    public float getFractionToKill() {
+        return fractionToKill;
+    }
+
+    public int getMaxPayout() {
+        return maxPayout;
+    }
+
+    public int getBaseShipBounty() {
+        return baseShipBounty;
+    }
+
+    public int getShipsToDestroy() {
+        return shipsToDestroy;
+    }
+
+    public SectorEntityToken getHideout() {
+        return hideout;
     }
 }

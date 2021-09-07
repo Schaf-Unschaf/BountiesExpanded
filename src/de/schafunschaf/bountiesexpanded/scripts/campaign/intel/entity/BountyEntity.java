@@ -15,11 +15,15 @@ public interface BountyEntity {
 
     FactionAPI getOfferingFaction();
 
+    FactionAPI getTargetedFaction();
+
     CampaignFleetAPI getFleet();
 
     PersonAPI getPerson();
 
-    SectorEntityToken getHideout();
+    SectorEntityToken getStartingPoint();
+
+    SectorEntityToken getEndingPoint();
 
     String getIcon();
 

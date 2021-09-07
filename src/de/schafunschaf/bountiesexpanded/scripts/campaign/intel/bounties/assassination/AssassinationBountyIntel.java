@@ -1,0 +1,84 @@
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination;
+
+import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.BattleAPI;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.FactionAPI;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import com.fs.starfarer.api.ui.SectorMapAPI;
+import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountylib.campaign.intel.BountyEventData;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+
+public class AssassinationBountyIntel extends BaseBountyIntel {
+    private int payment;
+    private final SectorEntityToken destination;
+    private float travelDistance;
+
+    public AssassinationBountyIntel(AssassinationBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
+        super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
+        this.payment = bountyEntity.getBaseReward();
+        this.destination = bountyEntity.getEndingPoint();
+    }
+
+    @Override
+    public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
+        boolean isDone = isDone() || isNotNull(result);
+        boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
+        boolean isFlagshipAlive = isNotNull(fleet.getFlagship()) && fleet.getFlagship().getCaptain() == person;
+        boolean occurredInHyperspace = fleet.isInHyperspace();
+        float remainingDistance = Misc.getDistanceLY(fleet.getLocationInHyperspace(), destination.getLocationInHyperspace());
+
+        if (isDone || isNotInvolved || isFlagshipAlive) {
+            return;
+        }
+
+        if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
+            if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
+                fleet.setCommander(fleet.getFaction().createRandomPerson());
+                result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_OTHER, 0, 0, null);
+                cleanUp(true);
+                return;
+            }
+        }
+
+        if (occurredInHyperspace) payment *= Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance;
+        CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
+        playerFleet.getCargo().getCredits().add(payment);
+        result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_PLAYER_BOUNTY, payment, 0, null);
+        SharedData.getData().getPersonBountyEventData().reportSuccess();
+        cleanUp(false);
+    }
+
+    @Override
+    public FactionAPI getFactionForUIColors() {
+        return entity.getTargetedFaction();
+    }
+
+    @Override
+    public List<ArrowData> getArrowData(SectorMapAPI map) {
+        if (!fleet.isInHyperspace()) return null;
+
+        List<ArrowData> result = new ArrayList<>();
+
+        ArrowData arrow = new ArrowData(entity.getStartingPoint(), entity.getEndingPoint());
+        arrow.color = getFactionForUIColors().getBaseUIColor();
+        result.add(arrow);
+
+        return result;
+    }
+
+    @Override
+    public SectorEntityToken getMapLocation(SectorMapAPI map) {
+        return fleet.isInHyperspace() ? entity.getStartingPoint().getStarSystem().getHyperspaceAnchor() : null;
+    }
+}

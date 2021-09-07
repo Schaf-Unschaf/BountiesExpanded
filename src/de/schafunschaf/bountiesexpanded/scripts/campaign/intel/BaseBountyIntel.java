@@ -26,16 +26,14 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
 
-    protected float elapsedDays = 0f;
-
     protected final float duration;
     protected final Difficulty difficulty;
-
-    protected BountyResult result;
     protected final CampaignFleetAPI fleet;
     protected final BountyEntity entity;
     protected final PersonAPI person;
     protected final SectorEntityToken hideout;
+    protected float elapsedDays = 0f;
+    protected BountyResult result;
 
     public BaseBountyIntel(BountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         this.entity = bountyEntity;
@@ -50,6 +48,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         Global.getSector().getIntelManager().queueIntel(this);
     }
 
+    @Deprecated
     @Override
     public void createIntelInfo(TooltipMakerAPI info, ListInfoMode mode) {
         info.addPara(entity.getTitle(result), getTitleColor(mode), 0f);
@@ -207,11 +206,13 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             Misc.makeUnimportant(fleet, "pbe");
             fleet.clearAssignments();
 
-            if (hideout != null) {
-                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
-            } else {
-                fleet.despawn();
-            }
+//            if (hideout != null) {
+//                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
+//            } else {
+//                fleet.despawn();
+//            }
+
+            fleet.despawn();
         }
 
         if (!isEnding() && !isEnded()) {
