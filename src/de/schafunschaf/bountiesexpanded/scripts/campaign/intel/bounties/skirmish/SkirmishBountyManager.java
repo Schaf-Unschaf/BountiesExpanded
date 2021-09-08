@@ -1,8 +1,9 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.skirmish;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish;
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
@@ -51,6 +52,7 @@ public class SkirmishBountyManager extends BaseEventManager {
             String fleetTypeName = "Skirmisher Fleet";
             fleet.setName(fleetTypeName);
             fleet.setTransponderOn(true);
+            fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
 
             return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getStartingPoint());
         }

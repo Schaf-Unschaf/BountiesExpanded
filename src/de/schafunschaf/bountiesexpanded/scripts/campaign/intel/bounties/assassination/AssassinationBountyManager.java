@@ -9,6 +9,7 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.FleetNameCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
@@ -52,8 +53,8 @@ public class AssassinationBountyManager extends BaseEventManager {
             if (isNull(assassinationBountyEntity))
                 return null;
             final CampaignFleetAPI fleet = assassinationBountyEntity.getFleet();
-            String fleetTypeName = "Assassination Fleet";
-            fleet.setName(fleetTypeName);
+            fleet.setNoFactionInName(true);
+            fleet.setName(FleetNameCollection.getRandomName());
             fleet.setTransponderOn(false);
             fleet.getAI().clearAssignments();
             fleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying fleet", new Script() {

@@ -8,8 +8,8 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.skirmish.SkirmishBountyEntity;
 import de.schafunschaf.bountylib.campaign.helper.credits.CreditCalculator;
 import de.schafunschaf.bountylib.campaign.helper.faction.HostileFactionPicker;
 import de.schafunschaf.bountylib.campaign.helper.faction.ParticipatingFactionPicker;
@@ -34,7 +34,7 @@ public class EntityProvider {
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
         float fractionToKill = (50 - new Random().nextInt(26)) / 100f;
         int bountyCredits = Math.round((int) ((CreditCalculator.vanillaCalculation(level, fractionToKill) * difficulty.getModifier()) / 1000)) * 1000;
-        float fp = FleetPointCalculator.vanillaCalculation(level);
+        float fp = FleetPointCalculator.vanillaCalculation(level) * difficulty.getModifier();
         float qf = QualityCalculator.vanillaCalculation(level);
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
@@ -46,7 +46,7 @@ public class EntityProvider {
         if (isNull(hideout))
             return null;
 
-        CampaignFleetAPI fleet = FleetGenerator.createAndSpawnFleet(fp, qf, null, hideout, person);
+        CampaignFleetAPI fleet = FleetGenerator.createAndSpawnFleetTesting(fp, qf, null, hideout, person);
 
         return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, difficulty);
     }
@@ -62,7 +62,7 @@ public class EntityProvider {
         if (isNull(targetedFaction))
             return null;
         PersonAPI person = OfficerGenerator.generateOfficer(targetedFaction, level);
-        MarketAPI startingPoint = CoreWorldPicker.pickFactionHideout(targetedFaction).getMarket();
+        MarketAPI startingPoint = CoreWorldPicker.pickSafeHideout(targetedFaction).getMarket();
         if (isNull(startingPoint))
             return null;
         MarketAPI endingPoint = CoreWorldPicker.pickSafeHideout(targetedFaction, CoreWorldPicker.getDistantMarkets((float) Settings.ASSASSINATION_MIN_TRAVEL_DISTANCE, startingPoint.getPrimaryEntity())).getMarket();

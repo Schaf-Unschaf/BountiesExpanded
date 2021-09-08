@@ -7,15 +7,13 @@ import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
-import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResult;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResultType;
 
 import java.awt.*;
 import java.util.Random;
@@ -93,35 +91,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
     @Override
     public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
-        boolean isDone = isDone() || isNotNull(result);
-        boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean isFlagshipAlive = isNotNull(fleet.getFlagship()) && fleet.getFlagship().getCaptain() == person;
 
-        if (isDone || isNotInvolved || isFlagshipAlive) {
-            return;
-        }
-
-        if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
-            if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
-                fleet.setCommander(fleet.getFaction().createRandomPerson());
-                result = new BountyResult(BountyResultType.END_OTHER, 0, 0, null);
-                cleanUp(true);
-                return;
-            }
-        }
-
-        int payment = (int) (entity.getBaseReward() * battle.getPlayerInvolvementFraction());
-        if (payment <= 0) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, null);
-            cleanUp(true);
-            return;
-        }
-
-        CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
-        playerFleet.getCargo().getCredits().add(payment);
-        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, 0, null);
-        SharedData.getData().getPersonBountyEventData().reportSuccess();
-        cleanUp(false);
     }
 
     @Override
@@ -132,7 +102,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
         if (this.fleet == fleet) {
             fleet.setCommander(fleet.getFaction().createRandomPerson());
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, null);
+            result = new BountyResult(BountyResult.BountyResultType.END_OTHER, 0, 0, 0f, null);
             cleanUp(true);
         }
     }
@@ -173,7 +143,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         if (elapsedDays >= duration && !isDone()) {
             boolean canEnd = isNull(fleet) || !fleet.isInCurrentLocation();
             if (canEnd) {
-                result = new BountyResult(BountyResultType.END_TIME, 0, 0, null);
+                result = new BountyResult(BountyResult.BountyResultType.END_TIME, 0, 0, 0f, null);
                 cleanUp(true);
                 return;
             }
@@ -184,7 +154,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
 
         if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, null);
+            result = new BountyResult(BountyResult.BountyResultType.END_OTHER, 0, 0, 0f, null);
             cleanUp(!fleet.isInCurrentLocation());
         }
 
@@ -206,13 +176,11 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             Misc.makeUnimportant(fleet, "pbe");
             fleet.clearAssignments();
 
-//            if (hideout != null) {
-//                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
-//            } else {
-//                fleet.despawn();
-//            }
-
-            fleet.despawn();
+            if (!Settings.UNINSTALL && hideout != null) {
+                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
+            } else {
+                fleet.despawn();
+            }
         }
 
         if (!isEnding() && !isEnded()) {

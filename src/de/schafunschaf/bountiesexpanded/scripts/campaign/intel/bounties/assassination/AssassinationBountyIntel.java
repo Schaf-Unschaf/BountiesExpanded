@@ -11,7 +11,7 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +20,17 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
 
 public class AssassinationBountyIntel extends BaseBountyIntel {
-    private int payment;
+    private final int payment;
     private final SectorEntityToken destination;
-    private float travelDistance;
+
+    private final float travelDistance;
+    private int bonusPayment = 0;
 
     public AssassinationBountyIntel(AssassinationBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
         this.payment = bountyEntity.getBaseReward();
         this.destination = bountyEntity.getEndingPoint();
+        this.travelDistance = Misc.getDistanceLY(bountyEntity.getStartingPoint().getStarSystem().getHyperspaceAnchor(), bountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor());
     }
 
     @Override
@@ -45,16 +48,18 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
             if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
                 fleet.setCommander(fleet.getFaction().createRandomPerson());
-                result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_OTHER, 0, 0, null);
+                result = new BountyResult(BountyResult.BountyResultType.END_OTHER, 0, 0, 0f, null);
                 cleanUp(true);
                 return;
             }
         }
 
-        if (occurredInHyperspace) payment *= Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance;
+
+        if (occurredInHyperspace)
+            bonusPayment = Math.round((int) (payment * (Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance)) / 1000) * 1000;
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
-        playerFleet.getCargo().getCredits().add(payment);
-        result = new BountyEventData.BountyResult(BountyEventData.BountyResultType.END_PLAYER_BOUNTY, payment, 0, null);
+        playerFleet.getCargo().getCredits().add(payment + bonusPayment);
+        result = new BountyResult(BountyResult.BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, 0f, null);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }

@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.skirmish;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish;
 
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
@@ -12,11 +12,10 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountylib.campaign.helper.fleet.FleetGenerator;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResult;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResultType;
 
 import java.awt.*;
 import java.util.List;
@@ -161,11 +160,16 @@ public class SkirmishBountyEntity implements BountyEntity {
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    info.addPara("%s received", initPad, bulletColor, highlightColor, Misc.getDGSCredits(result.payment));
+                    String payout = Misc.getDGSCredits(Math.round((result.payment + result.bonus) * result.share));
+                    String basePayout = Misc.getDGSCredits(result.payment);
+                    String bonusPayout = Misc.getDGSCredits(result.bonus);
+                    info.addPara("%s received", initPad, bulletColor, highlightColor, payout);
                     if (result.share < 1f)
-                        info.addPara("%s participation", initPad, bulletColor, highlightColor, (int) (result.share * 100) + "%");
+                        info.addPara("(%s Base + %s Bonus) * %s Participation", initPad, bulletColor, highlightColor, basePayout, bonusPayout, (int) (result.share * 100) + "%");
+                    else
+                        info.addPara("%s Base + %s Bonus", initPad, bulletColor, highlightColor, basePayout, bonusPayout);
                     CoreReputationPlugin.addAdjustmentMessage(result.rep.delta, offeringFaction, null,
-                            null, null, info, bulletColor, isUpdate, 0f);
+                            null, null, info, bulletColor, isUpdate, initPad);
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
@@ -190,13 +194,13 @@ public class SkirmishBountyEntity implements BountyEntity {
 
 
         info.addImages(width, 100, opad, opad, offeringFaction.getLogo(), targetedFaction.getLogo());
-        info.addPara("%s officials have offered a reward for beating-up a hostile %s fleet.", opad,
+        info.addPara("%s officials have offered a reward for thinning out a hostile %s fleet.", opad,
                 factionColors,
                 Misc.ucFirst(offeringFaction.getDisplayName()),
                 targetedFaction.getDisplayNameWithArticleWithoutArticle());
 
         if (isNotNull(result)) {
-            if (result.type == BountyResultType.END_PLAYER_BOUNTY) {
+            if (result.type == BountyResult.BountyResultType.END_PLAYER_BOUNTY) {
                 info.addPara("You have successfully completed the mission.", opad);
             } else {
                 info.addPara("This mission is no longer on offer.", opad);

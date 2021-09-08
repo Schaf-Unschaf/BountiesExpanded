@@ -12,9 +12,9 @@ import com.fs.starfarer.api.impl.campaign.fleets.RouteLocationCalculator;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
-import de.schafunschaf.bountylib.campaign.intel.BountyEventData.BountyResult;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -133,7 +133,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                     info.addPara("Origin: %s", travelPad, bulletColor,
                             highlightColor, startingPoint.getStarSystem().getName());
                     info.addPara("Destination: %s", 0f, bulletColor,
-                            highlightColor, endingPoint.getStarSystem().getName());
+                            highlightColor, endingPoint.getName());
                     info.addPara("Estimated Travel Time: %s " + dayOrDays(remainingTravelTime), 0f, bulletColor, highlightColor, String.valueOf(remainingTravelTime));
                 }
 
@@ -147,13 +147,23 @@ public class AssassinationBountyEntity implements BountyEntity {
                             highlightColor, Misc.getDGSCredits(baseReward));
                 }
 
-                String currentLocation = fleet.isInHyperspace() ? "Hyperspace" : "Unknown";
+                String currentLocation;
+                if (fleet.isInHyperspace()) currentLocation = "Hyperspace";
+                else if (fleet.getContainingLocation() == endingPoint.getContainingLocation())
+                    currentLocation = endingPoint.getStarSystem().getName();
+                else
+                    currentLocation = "Unknown";
+
                 info.addPara("Location: %s", 0f, bulletColor, highlightColor, currentLocation);
             }
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    info.addPara("%s received", initPad, bulletColor, highlightColor, Misc.getDGSCredits(result.payment));
+                    info.addPara("%s received", 10f, bulletColor, highlightColor,
+                            Misc.getDGSCredits(result.payment + result.bonus));
+                    info.addPara("Base: %s + Bonus: %s", 3f, bulletColor, highlightColor,
+                            Misc.getDGSCredits(result.payment),
+                            Misc.getDGSCredits(result.bonus));
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
@@ -179,7 +189,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             String messageTopic = "##### HIGH PRIORITY MESSAGE #####";
             info.addPara("Our communications officer decrypted the following message sent over '%s':", opad, highlightColor, voidNet);
             info.addPara("     %s", opad, highlightColor, messageTopic);
-            info.addPara("Requesting immediate assassination of specified target. Window of opportunity is short. Generous reward offered.", opad / 2);
+            info.addPara("Requesting immediate assassination of specified target. Window of opportunity is short. Generous reward offered. Additional payment available if killed in Hyperspace.", opad / 2);
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
@@ -194,6 +204,10 @@ public class AssassinationBountyEntity implements BountyEntity {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
                     info.addPara("Target elimination confirmed. Credits received.", opad);
+                    info.addPara("%s Credits got transferred (Base: %s + Bonus: %s)", 10f, highlightColor,
+                            Misc.getDGSCredits(result.payment + result.bonus),
+                            Misc.getDGSCredits(result.payment),
+                            Misc.getDGSCredits(result.bonus));
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:

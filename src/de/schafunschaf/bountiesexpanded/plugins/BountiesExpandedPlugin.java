@@ -8,8 +8,9 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.FleetNameCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.skirmish.SkirmishBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
 import de.schafunschaf.bountylib.campaign.intel.BountyEventData;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -22,8 +23,9 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ParsingTools.parseJ
 
 
 public class BountiesExpandedPlugin extends BaseModPlugin {
-    public static final String DEFAULT_BLACKLIST_FILE = "data/config/bountiesExpanded/defaultBlacklist.json";
-    public static final String SETTINGS_FILE = "BountiesExpandedSettings.json";
+    public static final String DEFAULT_BLACKLIST_FILE = "data/config/bountiesExpanded/default_blacklist.json";
+    public static final String SETTINGS_FILE = "bounties_expanded_settings.json";
+    public static final String FLEET_NAMES_FILE = "data/config/bountiesExpanded/fleet_names.json";
     public static Logger log = Global.getLogger(BountiesExpandedPlugin.class);
 
     @Override
@@ -54,6 +56,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         try {
             loadSettings();
             loadBlacklists();
+            loadFleetNames();
         } catch (IOException | JSONException exception) {
             log.error("BountiesExpanded - Failed to load Settings! - " + exception.getMessage());
         }
@@ -89,7 +92,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         Settings.SKIRMISH_MAX_DURATION = settings.getInt("SKIRMISH_MAX_DURATION");
         Settings.SKIRMISH_MIN_DURATION = settings.getInt("SKIRMISH_MIN_DURATION");
 
-//        Settings.ASSASSINATION_ACTIVE = settings.getBoolean("ASSASSINATION_ACTIVE");
+        Settings.ASSASSINATION_ACTIVE = settings.getBoolean("ASSASSINATION_ACTIVE");
         Settings.ASSASSINATION_SPAWN_CHANCE = settings.getDouble("ASSASSINATION_SPAWN_CHANCE");
         Settings.ASSASSINATION_MAX_BOUNTIES = settings.getInt("ASSASSINATION_MAX_BOUNTIES");
         Settings.ASSASSINATION_MIN_BOUNTIES = settings.getInt("ASSASSINATION_MIN_BOUNTIES");
@@ -100,6 +103,11 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     private void loadBlacklists() throws IOException, JSONException {
         JSONObject blacklist = Global.getSettings().loadJSON(DEFAULT_BLACKLIST_FILE);
         Blacklists.addFactions(parseJSONArray(blacklist.getJSONArray("blacklistedFactions")));
+    }
+
+    private void loadFleetNames() throws IOException, JSONException {
+        JSONObject fleetNames = Global.getSettings().loadJSON(FLEET_NAMES_FILE);
+        FleetNameCollection.setAssassinationNames(parseJSONArray(fleetNames.getJSONArray("suspiciousNames")));
     }
 
     private void setBlacklists() {
