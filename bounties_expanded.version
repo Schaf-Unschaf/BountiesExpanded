@@ -1,0 +1,10 @@
+{
+    "masterVersionFile":"https://github.com/Schaf-Unschaf/BountiesExpanded/blob/master/bounties_expanded.version",
+    "modName":"Bounties Expanded",
+    "modVersion":
+    {
+        "major":0,
+        "minor":2,
+        "patch":0
+    },
+}
