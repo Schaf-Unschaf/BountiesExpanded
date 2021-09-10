@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Set;
 
+import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountylib.campaign.helper.util.ParsingTools.parseJSONArray;
 
 
@@ -140,6 +141,8 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     }
 
     private void uninstallManager(BaseEventManager bountyManager) {
+        if (isNull(bountyManager))
+            return;
         for (EveryFrameScript script : bountyManager.getActive()) {
             ((BaseBountyIntel) script).endImmediately();
             Global.getSector().removeScript(script);
