@@ -22,7 +22,7 @@ import java.util.List;
 
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.dayOrDays;
+import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.singularOrPlural;
 
 public class SkirmishBountyEntity implements BountyEntity {
     private final int baseReward;
@@ -151,9 +151,8 @@ public class SkirmishBountyEntity implements BountyEntity {
 
                 if (!baseBountyIntel.isEnding()) {
                     int days = Math.max((int) (duration - elapsedDays), 1);
-                    String daysStr = dayOrDays(days);
 
-                    info.addPara("%s reward, %s " + daysStr + " remaining", 0f, bulletColor,
+                    info.addPara("%s reward, %s day" + singularOrPlural(days) + " remaining", 0f, bulletColor,
                             highlightColor, Misc.getDGSCredits(maxPayout), "" + days);
                 }
             }

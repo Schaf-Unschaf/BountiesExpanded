@@ -65,11 +65,20 @@ public class AssassinationBountyManager extends BaseEventManager {
                             "Travelling to Jump-Point",
                             new Script() {
                                 public void run() {
-                                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
-                                            assassinationBountyEntity.getEndingPoint(),
+                                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                                            Misc.findNearestJumpPointTo(assassinationBountyEntity.getEndingPoint()),
                                             100f,
-                                            "Travelling to " + assassinationBountyEntity.getEndingPoint().getStarSystem(),
-                                            null);
+                                            "Travelling to " + assassinationBountyEntity.getEndingPoint().getStarSystem().getName(),
+                                            new Script() {
+                                                public void run() {
+                                                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
+                                                            assassinationBountyEntity.getEndingPoint(),
+                                                            30f,
+                                                            "Travelling to " + assassinationBountyEntity.getEndingPoint().getName(),
+                                                            null);
+                                                    fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, false);
+                                                }
+                                            });
                                     fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, true);
                                 }
                             });

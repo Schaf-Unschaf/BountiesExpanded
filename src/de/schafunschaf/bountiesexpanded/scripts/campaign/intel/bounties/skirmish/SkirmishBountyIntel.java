@@ -76,4 +76,16 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }
+
+    @Override
+    protected void cleanUp(boolean onlyIfImportant) {
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_IDENTIFIER_KEY + bountyEntity.getHideout().getMarket().getName());
+        super.cleanUp(onlyIfImportant);
+    }
+
+    @Override
+    public void endImmediately() {
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_IDENTIFIER_KEY + bountyEntity.getHideout().getMarket().getName());
+        super.endImmediately();
+    }
 }
