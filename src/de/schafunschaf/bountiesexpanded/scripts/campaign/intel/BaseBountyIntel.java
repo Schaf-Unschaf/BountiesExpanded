@@ -115,6 +115,10 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         return duration;
     }
 
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
     public BountyResult getResult() {
         return result;
     }

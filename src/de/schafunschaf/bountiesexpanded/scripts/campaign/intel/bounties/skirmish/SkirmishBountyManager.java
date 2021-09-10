@@ -15,6 +15,7 @@ import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isN
 
 public class SkirmishBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
+    public static final String BOUNTY_IDENTIFIER_KEY = "$bountiesExpanded_skirmishBountyActive_";
     public static Logger log = Global.getLogger(SkirmishBountyManager.class);
 
     public SkirmishBountyManager() {
@@ -45,14 +46,34 @@ public class SkirmishBountyManager extends BaseEventManager {
     @Override
     protected EveryFrameScript createEvent() {
         if (Settings.SKIRMISH_ACTIVE && new Random().nextFloat() <= Settings.SKIRMISH_SPAWN_CHANCE) {
-            SkirmishBountyEntity skirmishBountyEntity = EntityProvider.skirmishBountyEntity();
-            if (isNull(skirmishBountyEntity))
+            SkirmishBountyEntity skirmishBountyEntity = null;
+            boolean isValidBounty = false;
+            int maxSpawningAttempts = 5;
+
+            while (!isValidBounty && maxSpawningAttempts > 0) {
+                SkirmishBountyEntity skirmishBountyEntityAttempt = EntityProvider.skirmishBountyEntity();
+                if (isNull(skirmishBountyEntityAttempt)) {
+                    maxSpawningAttempts--;
+                    continue;
+                }
+                if (Global.getSector().getMemoryWithoutUpdate().contains(BOUNTY_IDENTIFIER_KEY + skirmishBountyEntityAttempt.getStartingPoint().getMarket().getName())) {
+                    maxSpawningAttempts--;
+                    continue;
+                }
+                isValidBounty = true;
+                skirmishBountyEntity = skirmishBountyEntityAttempt;
+            }
+
+            if (!isValidBounty)
                 return null;
+
             CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
             String fleetTypeName = "Skirmisher Fleet";
             fleet.setName(fleetTypeName);
             fleet.setTransponderOn(true);
             fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
+
+            Global.getSector().getMemoryWithoutUpdate().set(BOUNTY_IDENTIFIER_KEY + skirmishBountyEntity.getHideout().getMarket().getName(), null);
 
             return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getStartingPoint());
         }

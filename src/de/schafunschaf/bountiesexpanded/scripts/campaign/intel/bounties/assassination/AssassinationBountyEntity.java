@@ -23,7 +23,8 @@ import java.util.Random;
 
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.dayOrDays;
+import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.aOrAn;
+import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.singularOrPlural;
 
 public class AssassinationBountyEntity implements BountyEntity {
     private final int baseReward;
@@ -121,11 +122,31 @@ public class AssassinationBountyEntity implements BountyEntity {
         baseBountyIntel.bullet(info);
 
         if (result == null) {
+            String currentLocation;
+
+            if (fleet.isInHyperspace())
+                currentLocation = "Hyperspace";
+            else if (fleet.getContainingLocation() == endingPoint.getContainingLocation())
+                currentLocation = endingPoint.getStarSystem().getName();
+            else {
+                if (getDifficulty() == Difficulty.EASY) {
+                    String factionName = endingPoint.getFaction().getDisplayNameWithArticleWithoutArticle();
+                    currentLocation = "Near " + aOrAn(factionName) + " " + factionName + " controlled world";
+                } else if (getDifficulty() == Difficulty.MEDIUM) {
+                    String factionName = person.getFaction().getDisplayNameWithArticle();
+                    currentLocation = "Near a world not at war with " + factionName;
+                } else
+                    currentLocation = "Unknown";
+            }
+
             if (mode == ListInfoMode.IN_DESC) {
-                boolean isFleetInHyperspace = fleet.getContainingLocation().isHyperspace();
+                boolean isFleetInHyperspace = (fleet.isInHyperspace() || fleet.isInHyperspaceTransition());
                 float travelPad = isFleetInHyperspace ? 10f : 0f;
                 info.addPara("Target: %s", initPad, bulletColor,
                         targetedFaction.getBaseUIColor(), person.getNameString());
+                info.addPara("Reward: %s", 0f, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
+
+                info.addPara("Location: %s", 3f, bulletColor, highlightColor, currentLocation);
                 info.addPara("Current Activity: %s", 0f, bulletColor,
                         highlightColor, fleet.getCurrentAssignment().getActionText());
 
@@ -134,10 +155,8 @@ public class AssassinationBountyEntity implements BountyEntity {
                             highlightColor, startingPoint.getStarSystem().getName());
                     info.addPara("Destination: %s", 0f, bulletColor,
                             highlightColor, endingPoint.getName());
-                    info.addPara("Estimated Travel Time: %s " + dayOrDays(remainingTravelTime), 0f, bulletColor, highlightColor, String.valueOf(remainingTravelTime));
+                    info.addPara("Estimated Travel Time: %s day" + singularOrPlural(remainingTravelTime), 0f, bulletColor, highlightColor, String.valueOf(remainingTravelTime));
                 }
-
-                info.addPara("Reward: %s", travelPad, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
             } else {
                 info.addPara("Target: %s", initPad, bulletColor,
                         targetedFaction.getBaseUIColor(), person.getNameString());
@@ -147,23 +166,17 @@ public class AssassinationBountyEntity implements BountyEntity {
                             highlightColor, Misc.getDGSCredits(baseReward));
                 }
 
-                String currentLocation;
-                if (fleet.isInHyperspace()) currentLocation = "Hyperspace";
-                else if (fleet.getContainingLocation() == endingPoint.getContainingLocation())
-                    currentLocation = endingPoint.getStarSystem().getName();
-                else
-                    currentLocation = "Unknown";
-
                 info.addPara("Location: %s", 0f, bulletColor, highlightColor, currentLocation);
             }
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    info.addPara("%s received", 10f, bulletColor, highlightColor,
+                    info.addPara("%s received", initPad, bulletColor, highlightColor,
                             Misc.getDGSCredits(result.payment + result.bonus));
-                    info.addPara("Base: %s + Bonus: %s", 3f, bulletColor, highlightColor,
-                            Misc.getDGSCredits(result.payment),
-                            Misc.getDGSCredits(result.bonus));
+                    if (result.bonus > 0)
+                        info.addPara("Base: %s + Bonus: %s", 0f, bulletColor, highlightColor,
+                                Misc.getDGSCredits(result.payment),
+                                Misc.getDGSCredits(result.bonus));
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
@@ -189,7 +202,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             String messageTopic = "##### HIGH PRIORITY MESSAGE #####";
             info.addPara("Our communications officer decrypted the following message sent over '%s':", opad, highlightColor, voidNet);
             info.addPara("     %s", opad, highlightColor, messageTopic);
-            info.addPara("Requesting immediate assassination of specified target. Window of opportunity is short. Generous reward offered. Additional payment available if killed in Hyperspace.", opad / 2);
+            info.addPara("Requesting immediate assassination of specified target. Window of opportunity is short. Generous reward offered. Additional payment available if killed in Hyperspace. Hidden transponder smuggled successfully on board. Will transmit more information once triggered in hyperspace.", opad / 2);
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
@@ -198,7 +211,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             float iconSize = width / 3;
             info.addPara("The message had an intel file containing the targets ship attached.", opad);
             info.addShipList(cols, rows, iconSize, baseBountyIntel.getFactionForUIColors().getBaseUIColor(), flagshipAsList, opad);
-            info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional ships.", opad, highlightColor, String.valueOf(obfuscatedFleetSize));
+            info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional ship" + singularOrPlural(obfuscatedFleetSize) + ".", opad, highlightColor, String.valueOf(obfuscatedFleetSize));
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
         } else {
             switch (result.type) {
