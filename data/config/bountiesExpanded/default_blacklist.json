@@ -1,0 +1,14 @@
+{
+  "blacklistedFactions": [
+    "neutral"
+    ,"mercenary"
+    ,"scavengers"
+    ,"omega"
+    ,"lions_guard"
+    ,"knights_of_ludd"
+    ,"derelict"
+    ,"remnant"
+    ,"sleeper"
+    ,"poor"
+  ]
+}
