@@ -33,6 +33,8 @@ public interface BountyEntity {
 
     int getBaseReward();
 
+    int getLevel();
+
     void addBulletPoints(BaseBountyIntel plugin, TooltipMakerAPI info, ListInfoMode mode);
 
     void createSmallDescription(BaseBountyIntel plugin, TooltipMakerAPI info, float width, float height);

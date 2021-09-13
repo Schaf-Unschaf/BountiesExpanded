@@ -5,6 +5,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.Script;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
+import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.Misc;
@@ -48,47 +49,73 @@ public class AssassinationBountyManager extends BaseEventManager {
 
     @Override
     protected EveryFrameScript createEvent() {
-        if (Settings.ASSASSINATION_ACTIVE && new Random().nextFloat() <= Settings.ASSASSINATION_SPAWN_CHANCE) {
-            final AssassinationBountyEntity assassinationBountyEntity = EntityProvider.assassinationBountyEntity();
-            if (isNull(assassinationBountyEntity))
-                return null;
-            final CampaignFleetAPI fleet = assassinationBountyEntity.getFleet();
-            fleet.setNoFactionInName(true);
-            fleet.setName(FleetNameCollection.getRandomName());
-            fleet.setTransponderOn(false);
-            fleet.getAI().clearAssignments();
-            fleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying fleet", new Script() {
-                public void run() {
-                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
-                            Misc.findNearestJumpPoint(assassinationBountyEntity.getStartingPoint()),
-                            30f,
-                            "Travelling to Jump-Point",
-                            new Script() {
-                                public void run() {
-                                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
-                                            Misc.findNearestJumpPointTo(assassinationBountyEntity.getEndingPoint()),
-                                            100f,
-                                            "Travelling to " + assassinationBountyEntity.getEndingPoint().getStarSystem().getName(),
-                                            new Script() {
-                                                public void run() {
-                                                    fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
-                                                            assassinationBountyEntity.getEndingPoint(),
-                                                            30f,
-                                                            "Travelling to " + assassinationBountyEntity.getEndingPoint().getName(),
-                                                            null);
-                                                    fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, false);
-                                                }
-                                            });
-                                    fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, true);
-                                }
-                            });
-                }
-            });
-            fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
-
-            return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getPerson(), assassinationBountyEntity.getStartingPoint());
+        if (Settings.ASSASSINATION_ACTIVE) {
+            if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
+                return createAssassinationBountyEvent();
+            if (new Random().nextFloat() <= Settings.ASSASSINATION_SPAWN_CHANCE)
+                return createAssassinationBountyEvent();
         }
 
         return null;
+    }
+
+    private AssassinationBountyIntel createAssassinationBountyEvent() {
+        final AssassinationBountyEntity assassinationBountyEntity = EntityProvider.assassinationBountyEntity();
+        if (isNull(assassinationBountyEntity))
+            return null;
+        final CampaignFleetAPI fleet = assassinationBountyEntity.getFleet();
+        fleet.setNoFactionInName(true);
+        fleet.setName(FleetNameCollection.getRandomName());
+        fleet.setTransponderOn(false);
+        fleet.getAI().clearAssignments();
+        fleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying fleet", new Script() {
+            public void run() {
+                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                        Misc.findNearestJumpPoint(assassinationBountyEntity.getStartingPoint()),
+                        15f,
+                        "Travelling to Jump-Point",
+                        new Script() {
+                            public void run() {
+                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                                        assassinationBountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor(),
+                                        45f,
+                                        "Travelling to " + assassinationBountyEntity.getEndingPoint().getStarSystem().getName(),
+                                        new Script() {
+                                            public void run() {
+                                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                                                        assassinationBountyEntity.getEndingPoint(),
+                                                        15f,
+                                                        "Travelling to " + assassinationBountyEntity.getEndingPoint().getName(),
+                                                        new Script() {
+                                                            public void run() {
+                                                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
+                                                                        assassinationBountyEntity.getEndingPoint(),
+                                                                        2f,
+                                                                        "Preparing to dock at " + assassinationBountyEntity.getEndingPoint().getName(),
+                                                                        new Script() {
+                                                                            public void run() {
+                                                                                fleet.despawn();
+                                                                            }
+                                                                        });
+                                                            }
+                                                        });
+                                                fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, false);
+                                            }
+                                        });
+                                fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, false);
+                                fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, true);
+                            }
+                        });
+            }
+        });
+        fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+        fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+
+        log.info("BountiesExpanded - Spawning Assassination Bounty: "
+                + assassinationBountyEntity.getFleet().getName() + " | "
+                + assassinationBountyEntity.getStartingPoint().getName() + " -> "
+                + assassinationBountyEntity.getEndingPoint().getName());
+
+        return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getPerson(), assassinationBountyEntity.getStartingPoint());
     }
 }

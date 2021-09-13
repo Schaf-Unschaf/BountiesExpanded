@@ -48,7 +48,7 @@ public class EntityProvider {
 
         CampaignFleetAPI fleet = FleetGenerator.createAndSpawnFleetTesting(fp, qf, null, hideout, person);
 
-        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, difficulty);
+        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, difficulty, level);
     }
 
     public static AssassinationBountyEntity assassinationBountyEntity() {
@@ -71,7 +71,7 @@ public class EntityProvider {
 
         CampaignFleetAPI fleet = FleetGenerator.createAndSpawnFleet(fp, qf, null, startingPoint.getPrimaryEntity(), person);
 
-        return new AssassinationBountyEntity(bountyCredits, targetedFaction, fleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty);
+        return new AssassinationBountyEntity(bountyCredits, targetedFaction, fleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty, level);
     }
 
 

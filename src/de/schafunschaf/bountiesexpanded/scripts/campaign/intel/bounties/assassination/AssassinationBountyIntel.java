@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -88,6 +89,9 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
             return entity.getStartingPoint().getStarSystem().getHyperspaceAnchor();
         else if (fleet.getContainingLocation() == entity.getEndingPoint().getContainingLocation())
             return entity.getEndingPoint().getStarSystem().getHyperspaceAnchor();
-        return null;
+        if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
+            return entity.getStartingPoint();
+        else
+            return null;
     }
 }
