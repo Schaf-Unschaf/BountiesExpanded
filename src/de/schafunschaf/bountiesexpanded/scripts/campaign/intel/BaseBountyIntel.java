@@ -5,6 +5,7 @@ import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
 import com.fs.starfarer.api.ui.SectorMapAPI;
@@ -56,7 +57,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     @Override
     public void createSmallDescription(TooltipMakerAPI info, float width, float height) {
         entity.createSmallDescription(this, info, width, height);
-        if (Settings.SHEEP_DEBUG)
+        if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
             addDeleteButton(info, width);
     }
 

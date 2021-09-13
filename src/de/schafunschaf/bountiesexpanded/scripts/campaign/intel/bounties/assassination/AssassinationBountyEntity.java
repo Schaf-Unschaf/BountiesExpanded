@@ -8,9 +8,11 @@ import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
+import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.fleets.RouteLocationCalculator;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
@@ -28,6 +30,7 @@ import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.sin
 
 public class AssassinationBountyEntity implements BountyEntity {
     private final int baseReward;
+    private final int level;
     private final Difficulty difficulty;
 
     private final FactionAPI targetedFaction;
@@ -39,7 +42,7 @@ public class AssassinationBountyEntity implements BountyEntity {
     private final int obfuscatedFleetSize;
     private final List<FleetMemberAPI> flagshipAsList;
 
-    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, SectorEntityToken endingPoint, Difficulty difficulty) {
+    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, SectorEntityToken endingPoint, Difficulty difficulty, int level) {
         this.baseReward = baseReward;
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
@@ -47,6 +50,7 @@ public class AssassinationBountyEntity implements BountyEntity {
         this.startingPoint = startingPoint;
         this.endingPoint = endingPoint;
         this.difficulty = difficulty;
+        this.level = level;
 
         this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 7 + new Random().nextInt(15), 1);
         this.flagshipAsList = getFlagshipCopy();
@@ -110,6 +114,11 @@ public class AssassinationBountyEntity implements BountyEntity {
     @Override
     public int getBaseReward() {
         return baseReward;
+    }
+
+    @Override
+    public int getLevel() {
+        return level;
     }
 
     @Override
@@ -213,6 +222,12 @@ public class AssassinationBountyEntity implements BountyEntity {
             info.addShipList(cols, rows, iconSize, baseBountyIntel.getFactionForUIColors().getBaseUIColor(), flagshipAsList, opad);
             info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional ship" + singularOrPlural(obfuscatedFleetSize) + ".", opad, highlightColor, String.valueOf(obfuscatedFleetSize));
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
+
+            if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG) {
+                info.addPara("FLEET LEVEL: " + level, opad * 2);
+                info.addPara("SPAWN LOCATION: " + startingPoint.getName(), 0f);
+                info.addPara("DESTINATION: " + endingPoint.getName(), 0f);
+            }
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
