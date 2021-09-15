@@ -2,12 +2,11 @@
   "id": "bountiesexpanded",
   "name": "Bounties Expanded",
   "author": "Schaf-Unschaf",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Expands your daily bounty business.",
   "gameVersion": "0.95a-RC15",
   "jars": [
-    "jars/BountiesExpanded.jar",
-    "lib/BountyLib/BountyLib.jar"
+    "jars/BountiesExpanded.jar"
   ],
   "modPlugin": "de.schafunschaf.bountiesexpanded.plugins.BountiesExpandedPlugin"
 }

@@ -1,5 +1,6 @@
 package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
@@ -8,24 +9,24 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
+import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
-import de.schafunschaf.bountylib.campaign.helper.fleet.FleetGenerator;
 
 import java.awt.*;
-import java.util.List;
 
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.FormattingTools.singularOrPlural;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
 
 public class SkirmishBountyEntity implements BountyEntity {
+    private static final String SKIRMISH_ICON = "bountiesExpanded_skirmish";
     private final int baseReward;
     private final int level;
     private final int maxPayout;
@@ -38,7 +39,7 @@ public class SkirmishBountyEntity implements BountyEntity {
     private final CampaignFleetAPI fleet;
     private final PersonAPI person;
     private final SectorEntityToken hideout;
-    String[] creditsPerSize;
+    final String[] creditsPerSize;
 
     public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, float fractionToKill, Difficulty difficulty, int level) {
         this.baseReward = baseReward;
@@ -98,7 +99,7 @@ public class SkirmishBountyEntity implements BountyEntity {
 
     @Override
     public String getIcon() {
-        return targetedFaction.getCrest();
+        return Global.getSettings().getSpriteName("intel", SKIRMISH_ICON);
     }
 
     @Override
@@ -223,19 +224,14 @@ public class SkirmishBountyEntity implements BountyEntity {
                             + hideout.getStarSystem().getName() + ".",
                     10f, highlightColor, hideout.getName(), hideout.getStarSystem().getName());
 
-            List<FleetMemberAPI> fleetMemberList = FleetGenerator.createCompleteCopyForIntel(fleet);
-            int cols = 7;
-            int rows = (int) Math.ceil(fleetMemberList.size() / (float) cols);
-            float iconSize = width / cols;
+            info.addSectionHeading("Fleet Intel", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
+
             Color[] factionAndHighlightColors = {offeringFaction.getBaseUIColor(), highlightColor};
             info.addPara("Since this is an official military operation, %s transmitted a complete intel report.", opad, offeringFaction.getBaseUIColor(), offeringFaction.getDisplayNameWithArticle());
-            info.addShipList(cols, rows, iconSize, baseBountyIntel.getFactionForUIColors().getBaseUIColor(), fleetMemberList, opad);
+            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), false);
             info.addPara("To claim your bounty, %s demands the destruction of at least %s ship" + singularOrPlural(shipsToDestroy) + ".", opad, factionAndHighlightColors, offeringFaction.getDisplayNameWithArticle(), String.valueOf(shipsToDestroy));
             info.addPara("They will also pay an additional %s / %s / %s / %s credits per kill as bonus on top of your reward.", opad, highlightColor, creditsPerSize);
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
-
-            if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
-                info.addPara("FLEET LEVEL: " + level, opad * 2);
         }
     }
 

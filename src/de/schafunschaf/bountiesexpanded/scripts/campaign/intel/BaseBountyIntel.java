@@ -5,7 +5,6 @@ import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
 import com.fs.starfarer.api.ui.SectorMapAPI;
@@ -17,15 +16,14 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Diffic
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 
 import java.awt.*;
-import java.util.Random;
 import java.util.Set;
 
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
 
-    protected final float duration;
+    protected float duration;
     protected final Difficulty difficulty;
     protected final CampaignFleetAPI fleet;
     protected final BountyEntity entity;
@@ -39,11 +37,10 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         this.fleet = campaignFleetAPI;
         this.hideout = sectorEntityToken;
         this.person = personAPI;
-        this.duration = new Random().nextInt((Settings.SKIRMISH_MAX_DURATION - Settings.SKIRMISH_MIN_DURATION) + 1) + Settings.SKIRMISH_MIN_DURATION;
+        this.duration = 100f;
         this.difficulty = entity.getDifficulty();
 
         fleet.addEventListener(this);
-        Misc.makeImportant(fleet, "pbe", duration + 20f);
         Global.getSector().getIntelManager().queueIntel(this);
     }
 
@@ -57,7 +54,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     @Override
     public void createSmallDescription(TooltipMakerAPI info, float width, float height) {
         entity.createSmallDescription(this, info, width, height);
-        if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
+        if (Settings.isDebugActive())
             addDeleteButton(info, width);
     }
 
@@ -108,6 +105,22 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
     }
 
+    public CampaignFleetAPI getFleet() {
+        return fleet;
+    }
+
+    public BountyEntity getEntity() {
+        return entity;
+    }
+
+    public PersonAPI getPerson() {
+        return person;
+    }
+
+    public SectorEntityToken getHideout() {
+        return hideout;
+    }
+
     public float getElapsedDays() {
         return elapsedDays;
     }
@@ -128,16 +141,23 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         super.addDays(info, after, days, c);
     }
 
+    @Override
     public void bullet(TooltipMakerAPI info) {
         super.bullet(info);
     }
 
-    public Color getBulletColorForMode(ListInfoMode mode) {
-        return super.getBulletColorForMode(mode);
-    }
-
+    @Override
     public void unindent(TooltipMakerAPI info) {
         super.unindent(info);
+    }
+
+    @Override
+    public void indent(TooltipMakerAPI info) {
+        super.indent(info);
+    }
+
+    public Color getBulletColorForMode(ListInfoMode mode) {
+        return super.getBulletColorForMode(mode);
     }
 
     @Override
@@ -181,7 +201,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             Misc.makeUnimportant(fleet, "pbe");
             fleet.clearAssignments();
 
-            if (!Settings.UNINSTALL && hideout != null) {
+            if (!Settings.PREPARE_UPDATE && hideout != null) {
                 fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
             } else {
                 fleet.despawn();

@@ -5,22 +5,21 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.Script;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.FleetNameCollection;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
 import java.util.Random;
 
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class AssassinationBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_assassinationBountyManager";
-    public static Logger log = Global.getLogger(AssassinationBountyManager.class);
+    public static final Logger log = Global.getLogger(AssassinationBountyManager.class);
 
     public AssassinationBountyManager() {
         super();
@@ -43,14 +42,9 @@ public class AssassinationBountyManager extends BaseEventManager {
     }
 
     @Override
-    protected float getIntervalRateMult() {
-        return super.getIntervalRateMult();
-    }
-
-    @Override
     protected EveryFrameScript createEvent() {
         if (Settings.ASSASSINATION_ACTIVE) {
-            if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
+            if (Settings.isDebugActive())
                 return createAssassinationBountyEvent();
             if (new Random().nextFloat() <= Settings.ASSASSINATION_SPAWN_CHANCE)
                 return createAssassinationBountyEvent();
@@ -59,13 +53,13 @@ public class AssassinationBountyManager extends BaseEventManager {
         return null;
     }
 
-    private AssassinationBountyIntel createAssassinationBountyEvent() {
+    public AssassinationBountyIntel createAssassinationBountyEvent() {
         final AssassinationBountyEntity assassinationBountyEntity = EntityProvider.assassinationBountyEntity();
         if (isNull(assassinationBountyEntity))
             return null;
         final CampaignFleetAPI fleet = assassinationBountyEntity.getFleet();
         fleet.setNoFactionInName(true);
-        fleet.setName(FleetNameCollection.getRandomName());
+        fleet.setName(NameStringCollection.getSuspiciousName());
         fleet.setTransponderOn(false);
         fleet.getAI().clearAssignments();
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying fleet", new Script() {
@@ -104,6 +98,7 @@ public class AssassinationBountyManager extends BaseEventManager {
                                         });
                                 fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, false);
                                 fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SMUGGLER, true);
+                                assassinationBountyEntity.reportEnteredHyperspace();
                             }
                         });
             }

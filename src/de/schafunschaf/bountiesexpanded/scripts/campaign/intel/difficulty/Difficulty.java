@@ -7,19 +7,19 @@ import java.awt.*;
 public final class Difficulty {
 
     public static final Difficulty EASY = new Difficulty(
-            "easy", "an", 0.75f, -1, Color.GREEN
+            "easy", "an", 1f, 0, Color.GREEN
     );
     public static final Difficulty MEDIUM = new Difficulty(
-            "balanced", "a", 1f, 0, Color.CYAN
+            "fair", "a", 1.25f, 1, Color.CYAN
     );
     public static final Difficulty CHALLENGING = new Difficulty(
-            "challenging", "a", 1.25f, 1, Color.ORANGE
+            "challenging", "a", 1.5f, 2, Color.ORANGE
     );
     public static final Difficulty HARD = new Difficulty(
-            "difficult", "a", 1.5f, 2, Color.RED
+            "difficult", "a", 1.75f, 3, Color.RED
     );
     public static final Difficulty BOSS = new Difficulty(
-            "BOSS", "a", 2f, 3, Color.MAGENTA
+            "BOSS", "a", 2f, 4, Color.MAGENTA
     );
     private static final Difficulty[] VALUES = {
             EASY, MEDIUM, HARD, CHALLENGING, BOSS

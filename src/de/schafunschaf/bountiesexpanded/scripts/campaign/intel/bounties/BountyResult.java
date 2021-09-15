@@ -3,11 +3,11 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties;
 import com.fs.starfarer.api.campaign.ReputationActionResponsePlugin;
 
 public class BountyResult {
-    public BountyResultType type;
-    public int payment;
-    public int bonus;
-    public Float share;
-    public ReputationActionResponsePlugin.ReputationAdjustmentResult rep;
+    public final BountyResultType type;
+    public final int payment;
+    public final int bonus;
+    public final Float share;
+    public final ReputationActionResponsePlugin.ReputationAdjustmentResult rep;
 
     public BountyResult(BountyResultType type, int payment, int bonus, Float share, ReputationActionResponsePlugin.ReputationAdjustmentResult rep) {
         this.type = type;
