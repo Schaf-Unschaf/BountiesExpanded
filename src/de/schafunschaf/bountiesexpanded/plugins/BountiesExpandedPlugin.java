@@ -74,8 +74,11 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
                 HighValueBountyManager.getInstance().markBountyAsCompleted(bountyId);
             }
 
-            for (EveryFrameScript activeBounty : vayraUniqueBountyManager.getActive())
+            List<EveryFrameScript> activeBounties = vayraUniqueBountyManager.getActive();
+            for (int i = 0; i < activeBounties.size(); i++) {
+                EveryFrameScript activeBounty = activeBounties.get(i);
                 ((VayraUniqueBountyIntel) activeBounty).endImmediately();
+            }
 
             Global.getSector().removeScript(vayraUniqueBountyManager);
         }
