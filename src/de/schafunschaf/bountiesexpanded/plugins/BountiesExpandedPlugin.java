@@ -167,7 +167,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
             Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER = settings.getDouble("ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER");
 
             Settings.HIGH_VALUE_BOUNTY_ACTIVE = settings.getBoolean("HIGH_VALUE_BOUNTY_ACTIVE");
-            Settings.HIGH_VALUE_BOUNTY_MAX_BOUNTIES = settings.getInt("HIGH_VALUE_BOUNTY_SPAWN_CHANCE");
+            Settings.HIGH_VALUE_BOUNTY_MAX_BOUNTIES = settings.getInt("HIGH_VALUE_BOUNTY_MAX_BOUNTIES");
             Settings.HIGH_VALUE_BOUNTY_SPAWN_CHANCE = settings.getDouble("HIGH_VALUE_BOUNTY_SPAWN_CHANCE");
             Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS = settings.getDouble("HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS");
             Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS = settings.getDouble("HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS");

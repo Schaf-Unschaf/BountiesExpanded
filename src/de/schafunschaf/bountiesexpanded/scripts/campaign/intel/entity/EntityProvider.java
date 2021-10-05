@@ -25,6 +25,7 @@ import de.schafunschaf.bountiesexpanded.helper.faction.ParticipatingFactionPicke
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetPointCalculator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.QualityCalculator;
+import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.helper.level.LevelPicker;
 import de.schafunschaf.bountiesexpanded.helper.location.CoreWorldPicker;
 import de.schafunschaf.bountiesexpanded.helper.location.RemoteWorldPicker;
@@ -56,9 +57,10 @@ public class EntityProvider {
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
         float fractionToKill = (50 - new Random().nextInt(26)) / 100f;
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
-        fp += level * 7f;
-        float qf = QualityCalculator.vanillaCalculation(level);
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
+        int bountyLevel = BountyEventData.getSharedData().getLevel();
+        fp += level * bountyLevel;
+        float qf = QualityCalculator.vanillaCalculation(level);
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist());
@@ -85,9 +87,10 @@ public class EntityProvider {
         Difficulty difficulty = Difficulty.randomDifficulty();
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
-        fp += level * 5f;
-        float qf = QualityCalculator.vanillaCalculation(level);
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
+        int bountyLevel = BountyEventData.getSharedData().getLevel();
+        fp += level * bountyLevel;
+        float qf = QualityCalculator.vanillaCalculation(level);
 
         FactionAPI targetedFaction = ParticipatingFactionPicker.pickFaction(Blacklists.getSkirmishBountyBlacklist());
         if (isNull(targetedFaction))
