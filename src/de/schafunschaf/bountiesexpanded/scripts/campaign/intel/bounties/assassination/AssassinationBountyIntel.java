@@ -6,7 +6,6 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -17,21 +16,26 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyRe
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNotNull;
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class AssassinationBountyIntel extends BaseBountyIntel {
+    private final AssassinationBountyEntity bountyEntity;
     private final int payment;
     private final SectorEntityToken destination;
 
     private final float travelDistance;
-    private int bonusPayment = 0;
+    private int bonusPayment;
 
     public AssassinationBountyIntel(AssassinationBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
+        Misc.makeImportant(fleet, "pbe", 100f);
+        this.bountyEntity = bountyEntity;
         this.payment = bountyEntity.getBaseReward();
+        this.bonusPayment = bountyEntity.getBonusReward();
         this.destination = bountyEntity.getEndingPoint();
         this.travelDistance = Misc.getDistanceLY(bountyEntity.getStartingPoint().getStarSystem().getHyperspaceAnchor(), bountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor());
+        bountyEntity.setIntel(this);
     }
 
     @Override
@@ -55,9 +59,8 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
             }
         }
 
-
         if (occurredInHyperspace)
-            bonusPayment = Math.round((int) (payment * (Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance)) / 1000) * 1000;
+            bonusPayment = (Math.round((int) (bonusPayment * (Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance)) / 1000) * 1000);
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
         result = new BountyResult(BountyResult.BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, 0f, null);
@@ -85,13 +88,20 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
 
     @Override
     public SectorEntityToken getMapLocation(SectorMapAPI map) {
-        if (fleet.isInHyperspace())
+        if (fleet.isInHyperspace()) {
+            if (Settings.isDebugActive())
+                return Global.getSector().getHyperspace().createToken(fleet.getLocationInHyperspace().x, fleet.getLocationInHyperspace().y);
             return entity.getStartingPoint().getStarSystem().getHyperspaceAnchor();
-        else if (fleet.getContainingLocation() == entity.getEndingPoint().getContainingLocation())
+        } else if (fleet.getContainingLocation() == entity.getEndingPoint().getContainingLocation()) {
             return entity.getEndingPoint().getStarSystem().getHyperspaceAnchor();
-        if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG)
+        }
+        if (Settings.isDebugActive())
             return entity.getStartingPoint();
         else
             return null;
+    }
+
+    public Object getListInfo() {
+        return getListInfoParam();
     }
 }

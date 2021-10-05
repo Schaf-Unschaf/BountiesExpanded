@@ -3,21 +3,23 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmis
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
-import static de.schafunschaf.bountylib.campaign.helper.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class SkirmishBountyManager extends BaseEventManager {
+    private Set<String> activeFactionBountyList = new HashSet<>();
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
     public static final String BOUNTY_IDENTIFIER_KEY = "$bountiesExpanded_skirmishBountyActive_";
-    public static Logger log = Global.getLogger(SkirmishBountyManager.class);
+    public static final Logger log = Global.getLogger(SkirmishBountyManager.class);
 
     public SkirmishBountyManager() {
         super();
@@ -40,14 +42,9 @@ public class SkirmishBountyManager extends BaseEventManager {
     }
 
     @Override
-    protected float getIntervalRateMult() {
-        return super.getIntervalRateMult();
-    }
-
-    @Override
     protected EveryFrameScript createEvent() {
         if (Settings.SKIRMISH_ACTIVE) {
-            if ((DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG))
+            if (Settings.isDebugActive())
                 return createSkirmishBountyEvent();
             if (new Random().nextFloat() <= Settings.SKIRMISH_SPAWN_CHANCE) {
                 return createSkirmishBountyEvent();
@@ -57,7 +54,7 @@ public class SkirmishBountyManager extends BaseEventManager {
         return null;
     }
 
-    private SkirmishBountyIntel createSkirmishBountyEvent() {
+    public SkirmishBountyIntel createSkirmishBountyEvent() {
         SkirmishBountyEntity skirmishBountyEntity = null;
         boolean isValidBounty = false;
         int maxSpawningAttempts = 5;
@@ -65,6 +62,10 @@ public class SkirmishBountyManager extends BaseEventManager {
         while (!isValidBounty && maxSpawningAttempts > 0) {
             SkirmishBountyEntity skirmishBountyEntityAttempt = EntityProvider.skirmishBountyEntity();
             if (isNull(skirmishBountyEntityAttempt)) {
+                maxSpawningAttempts--;
+                continue;
+            }
+            if (activeFactionBountyList.contains(skirmishBountyEntityAttempt.getTargetedFaction().getId())) {
                 maxSpawningAttempts--;
                 continue;
             }
@@ -92,6 +93,16 @@ public class SkirmishBountyManager extends BaseEventManager {
                 + skirmishBountyEntity.getTargetedFaction().getDisplayName() + " | At "
                 + skirmishBountyEntity.getHideout().getName());
 
+        addFactionToActiveBountyList(skirmishBountyEntity.getTargetedFaction().getId());
+
         return new SkirmishBountyIntel(skirmishBountyEntity, skirmishBountyEntity.getFleet(), skirmishBountyEntity.getPerson(), skirmishBountyEntity.getHideout());
+    }
+
+    public void addFactionToActiveBountyList(String factionId) {
+        activeFactionBountyList.add(factionId);
+    }
+
+    public void removeFactionFromActiveList(String factionId) {
+        activeFactionBountyList.remove(factionId);
     }
 }

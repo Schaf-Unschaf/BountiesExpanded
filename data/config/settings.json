@@ -1,0 +1,8 @@
+{
+  "graphics": {
+    "intel": {
+      "bountiesExpanded_assassination": "graphics/icons/intel/assassination_bounty.png",
+      "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png"
+    }
+  }
+}

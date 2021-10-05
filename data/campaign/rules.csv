@@ -1,0 +1,15 @@
+id,trigger,conditions,script,text,options,notes
+,,,,,,
+# High Value Bounty fleet greeting lines,,,,,,
+bountiesExpanded_highValueBountyHunterHail,BeginFleetEncounter,"$bountiesExpanded_highValueBounty score:1000
+$entity.isHostile
+!$ignorePlayerCommRequests","AddText ""You're being hailed by the $faction $otherShipOrFleet."" $faction.baseColor
+$hailing = true 0
+MakeOtherFleetPreventDisengage tOff true
+MakeOtherFleetAggressive tOff true",,,
+bountiesExpanded_highValueBountyHunterHailNonHostile,BeginFleetEncounter,"$bountiesExpanded_highValueBounty score:1000
+!$entity.isHostile
+!$ignorePlayerCommRequests","AddText ""You're being hailed by the $faction $otherShipOrFleet."" $faction.baseColor
+$hailing = true 0",,,
+bountiesExpanded_highValueBountyHunterText,OpenCommLink,"$entity.bountiesExpanded_highValueBounty score:1000
+!$entity.ignorePlayerCommRequests",$entity.ignorePlayerCommRequests = true,$bountiesExpanded_highValueBountyGreeting,cutCommLinkNoText:Continue,
