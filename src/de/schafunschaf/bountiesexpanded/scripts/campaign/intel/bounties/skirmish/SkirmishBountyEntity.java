@@ -16,6 +16,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 
@@ -141,7 +142,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         float duration = baseBountyIntel.getDuration();
         float elapsedDays = baseBountyIntel.getElapsedDays();
 
-        BountyResult result = baseBountyIntel.getResult();
+        SkirmishBountyResult result = (SkirmishBountyResult) baseBountyIntel.getResult();
         baseBountyIntel.bullet(info);
 
         boolean isUpdate = baseBountyIntel.getListInfoParam() != null;
@@ -171,11 +172,31 @@ public class SkirmishBountyEntity implements BountyEntity {
                     String payout = Misc.getDGSCredits(Math.round((result.payment + result.bonus) * result.share));
                     String basePayout = Misc.getDGSCredits(result.payment);
                     String bonusPayout = Misc.getDGSCredits(result.bonus);
+                    String increasedDecreased;
+                    Color rewardColor;
+                    String percentage;
+
                     info.addPara("%s received", initPad, bulletColor, highlightColor, payout);
-                    if (result.share < 1f)
-                        info.addPara("(%s Base + %s Bonus) * %s Participation", initPad, bulletColor, highlightColor, basePayout, bonusPayout, (int) (result.share * 100) + "%");
-                    else
-                        info.addPara("%s Base + %s Bonus", initPad, bulletColor, highlightColor, basePayout, bonusPayout);
+
+                    if (mode == ListInfoMode.IN_DESC) {
+                        if (result.rewardAdjustment > 0) {
+                            increasedDecreased = "increased";
+                            rewardColor = Color.GREEN;
+                            percentage = (int) result.rewardAdjustment - 100 + "%";
+                        } else {
+                            increasedDecreased = "decreased";
+                            rewardColor = Color.RED;
+                            percentage = 100 + (int) result.rewardAdjustment + "%";
+                        }
+
+                        if (result.share < 1f)
+                            info.addPara("(%s Base + %s Bonus) * %s Participation", initPad, highlightColor, basePayout, bonusPayout, (int) (result.share * 100) + "%");
+                        else
+                            info.addPara("%s Base + %s Bonus", initPad, highlightColor, basePayout, bonusPayout);
+                        if (result.rewardAdjustment != 0)
+                            info.addPara("Reward %s by %s due to faction standing", initPad, rewardColor, increasedDecreased, percentage);
+                    }
+
                     CoreReputationPlugin.addAdjustmentMessage(result.rep.delta, offeringFaction, null,
                             null, null, info, bulletColor, isUpdate, initPad);
                     break;
@@ -197,7 +218,7 @@ public class SkirmishBountyEntity implements BountyEntity {
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
         Color highlightColor = Misc.getHighlightColor();
         Color[] factionColors = {offeringFaction.getColor(), targetedFaction.getColor()};
-        BountyResult result = baseBountyIntel.getResult();
+        SkirmishBountyResult result = (SkirmishBountyResult) baseBountyIntel.getResult();
         float opad = 10f;
 
 
@@ -208,11 +229,10 @@ public class SkirmishBountyEntity implements BountyEntity {
                 targetedFaction.getDisplayNameWithArticleWithoutArticle());
 
         if (isNotNull(result)) {
-            if (result.type == BountyResult.BountyResultType.END_PLAYER_BOUNTY) {
+            if (result.type == BountyResultType.END_PLAYER_BOUNTY)
                 info.addPara("You have successfully completed the mission.", opad);
-            } else {
+            else
                 info.addPara("This mission is no longer on offer.", opad);
-            }
         }
 
         addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);

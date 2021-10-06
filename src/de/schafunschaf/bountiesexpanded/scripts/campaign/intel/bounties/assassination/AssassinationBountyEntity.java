@@ -50,7 +50,7 @@ public class AssassinationBountyEntity implements BountyEntity {
 
     public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, SectorEntityToken endingPoint, Difficulty difficulty, int level) {
         this.baseReward = (int) ((Math.round(baseReward * Settings.ASSASSINATION_BASE_REWARD_MULTIPLIER) / 1000) * 1000);
-        this.bonusReward = (int) ((Math.round(this.baseReward * Settings.ASSASSINATION_BONUS_REWARD_MULTIPLIER) / 1000) * 1000);
+        this.bonusReward = (int) ((Math.round(baseReward * Settings.ASSASSINATION_BONUS_REWARD_MULTIPLIER) / 1000) * 1000);
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
         this.person = person;
@@ -162,7 +162,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                 currentLocation = endingPoint.getStarSystem().getName();
             else {
                 if (getDifficulty() == Difficulty.EASY) {
-                    String factionName = endingPoint.getFaction().getDisplayNameWithArticleWithoutArticle();
+                    String factionName = startingPoint.getFaction().getDisplayNameWithArticleWithoutArticle();
                     currentLocation = "Near " + aOrAn(factionName) + " " + factionName + " controlled world";
                 } else if (getDifficulty() == Difficulty.MEDIUM) {
                     String factionName = person.getFaction().getDisplayNameWithArticle();
@@ -250,7 +250,6 @@ public class AssassinationBountyEntity implements BountyEntity {
 
             if (Settings.isDebugActive()) {
                 DescriptionUtils.createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), false);
-                info.addPara("FLEET LEVEL: " + level, opad);
                 info.addPara("SPAWN LOCATION: " + startingPoint.getName(), 0f);
                 info.addPara("DESTINATION: " + endingPoint.getName(), 0f);
             }

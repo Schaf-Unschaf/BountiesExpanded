@@ -10,16 +10,19 @@ import com.fs.starfarer.api.util.Misc;
 
 import java.util.*;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
-
 public class SModUpgradeHelper {
-    public static void upgradeShip(FleetMemberAPI fleetMember) {
+    public static void upgradeShip(FleetMemberAPI fleetMember, int numSMods) {
+        if (numSMods <= 0)
+            return;
+
         ShipVariantAPI shipVariant = fleetMember.getVariant().clone();
-        replaceAndEnhanceHullMods(shipVariant);
+        for (int i = 0; i < numSMods; i++)
+            upgradeHullMod(shipVariant);
+
         fleetMember.setVariant(shipVariant, true, true);
     }
 
-    public static void replaceAndEnhanceHullMods(ShipVariantAPI shipVariant) {
+    public static void upgradeHullMod(ShipVariantAPI shipVariant) {
         Map<String, Integer> hullModsWithOP = new HashMap<>();
         boolean hasSafetyOverrides = false;
 
@@ -47,53 +50,49 @@ public class SModUpgradeHelper {
             }
         }
 
-        String id1 = "";
-        String id2 = "";
-        int opCost1 = 0;
-        int opCost2 = 0;
+        String id = "";
+        int opCost = 0;
         for (Map.Entry<String, Integer> hullModSet : hullModsWithOP.entrySet()) {
-            if (opCost1 < hullModSet.getValue()) {
-                id2 = id1;
-                opCost2 = opCost1;
-                id1 = hullModSet.getKey();
-                opCost1 = hullModSet.getValue();
-            } else if (opCost2 < hullModSet.getValue()) {
-                id2 = hullModSet.getKey();
-                opCost2 = hullModSet.getValue();
+            if (opCost < hullModSet.getValue()) {
+                id = hullModSet.getKey();
+                opCost = hullModSet.getValue();
             }
         }
 
-        if (id1.isEmpty())
+        if (id.isEmpty())
             if (!hasSafetyOverrides && Misc.getSizeNum(shipVariant.getHullSize()) >= 3f && !hasModBuiltIn(shipVariant, HullMods.INTEGRATED_TARGETING_UNIT))
-                id1 = HullMods.INTEGRATED_TARGETING_UNIT;
+                id = HullMods.INTEGRATED_TARGETING_UNIT;
             else if (!hasModBuiltIn(shipVariant, HullMods.HARDENED_SHIELDS))
-                id1 = HullMods.HARDENED_SHIELDS;
+                id = HullMods.HARDENED_SHIELDS;
             else if (!hasModBuiltIn(shipVariant, HullMods.HEAVYARMOR))
-                id1 = HullMods.HEAVYARMOR;
+                id = HullMods.HEAVYARMOR;
             else
-                id1 = getRandomFreeHullMod(shipVariant);
+                id = getRandomFreeHullMod(shipVariant);
 
-        shipVariant.addPermaMod(id1, true);
+        shipVariant.addPermaMod(id, true);
+    }
 
-        if (id2.isEmpty())
-            if (!isNull(id1) && !id1.equals(HullMods.INTEGRATED_TARGETING_UNIT) && !hasSafetyOverrides && Misc.getSizeNum(shipVariant.getHullSize()) >= 3f && !hasModBuiltIn(shipVariant, HullMods.INTEGRATED_TARGETING_UNIT))
-                id2 = HullMods.INTEGRATED_TARGETING_UNIT;
-            else if (!isNull(id1) && !id1.equals(HullMods.HARDENED_SHIELDS) && !hasModBuiltIn(shipVariant, HullMods.HARDENED_SHIELDS))
-                id2 = HullMods.HARDENED_SHIELDS;
-            else if (!hasModBuiltIn(shipVariant, HullMods.HEAVYARMOR))
-                id2 = HullMods.HEAVYARMOR;
-            else
-                id2 = getRandomFreeHullMod(shipVariant);
+    public static void addMinorUpgrades(FleetMemberAPI fleetMember) {
+        ShipVariantAPI shipVariant = fleetMember.getVariant().clone();
 
-        shipVariant.addPermaMod(id2, true);
+        boolean hasSafetyOverrides = false;
 
-        if (!hasModBuiltIn(shipVariant, HullMods.REINFORCEDHULL) && !isNull(id1) && !id1.equals(HullMods.REINFORCEDHULL) || !isNull(id2) && id2.equals(HullMods.REINFORCEDHULL))
+        for (String hullModId : shipVariant.getHullMods()) {
+            if (hullModId.equals(HullMods.SAFETYOVERRIDES)) {
+                hasSafetyOverrides = true;
+                break;
+            }
+        }
+
+        if (!hasModBuiltIn(shipVariant, HullMods.REINFORCEDHULL))
             shipVariant.addPermaMod(HullMods.REINFORCEDHULL, true);
         else
             shipVariant.addPermaMod(getRandomFreeHullMod(shipVariant), true);
 
-        if (hasSafetyOverrides)
+        if (hasSafetyOverrides && !shipVariant.hasHullMod(HullMods.HARDENED_SUBSYSTEMS))
             shipVariant.addMod(HullMods.HARDENED_SUBSYSTEMS);
+
+        fleetMember.setVariant(shipVariant, true, true);
     }
 
     public static boolean hasModBuiltIn(ShipVariantAPI shipVariant, String hullModId) {

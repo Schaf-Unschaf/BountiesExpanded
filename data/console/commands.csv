@@ -6,3 +6,4 @@ BountiesExpanded_RemoveCompletedHVB,de.schafunschaf.bountiesexpanded.scripts.con
 BountiesExpanded_SpawnAssassinationBounty,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnAssassinationBounty,campaign,bountiesExpandedSpawnAssassinationBounty,"Forces an AssassinationBounty to spawn."
 BountiesExpanded_SpawnSkirmishBounty,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnSkirmishBounty,campaign,bountiesExpandedSpawnSkirmishBounty,"Forces a SkirmishBounty to spawn."
 BountiesExpanded_PrepareUpdate,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedPrepareUpdate,campaign,bountiesExpanded_PrepareUpdate,"Prepares the mod for an update."
+BountiesExpanded_RemoveFaultyBounties,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedRemoveFaultyBounties,campaign,bountiesExpanded_RemoveFaultyBounties,"Removes faulty Skirmish-Fleets that happened with 0.3.1"

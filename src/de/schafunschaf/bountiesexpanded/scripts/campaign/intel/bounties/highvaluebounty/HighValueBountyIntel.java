@@ -13,6 +13,7 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 
@@ -43,7 +44,7 @@ public class HighValueBountyIntel extends BaseBountyIntel {
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
                 bountyEntity.getOfferingFaction().getId());
 
-        result = new BountyResult(BountyResult.BountyResultType.END_PLAYER_BOUNTY, payment, 0, 0f, rep);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, 0, 0f, rep);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         HighValueBountyManager.getInstance().markBountyAsCompleted(bountyEntity.getBountyId());
         cleanUp(false);

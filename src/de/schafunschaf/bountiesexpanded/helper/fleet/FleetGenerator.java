@@ -33,11 +33,11 @@ public class FleetGenerator {
         return fleet;
     }
 
-    public static CampaignFleetAPI createAndSpawnFleetV2(float fleetPoints,
-                                                         float qualityOverride,
-                                                         MarketAPI fleetHomeMarket,
-                                                         SectorEntityToken hideout,
-                                                         PersonAPI fleetCaptain) {
+    public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
+                                                       float qualityOverride,
+                                                       MarketAPI fleetHomeMarket,
+                                                       SectorEntityToken hideout,
+                                                       PersonAPI fleetCaptain) {
         Random random = new Random();
         FactionAPI faction = fleetCaptain.getFaction();
         String factionID = faction.getId();
@@ -81,7 +81,6 @@ public class FleetGenerator {
         FleetFactoryV3.addCommanderSkills(fleetCaptain, fleet, null);
         fleetData.sort();
 
-        spawnFleet(fleet, hideout);
         return fleet;
     }
 

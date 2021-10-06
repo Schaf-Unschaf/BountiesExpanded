@@ -15,21 +15,21 @@ public class BountiesExpandedRemoveCompletedHVB implements BaseCommand {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
-        } else {
-            HighValueBountyManager manager = HighValueBountyManager.getInstance();
-            if (isNull(manager)) {
-                Console.showMessage("the HighValueBountyManager instance is missing!");
-                return CommandResult.ERROR;
-            } else {
-                if (manager.getCompletedBounties().contains(args)) {
-                    Console.showMessage("Removing '" + args + "' from completed HVBs.");
-                    manager.getCompletedBounties().remove(args);
-                    return CommandResult.SUCCESS;
-                } else {
-                    Console.showMessage("HVB '" + args + "' was not in the completed HVB list.");
-                    return CommandResult.ERROR;
-                }
-            }
         }
+
+        HighValueBountyManager manager = HighValueBountyManager.getInstance();
+        if (isNull(manager)) {
+            Console.showMessage("the HighValueBountyManager instance is missing!");
+            return CommandResult.ERROR;
+        }
+
+        if (manager.getCompletedBounties().contains(args)) {
+            Console.showMessage("Removing '" + args + "' from completed HVBs.");
+            manager.getCompletedBounties().remove(args);
+            return CommandResult.SUCCESS;
+        }
+
+        Console.showMessage("HVB '" + args + "' was not in the completed HVB list.");
+        return CommandResult.ERROR;
     }
 }

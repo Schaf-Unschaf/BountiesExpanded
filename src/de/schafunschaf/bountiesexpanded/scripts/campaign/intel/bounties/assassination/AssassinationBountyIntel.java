@@ -12,6 +12,7 @@ import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,17 +54,17 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
             if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
                 fleet.setCommander(fleet.getFaction().createRandomPerson());
-                result = new BountyResult(BountyResult.BountyResultType.END_OTHER, 0, 0, 0f, null);
+                result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null);
                 cleanUp(true);
                 return;
             }
         }
 
         if (occurredInHyperspace)
-            bonusPayment = (Math.round((int) (bonusPayment * (Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER / travelDistance * remainingDistance)) / 1000) * 1000);
+            bonusPayment = (Math.round((int) (bonusPayment * (1 / travelDistance * remainingDistance)) / 1000) * 1000);
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
-        result = new BountyResult(BountyResult.BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, 0f, null);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, 0f, null);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }

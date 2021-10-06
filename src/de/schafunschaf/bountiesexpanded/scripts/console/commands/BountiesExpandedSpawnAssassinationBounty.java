@@ -17,23 +17,24 @@ public class BountiesExpandedSpawnAssassinationBounty implements BaseCommand {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
-        } else {
-            AssassinationBountyManager manager = AssassinationBountyManager.getInstance();
-            if (isNull(manager)) {
-                Console.showMessage("the AssassinationBountyManager instance is missing!");
-                return CommandResult.ERROR;
-            } else {
-                Console.showMessage("attempting to spawn AssassinationBounty...");
-                AssassinationBountyIntel assassinationBountyEvent = manager.createAssassinationBountyEvent();
-                if (isNotNull(assassinationBountyEvent)) {
-                    Console.showMessage("it worked!");
-                    Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getHideout().getName());
-                    return CommandResult.SUCCESS;
-                } else {
-                    Console.showMessage("it didn't work!");
-                    return CommandResult.ERROR;
-                }
-            }
         }
+
+        AssassinationBountyManager manager = AssassinationBountyManager.getInstance();
+        if (isNull(manager)) {
+            Console.showMessage("the AssassinationBountyManager instance is missing!");
+            return CommandResult.ERROR;
+        }
+
+        Console.showMessage("attempting to spawn AssassinationBounty...");
+        AssassinationBountyIntel assassinationBountyEvent = manager.createAssassinationBountyEvent();
+        if (isNotNull(assassinationBountyEvent)) {
+            manager.addActive(assassinationBountyEvent);
+            Console.showMessage("it worked!");
+            Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getHideout().getName());
+            return CommandResult.SUCCESS;
+        }
+
+        Console.showMessage("it didn't work!");
+        return CommandResult.ERROR;
     }
 }

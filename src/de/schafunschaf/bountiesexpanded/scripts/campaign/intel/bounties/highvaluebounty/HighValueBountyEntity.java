@@ -19,6 +19,7 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import org.apache.log4j.Logger;
@@ -187,7 +188,7 @@ public class HighValueBountyEntity implements BountyEntity {
         info.addImage(person.getPortraitSprite(), width, 128f, opad);
         info.addPara(intelText, opad);
         if (isNotNull(result)) {
-            if (result.type == BountyResult.BountyResultType.END_PLAYER_BOUNTY)
+            if (result.type == BountyResultType.END_PLAYER_BOUNTY)
                 info.addPara("Confirming the successful elimination of " + person.getNameString(), opad, person.getFaction().getBaseUIColor(), person.getNameString());
             else info.addPara("This mission is no longer on offer.", opad);
         }

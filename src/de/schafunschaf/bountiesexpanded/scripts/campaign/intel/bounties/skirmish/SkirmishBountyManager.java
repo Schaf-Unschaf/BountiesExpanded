@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
@@ -16,7 +17,9 @@ import java.util.Set;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class SkirmishBountyManager extends BaseEventManager {
-    private Set<String> activeFactionBountyList = new HashSet<>();
+    private final Set<String> activeFactionBountyList = new HashSet<>();
+    public static final String FLEET_NAME = "Skirmisher Fleet";
+    public static final String FLEET_ACTION_TEXT = "practicing military maneuvers";
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
     public static final String BOUNTY_IDENTIFIER_KEY = "$bountiesExpanded_skirmishBountyActive_";
     public static final Logger log = Global.getLogger(SkirmishBountyManager.class);
@@ -81,8 +84,9 @@ public class SkirmishBountyManager extends BaseEventManager {
             return null;
 
         CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
-        String fleetTypeName = "Skirmisher Fleet";
-        fleet.setName(fleetTypeName);
+        FleetGenerator.spawnFleet(fleet, skirmishBountyEntity.getHideout());
+        fleet.setName(FLEET_NAME);
+        fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
 

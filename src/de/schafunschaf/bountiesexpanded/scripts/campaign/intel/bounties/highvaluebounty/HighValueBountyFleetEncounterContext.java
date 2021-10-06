@@ -22,6 +22,7 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
         log.info("BountiesExpanded: Triggering HighValueBountyFleetEncounterContext");
 
         List<FleetMemberAPI> recoverableShips = super.getRecoverableShips(battle, winningFleet, otherFleet);
+        List<FleetMemberAPI> storyRecoverableShips = getStoryRecoverableShips();
 
         if (Misc.isPlayerOrCombinedContainingPlayer(otherFleet))
             return recoverableShips;
@@ -29,6 +30,10 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
         String bountyId = (String) otherFleet.getMemoryWithoutUpdate().get("$bountiesExpanded_highValueBounty");
 
         for (FleetMemberAPI recoverableShip : recoverableShips)
+            if (recoverableShip.getVariant().getHullVariantId().equals(bountyId))
+                return recoverableShips;
+
+        for (FleetMemberAPI recoverableShip : storyRecoverableShips)
             if (recoverableShip.getVariant().getHullVariantId().equals(bountyId))
                 return recoverableShips;
 

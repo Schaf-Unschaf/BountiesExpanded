@@ -230,7 +230,8 @@ public class HighValueBountyData {
                 return null;
             }
             if (flagship.getVariant().getSMods().isEmpty()) {
-                SModUpgradeHelper.upgradeShip(flagship);
+                SModUpgradeHelper.upgradeShip(flagship, 3);
+                SModUpgradeHelper.addMinorUpgrades(flagship);
             }
             flagship.setShipName(bountyData.flagshipName);
             return flagship;

@@ -161,10 +161,9 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
 
             Settings.ASSASSINATION_ACTIVE = settings.getBoolean("ASSASSINATION_ACTIVE");
             Settings.ASSASSINATION_SPAWN_CHANCE = settings.getDouble("ASSASSINATION_SPAWN_CHANCE");
+            Settings.ASSASSINATION_MIN_TRAVEL_DISTANCE = settings.getDouble("ASSASSINATION_MIN_TRAVEL_DISTANCE");
             Settings.ASSASSINATION_MAX_BOUNTIES = settings.getInt("ASSASSINATION_MAX_BOUNTIES");
             Settings.ASSASSINATION_MIN_BOUNTIES = settings.getInt("ASSASSINATION_MIN_BOUNTIES");
-            Settings.ASSASSINATION_MIN_TRAVEL_DISTANCE = settings.getDouble("ASSASSINATION_MIN_TRAVEL_DISTANCE");
-            Settings.ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER = settings.getDouble("ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER");
 
             Settings.HIGH_VALUE_BOUNTY_ACTIVE = settings.getBoolean("HIGH_VALUE_BOUNTY_ACTIVE");
             Settings.HIGH_VALUE_BOUNTY_MAX_BOUNTIES = settings.getInt("HIGH_VALUE_BOUNTY_MAX_BOUNTIES");
@@ -311,6 +310,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
 
         uninstallPlugins();
+        Settings.PREPARE_UPDATE = false;
     }
 
     private static void uninstallManager(BaseEventManager bountyManager) {
