@@ -10,16 +10,16 @@ public final class Difficulty {
             "easy", "an", 1f, 0, Color.GREEN
     );
     public static final Difficulty MEDIUM = new Difficulty(
-            "fair", "a", 1.25f, 1, Color.CYAN
+            "fair", "a", 1.15f, 1, Color.CYAN
     );
     public static final Difficulty CHALLENGING = new Difficulty(
-            "challenging", "a", 1.5f, 2, Color.ORANGE
+            "challenging", "a", 1.25f, 2, Color.ORANGE
     );
     public static final Difficulty HARD = new Difficulty(
-            "difficult", "a", 1.75f, 3, Color.RED
+            "difficult", "a", 1.4f, 3, Color.RED
     );
     public static final Difficulty BOSS = new Difficulty(
-            "BOSS", "a", 2f, 4, Color.MAGENTA
+            "BOSS", "a", 1.6f, 4, Color.MAGENTA
     );
     private static final Difficulty[] VALUES = {
             EASY, MEDIUM, HARD, CHALLENGING, BOSS

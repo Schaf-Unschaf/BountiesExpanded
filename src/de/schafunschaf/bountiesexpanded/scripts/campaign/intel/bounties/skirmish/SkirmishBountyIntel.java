@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Set;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class SkirmishBountyIntel extends BaseBountyIntel {
     private final int maxFleetSizeForCompletion;
@@ -71,7 +72,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         float playerInvolvedAverage = Math.round(playerInvolvement / numBattles);
 
         if (playerInvolvedAverage <= 0) {
-            result = new SkirmishBountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null, 0f);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null, 0f);
             cleanUp(true);
             return;
         }
@@ -100,21 +101,45 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact, null, null, true, false),
                 offeringFaction.getId());
 
-        result = new SkirmishBountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, playerInvolvedAverage, rep, paymentModifier);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, playerInvolvedAverage, rep, paymentModifier);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }
 
     @Override
+    protected void advanceImpl(float amount) {
+        float days = Global.getSector().getClock().convertToDays(amount);
+        elapsedDays += days;
+
+        if (elapsedDays >= duration && !isDone()) {
+            boolean canEnd = isNull(fleet) || !fleet.isInCurrentLocation();
+            if (canEnd) {
+                result = new BountyResult(BountyResultType.END_TIME, 0, 0);
+                cleanUp(true);
+                return;
+            }
+        }
+
+        if (isNull(fleet) || isNull(result)) {
+            return;
+        }
+
+        if (fleet.getFleetSizeCount() <= maxFleetSizeForCompletion) {
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            cleanUp(!fleet.isInCurrentLocation());
+        }
+    }
+
+    @Override
     protected void cleanUp(boolean onlyIfImportant) {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_IDENTIFIER_KEY + bountyEntity.getHideout().getMarket().getName());
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
         SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
         super.cleanUp(onlyIfImportant);
     }
 
     @Override
     public void endImmediately() {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_IDENTIFIER_KEY + bountyEntity.getHideout().getMarket().getName());
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
         SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
         super.endImmediately();
     }
@@ -124,14 +149,5 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         Set<String> intelTags = super.getIntelTags(map);
         intelTags.add(bountyEntity.getOfferingFaction().getId());
         return intelTags;
-    }
-}
-
-class SkirmishBountyResult extends BountyResult {
-    public final float rewardAdjustment;
-
-    public SkirmishBountyResult(BountyResultType type, int payment, int bonus, Float share, ReputationActionResponsePlugin.ReputationAdjustmentResult rep, float rewardAdjustment) {
-        super(type, payment, bonus, share, rep);
-        this.rewardAdjustment = rewardAdjustment;
     }
 }

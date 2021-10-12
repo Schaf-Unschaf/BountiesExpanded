@@ -142,7 +142,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         float duration = baseBountyIntel.getDuration();
         float elapsedDays = baseBountyIntel.getElapsedDays();
 
-        SkirmishBountyResult result = (SkirmishBountyResult) baseBountyIntel.getResult();
+        BountyResult result = baseBountyIntel.getResult();
         baseBountyIntel.bullet(info);
 
         boolean isUpdate = baseBountyIntel.getListInfoParam() != null;
@@ -218,7 +218,7 @@ public class SkirmishBountyEntity implements BountyEntity {
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
         Color highlightColor = Misc.getHighlightColor();
         Color[] factionColors = {offeringFaction.getColor(), targetedFaction.getColor()};
-        SkirmishBountyResult result = (SkirmishBountyResult) baseBountyIntel.getResult();
+        BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
 
 

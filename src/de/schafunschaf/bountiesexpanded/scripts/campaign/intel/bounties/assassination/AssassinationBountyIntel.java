@@ -54,7 +54,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
             if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
                 fleet.setCommander(fleet.getFaction().createRandomPerson());
-                result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null);
+                result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
                 cleanUp(true);
                 return;
             }
@@ -64,7 +64,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
             bonusPayment = (Math.round((int) (bonusPayment * (1 / travelDistance * remainingDistance)) / 1000) * 1000);
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
-        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, 0f, null);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }

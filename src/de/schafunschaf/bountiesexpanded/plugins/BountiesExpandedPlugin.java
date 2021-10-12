@@ -3,6 +3,7 @@ package de.schafunschaf.bountiesexpanded.plugins;
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import data.scripts.VayraModPlugin;
@@ -10,6 +11,7 @@ import data.scripts.campaign.intel.VayraUniqueBountyIntel;
 import data.scripts.campaign.intel.VayraUniqueBountyManager;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUtils;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignPlugin;
@@ -58,6 +60,8 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
 
         initManagerAndPlugins();
 
+        reloadSMods();
+
         if (Settings.HIGH_VALUE_BOUNTY_ACTIVE && Global.getSettings().getModManager().isModEnabled("vayrasector"))
             removeVayraUniqueBounties();
 
@@ -89,6 +93,33 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         if (Settings.ASSASSINATION_ACTIVE) addAssassinationManager();
         if (Settings.HIGH_VALUE_BOUNTY_ACTIVE) addHighValueBountyManager();
         addCampaignPlugins();
+    }
+
+    private void reloadSMods() {
+        reloadSkirmishSMods();
+        reloadHVBSMods();
+    }
+
+    private void reloadSkirmishSMods() {
+        SkirmishBountyManager bountyManager = SkirmishBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> skirmishFleets = FleetUtils.findFleetWithMemKey(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI skirmishFleet : skirmishFleets) {
+            bountyManager.upgradeShips(skirmishFleet);
+        }
+    }
+
+    private void reloadHVBSMods() {
+        HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> highValueBountyFleets = FleetUtils.findFleetWithMemKey(HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI hvbFleet : highValueBountyFleets) {
+            bountyManager.upgradeShips(hvbFleet);
+        }
     }
 
     private void initBountiesExpanded() {

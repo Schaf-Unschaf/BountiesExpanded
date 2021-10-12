@@ -6,11 +6,14 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.IntervalUtil;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
@@ -23,6 +26,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpt
 public class HighValueBountyManager extends BaseEventManager {
     private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
     public static final String KEY = "$bountiesExpanded_highValueBountyManager";
+    public static final String HIGH_VALUE_BOUNTY_FLEET_KEY = "$bountiesExpanded_highValueBounty";
     private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     public static final Map<String, HighValueBountyData> highValueBountyData = new HashMap<>();
     private final Set<String> highValueBountyDataActive = new HashSet<>();
@@ -84,6 +88,10 @@ public class HighValueBountyManager extends BaseEventManager {
 
     public void markBountyAsCompleted(String bountyId) {
         highValueBountyDataCompleted.add(bountyId);
+    }
+
+    public void removeBountyFromActiveList(String bountyId) {
+        highValueBountyDataActive.remove(bountyId);
     }
 
     @Override
@@ -153,19 +161,21 @@ public class HighValueBountyManager extends BaseEventManager {
         HighValueBountyData bountyData = getBounty(bountyId);
         String randomActionText = NameStringCollection.getFleetActionText();
 
+        fleet.setNoFactionInName(true);
+        fleet.setName(bountyData.fleetName);
+
         FleetGenerator.spawnFleet(fleet, hideout);
 
         MemoryAPI memory = fleet.getMemoryWithoutUpdate();
-        memory.set("$bountiesExpanded_highValueBounty", bountyId);
+        memory.set(HIGH_VALUE_BOUNTY_FLEET_KEY, highValueBountyEntity);
         memory.set("$bountiesExpanded_highValueBountyGreeting", bountyData.greetingText);
         memory.set(MemFlags.CAN_ONLY_BE_ENGAGED_WHEN_VISIBLE_TO_PLAYER, true);
         memory.set(MemFlags.MEMORY_KEY_PIRATE, true);
         memory.set(MemFlags.FLEET_NO_MILITARY_RESPONSE, true);
         memory.set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
 
-        fleet.setNoFactionInName(true);
-        fleet.setName(bountyData.fleetName);
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
+        upgradeShips(fleet);
 
         HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getPerson(), hideout);
 
@@ -174,6 +184,17 @@ public class HighValueBountyManager extends BaseEventManager {
         addActive(bountyIntel);
 
         return bountyIntel;
+    }
+
+    public void upgradeShips(CampaignFleetAPI bountyFleet) {
+        Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
+        FleetMemberAPI flagship = bountyFleet.getFlagship();
+        if (flagship.getVariant().getSMods().isEmpty()) {
+            SModUpgradeHelper.upgradeShip(flagship, 3, random);
+            SModUpgradeHelper.addMinorUpgrades(flagship, random);
+        }
+
+        FleetUpgradeHelper.upgradeRandomShips(bountyFleet, 2, 0.2f, true, random);
     }
 
     @SuppressWarnings("unchecked")

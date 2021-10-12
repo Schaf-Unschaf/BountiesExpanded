@@ -8,10 +8,14 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
 public class DescriptionUtils {
     public static void createShipListForIntel(TooltipMakerAPI info, float width, float padding, CampaignFleetAPI fleet, int maxShipsToDisplay, boolean showShipsRemaining) {
@@ -21,6 +25,8 @@ public class DescriptionUtils {
             fleetMemberList = FleetGenerator.createCompleteCopyForIntel(fleet);
         else
             fleetMemberList = FleetGenerator.createCopyForIntel(fleet, maxShipsToDisplay, random);
+
+        fleetMemberList = orderListBySize(fleetMemberList);
 
         int cols = 7;
         int rows = (int) Math.ceil(fleetMemberList.size() / (float) cols);
@@ -52,5 +58,46 @@ public class DescriptionUtils {
                         " of lesser significance.", padding);
             }
         }
+    }
+
+    public static List<FleetMemberAPI> orderListBySize(@NotNull List<FleetMemberAPI> fleetMemberList) {
+        if (isNullOrEmpty(fleetMemberList))
+            return new ArrayList<>();
+
+        FleetMemberAPI flagship = null;
+        List<FleetMemberAPI> sortedList = new ArrayList<>();
+        List<FleetMemberAPI> frigateList = new ArrayList<>();
+        List<FleetMemberAPI> destroyerList = new ArrayList<>();
+        List<FleetMemberAPI> cruiserList = new ArrayList<>();
+        List<FleetMemberAPI> capitalList = new ArrayList<>();
+
+        for (FleetMemberAPI fleetMemberAPI : fleetMemberList) {
+            if (fleetMemberAPI.isFlagship()) {
+                flagship = fleetMemberAPI;
+                continue;
+            }
+            switch (fleetMemberAPI.getHullSpec().getHullSize()) {
+                case FRIGATE:
+                    frigateList.add(fleetMemberAPI);
+                    break;
+                case DESTROYER:
+                    destroyerList.add(fleetMemberAPI);
+                    break;
+                case CRUISER:
+                    cruiserList.add(fleetMemberAPI);
+                    break;
+                case CAPITAL_SHIP:
+                    capitalList.add(fleetMemberAPI);
+                    break;
+            }
+        }
+        sortedList.add(flagship);
+        sortedList.addAll(capitalList);
+        sortedList.addAll(cruiserList);
+        sortedList.addAll(destroyerList);
+        sortedList.addAll(frigateList);
+        sortedList.remove(null);
+
+        return sortedList;
     }
 }

@@ -21,7 +21,6 @@ import de.schafunschaf.bountiesexpanded.helper.faction.HostileFactionPicker;
 import de.schafunschaf.bountiesexpanded.helper.faction.ParticipatingFactionPicker;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetPointCalculator;
-import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.helper.fleet.QualityCalculator;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.helper.level.LevelPicker;
@@ -55,8 +54,7 @@ public class EntityProvider {
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
         int bountyLevel = BountyEventData.getSharedData().getLevel();
-        fp += level * bountyLevel;
-        float qf = QualityCalculator.vanillaCalculation(level);
+        fp += level * bountyLevel / 2;
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist(), true);
@@ -65,6 +63,7 @@ public class EntityProvider {
 
         PersonAPI person = OfficerManagerEvent.createOfficer(targetedFaction, level);
         person.setPersonality(Personalities.AGGRESSIVE);
+
         SectorEntityToken hideout = CoreWorldPicker.pickSafeHideout(targetedFaction);
         if (isNull(hideout))
             return null;
@@ -73,10 +72,14 @@ public class EntityProvider {
         if (isNull(homeMarket))
             homeMarket = MarketUtils.createFakeMarket(targetedFaction);
 
-        CampaignFleetAPI fleet = FleetGenerator.createBountyFleetV2(fp, qf, homeMarket, hideout, person);
-        fleet = FleetUpgradeHelper.upgradeRandomShips(fleet, difficulty.getLevelAdjustment(), difficulty.getLevelAdjustment() * 0.1f);
+        FleetParamsV3 fleetParams = new FleetParamsV3(null, hideout.getLocationInHyperspace(), targetedFaction.getId(), homeMarket.getShipQualityFactor(), FleetTypes.PERSON_BOUNTY_FLEET, fp, 0f, 0f, 0f, 0f, 0f, 0f);
+        CampaignFleetAPI bountyFleet = FleetFactoryV3.createEmptyFleet(fleetParams.factionId, FleetTypes.PERSON_BOUNTY_FLEET, null);
+        CampaignFleetAPI tempFleet = FleetGenerator.createBountyFleetV2(fp, homeMarket.getShipQualityFactor(), homeMarket, hideout, person);
+        for (FleetMemberAPI copyMember : tempFleet.getFleetData().getMembersListCopy()) {
+            bountyFleet.getFleetData().addFleetMember(copyMember);
+        }
 
-        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, fleet, person, hideout, fractionToKill, difficulty, level);
+        return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, bountyFleet, person, hideout, fractionToKill, difficulty, level);
     }
 
     public static AssassinationBountyEntity assassinationBountyEntity() {
@@ -99,9 +102,9 @@ public class EntityProvider {
         if (isNull(endingPoint))
             return null;
 
-        CampaignFleetAPI fleet = FleetGenerator.createBountyFleetV2(fp, qf, null, startingPoint.getPrimaryEntity(), person);
+        CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, qf, null, startingPoint.getPrimaryEntity(), person);
 
-        return new AssassinationBountyEntity(bountyCredits, targetedFaction, fleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty, level);
+        return new AssassinationBountyEntity(bountyCredits, targetedFaction, bountyFleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty, level);
     }
 
     public static HighValueBountyEntity highValueBountyEntity() {
@@ -145,7 +148,6 @@ public class EntityProvider {
         FleetParamsV3 fleetParams = new FleetParamsV3(null, hideout.getLocationInHyperspace(), targetedFaction.getId(), 2f, FleetTypes.PERSON_BOUNTY_FLEET, bountyData.minimumFleetFP, 0f, 0f, 0f, 0f, 0f, 0f);
         CampaignFleetAPI supportFleet = HighValueBountyData.FleetHelper.createSupportFleet(bountyData, fleetParams);
         CampaignFleetAPI bountyFleet = FleetFactoryV3.createEmptyFleet(fleetParams.factionId, FleetTypes.PERSON_BOUNTY_FLEET, null);
-
         FleetMemberAPI flagship = HighValueBountyData.FleetHelper.generateFlagship(bountyData);
         if (isNull(flagship)) return null;
         bountyFleet.getFleetData().addFleetMember(flagship);

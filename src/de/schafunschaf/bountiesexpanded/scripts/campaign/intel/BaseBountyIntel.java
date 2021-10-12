@@ -101,7 +101,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
         if (this.fleet == fleet) {
             fleet.setCommander(fleet.getFaction().createRandomPerson());
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
             cleanUp(true);
         }
     }
@@ -169,7 +169,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         if (elapsedDays >= duration && !isDone()) {
             boolean canEnd = isNull(fleet) || !fleet.isInCurrentLocation();
             if (canEnd) {
-                result = new BountyResult(BountyResultType.END_TIME, 0, 0, 0f, null);
+                result = new BountyResult(BountyResultType.END_TIME, 0, 0);
                 cleanUp(true);
                 return;
             }
@@ -180,7 +180,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
 
         if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
             cleanUp(!fleet.isInCurrentLocation());
         }
 

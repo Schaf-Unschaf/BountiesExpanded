@@ -42,7 +42,7 @@ public class FleetGenerator {
         FactionAPI faction = fleetCaptain.getFaction();
         String factionID = faction.getId();
         String fleetName = fleetCaptain.getName().getLast() + "'s Fleet";
-        float initialFP = fleetPoints + 0.7f;
+        float initialFP = fleetPoints * 0.7f;
         float remainingFP = fleetPoints - initialFP;
 
         FleetParamsV3 fleetParams = new FleetParamsV3(fleetHomeMarket,
@@ -60,14 +60,21 @@ public class FleetGenerator {
         );
         fleetParams.ignoreMarketFleetSizeMult = true;
         fleetParams.mode = FactionAPI.ShipPickMode.PRIORITY_THEN_ALL;
-        fleetParams.maxNumShips = 60;
+        if (fleetPoints < 400)
+            fleetParams.maxNumShips = 50;
+        if (fleetPoints < 500)
+            fleetParams.maxNumShips = 55;
+        if (fleetPoints < 600)
+            fleetParams.maxNumShips = 60;
+        if (fleetPoints >= 600)
+            fleetParams.maxNumShips = 65;
 
         FactionDoctrineAPI doctrine = faction.getDoctrine();
 
         CampaignFleetAPI fleet = FleetFactoryV3.createFleet(fleetParams);
         FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getWarships(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_LARGE);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_MEDIUM);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_SMALL, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_MEDIUM);
+        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_LARGE);
+        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_SMALL, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE);
 
         FleetDataAPI fleetData = fleet.getFleetData();
         fleet.setCommander(fleetCaptain);
@@ -157,7 +164,7 @@ public class FleetGenerator {
             deflate = true;
         }
 
-        if (memberList.size() > numOfShips) {
+        if (!isNullOrEmpty(memberList)) {
             WeightedRandomPicker<FleetMemberAPI> picker = new WeightedRandomPicker<>();
             int shipsLeftToAdd = numOfShips;
             picker.setRandom(random);
