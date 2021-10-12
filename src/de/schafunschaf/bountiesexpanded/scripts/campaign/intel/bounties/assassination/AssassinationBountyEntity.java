@@ -13,7 +13,6 @@ import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
@@ -24,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.createShipListForIntel;
+import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.generateTargetDescription;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.aOrAn;
@@ -59,7 +60,7 @@ public class AssassinationBountyEntity implements BountyEntity {
         this.difficulty = difficulty;
         this.level = level;
 
-        this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 7 + new Random().nextInt(15), 1);
+        this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 4 + new Random().nextInt(9), 1);
         this.flagshipAsList = getFlagshipCopy();
     }
 
@@ -245,11 +246,12 @@ public class AssassinationBountyEntity implements BountyEntity {
             info.addPara("The message had an intel file containing the targets ship attached.", opad);
             if (!Settings.isDebugActive())
                 info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipAsList, opad);
+            generateTargetDescription(info, opad, fleet, person);
             info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional ship" + singularOrPlural(obfuscatedFleetSize) + ".", opad, highlightColor, String.valueOf(obfuscatedFleetSize));
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
 
             if (Settings.isDebugActive()) {
-                DescriptionUtils.createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), false);
+                createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), false);
                 info.addPara("SPAWN LOCATION: " + startingPoint.getName(), 0f);
                 info.addPara("DESTINATION: " + endingPoint.getName(), 0f);
             }

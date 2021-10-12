@@ -21,7 +21,6 @@ import de.schafunschaf.bountiesexpanded.helper.faction.HostileFactionPicker;
 import de.schafunschaf.bountiesexpanded.helper.faction.ParticipatingFactionPicker;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetPointCalculator;
-import de.schafunschaf.bountiesexpanded.helper.fleet.QualityCalculator;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.helper.level.LevelPicker;
 import de.schafunschaf.bountiesexpanded.helper.location.CoreWorldPicker;
@@ -49,12 +48,12 @@ public class EntityProvider {
 
     public static SkirmishBountyEntity skirmishBountyEntity() {
         Difficulty difficulty = Difficulty.randomDifficulty();
-        int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
+        int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fractionToKill = (50 - new Random().nextInt(26)) / 100f;
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
         int bountyLevel = BountyEventData.getSharedData().getLevel();
-        fp += level * bountyLevel / 2;
+        fp += level * bountyLevel;
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist(), true);
@@ -72,26 +71,21 @@ public class EntityProvider {
         if (isNull(homeMarket))
             homeMarket = MarketUtils.createFakeMarket(targetedFaction);
 
-        FleetParamsV3 fleetParams = new FleetParamsV3(null, hideout.getLocationInHyperspace(), targetedFaction.getId(), homeMarket.getShipQualityFactor(), FleetTypes.PERSON_BOUNTY_FLEET, fp, 0f, 0f, 0f, 0f, 0f, 0f);
-        CampaignFleetAPI bountyFleet = FleetFactoryV3.createEmptyFleet(fleetParams.factionId, FleetTypes.PERSON_BOUNTY_FLEET, null);
-        CampaignFleetAPI tempFleet = FleetGenerator.createBountyFleetV2(fp, homeMarket.getShipQualityFactor(), homeMarket, hideout, person);
-        for (FleetMemberAPI copyMember : tempFleet.getFleetData().getMembersListCopy()) {
-            bountyFleet.getFleetData().addFleetMember(copyMember);
-        }
+        CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, homeMarket.getShipQualityFactor(), homeMarket, hideout, person);
 
         return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, bountyFleet, person, hideout, fractionToKill, difficulty, level);
     }
 
     public static AssassinationBountyEntity assassinationBountyEntity() {
         Difficulty difficulty = Difficulty.randomDifficulty();
-        int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getLevelAdjustment(), 0);
+        int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
-        float qf = QualityCalculator.vanillaCalculation(level);
 
         FactionAPI targetedFaction = ParticipatingFactionPicker.pickFaction(Blacklists.getSkirmishBountyBlacklist());
-        if (isNull(targetedFaction))
-            return null;
+        if (isNull(targetedFaction)) return null;
+
+        float qf = MarketUtils.createFakeMarket(targetedFaction).getShipQualityFactor();
 
         PersonAPI person = OfficerGenerator.generateOfficer(targetedFaction, level);
         MarketAPI startingPoint = CoreWorldPicker.pickSafeHideout(targetedFaction).getMarket();
@@ -122,7 +116,6 @@ public class EntityProvider {
             log.warn("BountiesExpanded: Failed to pick HighValueBounty Data");
             return null;
         }
-
 
         String description = bountyData.intelText;
         FactionAPI offeringFaction = bountyData.getOfferingFaction();

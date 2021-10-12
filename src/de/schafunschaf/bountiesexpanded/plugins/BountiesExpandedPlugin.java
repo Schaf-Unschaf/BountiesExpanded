@@ -98,6 +98,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     private void reloadSMods() {
         reloadSkirmishSMods();
         reloadHVBSMods();
+        reloadAssassinationSMods();
     }
 
     private void reloadSkirmishSMods() {
@@ -119,6 +120,17 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         Set<CampaignFleetAPI> highValueBountyFleets = FleetUtils.findFleetWithMemKey(HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY);
         for (CampaignFleetAPI hvbFleet : highValueBountyFleets) {
             bountyManager.upgradeShips(hvbFleet);
+        }
+    }
+
+    private void reloadAssassinationSMods() {
+        AssassinationBountyManager bountyManager = AssassinationBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> assassinationFleets = FleetUtils.findFleetWithMemKey(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI assassinationFleet : assassinationFleets) {
+            bountyManager.upgradeShips(assassinationFleet);
         }
     }
 

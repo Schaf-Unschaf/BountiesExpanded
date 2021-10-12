@@ -44,6 +44,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
         boolean isFlagshipAlive = isNotNull(fleet.getFlagship()) && fleet.getFlagship().getCaptain() == person;
+        boolean occurredInDestinationSystem = bountyEntity.getEndingPoint().getContainingLocation().equals(fleet.getContainingLocation());
         boolean occurredInHyperspace = fleet.isInHyperspace();
         float remainingDistance = Misc.getDistanceLY(fleet.getLocationInHyperspace(), destination.getLocationInHyperspace());
 
@@ -60,8 +61,12 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
             }
         }
 
+        if (occurredInDestinationSystem)
+            bonusPayment = 0;
+
         if (occurredInHyperspace)
-            bonusPayment = (Math.round((int) (bonusPayment * (1 / travelDistance * remainingDistance)) / 1000) * 1000);
+            bonusPayment = Math.round((int) (bonusPayment * (1 / travelDistance * remainingDistance)) / 1000) * 1000;
+
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
         result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment);
@@ -80,7 +85,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
 
         List<ArrowData> result = new ArrayList<>();
 
-        ArrowData arrow = new ArrowData(entity.getStartingPoint(), entity.getEndingPoint());
+        ArrowData arrow = new ArrowData(bountyEntity.getStartingPoint(), bountyEntity.getEndingPoint());
         arrow.color = getFactionForUIColors().getBaseUIColor();
         result.add(arrow);
 
@@ -92,12 +97,12 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (fleet.isInHyperspace()) {
             if (Settings.isDebugActive())
                 return Global.getSector().getHyperspace().createToken(fleet.getLocationInHyperspace().x, fleet.getLocationInHyperspace().y);
-            return entity.getStartingPoint().getStarSystem().getHyperspaceAnchor();
-        } else if (fleet.getContainingLocation() == entity.getEndingPoint().getContainingLocation()) {
-            return entity.getEndingPoint().getStarSystem().getHyperspaceAnchor();
+            return bountyEntity.getStartingPoint().getStarSystem().getHyperspaceAnchor();
+        } else if (fleet.getContainingLocation() == bountyEntity.getEndingPoint().getContainingLocation()) {
+            return bountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor();
         }
         if (Settings.isDebugActive())
-            return entity.getStartingPoint();
+            return bountyEntity.getStartingPoint();
         else
             return null;
     }

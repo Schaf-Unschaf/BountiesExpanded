@@ -59,24 +59,28 @@ public class FleetGenerator {
                 0f // qualityMod
         );
         fleetParams.ignoreMarketFleetSizeMult = true;
-        fleetParams.mode = FactionAPI.ShipPickMode.PRIORITY_THEN_ALL;
         if (fleetPoints < 400)
-            fleetParams.maxNumShips = 50;
+            fleetParams.maxNumShips = 40;
         if (fleetPoints < 500)
-            fleetParams.maxNumShips = 55;
+            fleetParams.maxNumShips = 45;
         if (fleetPoints < 600)
-            fleetParams.maxNumShips = 60;
+            fleetParams.maxNumShips = 50;
         if (fleetPoints >= 600)
             fleetParams.maxNumShips = 65;
 
         FactionDoctrineAPI doctrine = faction.getDoctrine();
 
-        CampaignFleetAPI fleet = FleetFactoryV3.createFleet(fleetParams);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getWarships(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_LARGE);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_LARGE);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_SMALL, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE);
-
+        CampaignFleetAPI fleet = FleetFactoryV3.createEmptyFleet(factionID, FleetTypes.PERSON_BOUNTY_FLEET, fleetHomeMarket);
+        CampaignFleetAPI mainForces = FleetFactoryV3.createFleet(fleetParams);
         FleetDataAPI fleetData = fleet.getFleetData();
+        for (FleetMemberAPI fleetMember : mainForces.getFleetData().getMembersListCopy())
+            fleetData.addFleetMember(fleetMember);
+
+        // Support Forces to avoid Capital bloat
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getWarships(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_LARGE);
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_LARGE);
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE, ShipRoles.PHASE_CAPITAL);
+
         fleet.setCommander(fleetCaptain);
         if (isNotNull(fleet.getFlagship())) {
             FleetMemberAPI flagship = getShipWithHighestFP(fleetData.getMembersListCopy());

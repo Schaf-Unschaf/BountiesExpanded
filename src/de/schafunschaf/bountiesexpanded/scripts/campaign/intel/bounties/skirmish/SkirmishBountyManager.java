@@ -119,7 +119,7 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
         Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
-        int modValue = ((SkirmishBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY)).getDifficulty().getLevelAdjustment();
+        int modValue = ((SkirmishBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY)).getDifficulty().getFlatModifier();
         FleetUpgradeHelper.upgradeRandomShips(bountyFleet, modValue, modValue * 0.1f, false, random);
     }
 

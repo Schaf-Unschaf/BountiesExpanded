@@ -6,11 +6,14 @@ import com.fs.starfarer.api.Script;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
@@ -60,40 +63,40 @@ public class AssassinationBountyManager extends BaseEventManager {
         final AssassinationBountyEntity assassinationBountyEntity = EntityProvider.assassinationBountyEntity();
         if (isNull(assassinationBountyEntity))
             return null;
-        final CampaignFleetAPI fleet = assassinationBountyEntity.getFleet();
-        fleet.setNoFactionInName(true);
-        fleet.setName(NameStringCollection.getSuspiciousName());
-        FleetGenerator.spawnFleet(fleet, assassinationBountyEntity.getStartingPoint());
-        fleet.setTransponderOn(false);
-        fleet.getAI().clearAssignments();
-        final MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
-        fleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying fleet", new Script() {
+        final CampaignFleetAPI bountyFleet = assassinationBountyEntity.getFleet();
+        bountyFleet.setNoFactionInName(true);
+        bountyFleet.setName(NameStringCollection.getSuspiciousName());
+        FleetGenerator.spawnFleet(bountyFleet, assassinationBountyEntity.getStartingPoint());
+        bountyFleet.setTransponderOn(false);
+        bountyFleet.getAI().clearAssignments();
+        final MemoryAPI fleetMemory = bountyFleet.getMemoryWithoutUpdate();
+        bountyFleet.getAI().addAssignment(FleetAssignment.ORBIT_PASSIVE, assassinationBountyEntity.getStartingPoint(), 5f, "Resupplying Fleet", new Script() {
             public void run() {
-                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                bountyFleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
                         Misc.findNearestJumpPoint(assassinationBountyEntity.getStartingPoint()),
                         15f,
                         "Travelling to Jump-Point",
                         new Script() {
                             public void run() {
-                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                                bountyFleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
                                         assassinationBountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor(),
                                         45f,
                                         "Travelling to " + assassinationBountyEntity.getEndingPoint().getStarSystem().getName(),
                                         new Script() {
                                             public void run() {
-                                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
+                                                bountyFleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION,
                                                         assassinationBountyEntity.getEndingPoint(),
                                                         15f,
                                                         "Travelling to " + assassinationBountyEntity.getEndingPoint().getName(),
                                                         new Script() {
                                                             public void run() {
-                                                                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
+                                                                bountyFleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN,
                                                                         assassinationBountyEntity.getEndingPoint(),
                                                                         2f,
                                                                         "Preparing to dock at " + assassinationBountyEntity.getEndingPoint().getName(),
                                                                         new Script() {
                                                                             public void run() {
-                                                                                fleet.despawn();
+                                                                                bountyFleet.despawn();
                                                                             }
                                                                         });
                                                             }
@@ -120,6 +123,20 @@ public class AssassinationBountyManager extends BaseEventManager {
         log.info("Enemy-FP at creation: " + assassinationBountyEntity.getFleet().getFleetPoints());
         log.info("Difficulty: " + assassinationBountyEntity.getDifficulty().getShortDescription());
 
+        upgradeShips(bountyFleet);
+
         return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getPerson(), assassinationBountyEntity.getStartingPoint());
+    }
+
+    public void upgradeShips(CampaignFleetAPI bountyFleet) {
+        Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
+        int modValue = ((AssassinationBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY)).getDifficulty().getFlatModifier();
+        FleetMemberAPI flagship = bountyFleet.getFlagship();
+        if (flagship.getVariant().getSMods().isEmpty()) {
+            SModUpgradeHelper.upgradeShip(flagship, 2, random);
+            SModUpgradeHelper.addMinorUpgrades(flagship, random);
+        }
+
+        FleetUpgradeHelper.upgradeRandomShips(bountyFleet, modValue, modValue * 0.1f, true, random);
     }
 }

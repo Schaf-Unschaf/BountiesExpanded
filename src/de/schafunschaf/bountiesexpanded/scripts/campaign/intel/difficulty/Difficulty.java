@@ -10,16 +10,16 @@ public final class Difficulty {
             "easy", "an", 1f, 0, Color.GREEN
     );
     public static final Difficulty MEDIUM = new Difficulty(
-            "fair", "a", 1.15f, 1, Color.CYAN
+            "fair", "a", 1.1f, 1, Color.CYAN
     );
     public static final Difficulty CHALLENGING = new Difficulty(
-            "challenging", "a", 1.25f, 2, Color.ORANGE
+            "challenging", "a", 1.2f, 2, Color.ORANGE
     );
     public static final Difficulty HARD = new Difficulty(
-            "difficult", "a", 1.4f, 3, Color.RED
+            "difficult", "a", 1.3f, 3, Color.RED
     );
     public static final Difficulty BOSS = new Difficulty(
-            "BOSS", "a", 1.6f, 4, Color.MAGENTA
+            "BOSS", "a", 1.5f, 4, Color.MAGENTA
     );
     private static final Difficulty[] VALUES = {
             EASY, MEDIUM, HARD, CHALLENGING, BOSS
@@ -27,14 +27,14 @@ public final class Difficulty {
     private final String shortDescription;
     private final String shortDescriptionAnOrA;
     private final float modifier;
-    private final int levelAdjustment;
+    private final int flatModifier;
     private final Color color;
 
-    private Difficulty(String shortDescription, String shortDescriptionAnOrA, float modifier, int levelAdjustment, Color color) {
+    private Difficulty(String shortDescription, String shortDescriptionAnOrA, float modifier, int flatModifier, Color color) {
         this.shortDescriptionAnOrA = shortDescriptionAnOrA;
         this.shortDescription = shortDescription;
         this.modifier = modifier;
-        this.levelAdjustment = levelAdjustment;
+        this.flatModifier = flatModifier;
         this.color = color;
     }
 
@@ -63,8 +63,8 @@ public final class Difficulty {
         return modifier;
     }
 
-    public int getLevelAdjustment() {
-        return levelAdjustment;
+    public int getFlatModifier() {
+        return flatModifier;
     }
 
     public Color getColor() {

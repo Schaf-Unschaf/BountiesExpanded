@@ -318,16 +318,22 @@ public class HighValueBountyEntity implements BountyEntity {
         }
 
         if (fleetSize <= 15) {
-            fleetDesc = "small";
+            fleetDesc = "small fleet";
         } else if (fleetSize <= 25) {
-            fleetDesc = "medium-sized";
+            fleetDesc = "medium-sized fleet";
         } else if (fleetSize <= 35) {
-            fleetDesc = "large";
+            fleetDesc = "large fleet";
+        } else if (fleetSize <= 45) {
+            fleetDesc = "very large fleet";
+        } else if (fleetSize <= 55){
+            fleetDesc = "gigantic fleet";
+        } else if (fleetSize <= 65) {
+            fleetDesc = "freaking armada";
         } else {
-            fleetDesc = "very large";
+            fleetDesc = "enough ships to push Jangala into the sun";
         }
 
-        String targetDesc = String.format("%s is in command of a %s fleet and personally commands the %s, a %s, as %s flagship.",
+        String targetDesc = String.format("%s is in command of a %s and personally commands the %s, a %s, as %s flagship.",
                 targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType, hisOrHer);
 
         targetDesc += String.format(" %s is %s known for %s.", Misc.ucFirst(heOrShe), levelDesc, skillDesc);
