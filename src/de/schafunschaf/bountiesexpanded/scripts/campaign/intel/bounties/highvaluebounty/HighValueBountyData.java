@@ -3,7 +3,6 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highval
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
@@ -13,7 +12,6 @@ import com.fs.starfarer.api.impl.campaign.ids.ShipRoles;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.market.MarketUtils;
-import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -229,9 +227,6 @@ public class HighValueBountyData {
                 log.warn("BountiesExpanded: Failed to generate HighValueBounty Flagship");
                 return null;
             }
-            if (flagship.getVariant().getSMods().isEmpty()) {
-                SModUpgradeHelper.upgradeShip(flagship);
-            }
             flagship.setShipName(bountyData.flagshipName);
             return flagship;
         }
@@ -240,10 +235,6 @@ public class HighValueBountyData {
             List<FleetMemberAPI> fleetMemberList = new ArrayList<>();
             for (String shipVariantId : bountyData.fleetVariantIds) {
                 FleetMemberAPI fleetMember = Global.getFactory().createFleetMember(FleetMemberType.SHIP, shipVariantId);
-                ShipVariantAPI shipVariant = fleetMember.getVariant().clone();
-                shipVariant.addPermaMod(SModUpgradeHelper.getRandomFreeHullMod(shipVariant), true);
-                shipVariant.addPermaMod(SModUpgradeHelper.getRandomFreeHullMod(shipVariant), true);
-                fleetMember.setVariant(shipVariant, true, true);
                 fleetMemberList.add(fleetMember);
             }
             return fleetMemberList;

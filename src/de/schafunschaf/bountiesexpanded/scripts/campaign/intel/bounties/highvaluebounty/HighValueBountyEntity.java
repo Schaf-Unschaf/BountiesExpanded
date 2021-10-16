@@ -19,6 +19,7 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import org.apache.log4j.Logger;
@@ -187,7 +188,7 @@ public class HighValueBountyEntity implements BountyEntity {
         info.addImage(person.getPortraitSprite(), width, 128f, opad);
         info.addPara(intelText, opad);
         if (isNotNull(result)) {
-            if (result.type == BountyResult.BountyResultType.END_PLAYER_BOUNTY)
+            if (result.type == BountyResultType.END_PLAYER_BOUNTY)
                 info.addPara("Confirming the successful elimination of " + person.getNameString(), opad, person.getFaction().getBaseUIColor(), person.getNameString());
             else info.addPara("This mission is no longer on offer.", opad);
         }
@@ -213,7 +214,7 @@ public class HighValueBountyEntity implements BountyEntity {
                     targetedFaction.getBaseUIColor(),
                     targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType);
             info.addSectionHeading("Fleet Intel", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
-            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, true);
+            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, 3, true);
         }
     }
 
@@ -317,16 +318,22 @@ public class HighValueBountyEntity implements BountyEntity {
         }
 
         if (fleetSize <= 15) {
-            fleetDesc = "small";
+            fleetDesc = "small fleet";
         } else if (fleetSize <= 25) {
-            fleetDesc = "medium-sized";
+            fleetDesc = "medium-sized fleet";
         } else if (fleetSize <= 35) {
-            fleetDesc = "large";
+            fleetDesc = "large fleet";
+        } else if (fleetSize <= 45) {
+            fleetDesc = "very large fleet";
+        } else if (fleetSize <= 55) {
+            fleetDesc = "gigantic fleet";
+        } else if (fleetSize <= 65) {
+            fleetDesc = "freaking armada";
         } else {
-            fleetDesc = "very large";
+            fleetDesc = "enough ships to push Jangala into the sun";
         }
 
-        String targetDesc = String.format("%s is in command of a %s fleet and personally commands the %s, a %s, as %s flagship.",
+        String targetDesc = String.format("%s is in command of a %s and personally commands the %s, a %s, as %s flagship.",
                 targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType, hisOrHer);
 
         targetDesc += String.format(" %s is %s known for %s.", Misc.ucFirst(heOrShe), levelDesc, skillDesc);

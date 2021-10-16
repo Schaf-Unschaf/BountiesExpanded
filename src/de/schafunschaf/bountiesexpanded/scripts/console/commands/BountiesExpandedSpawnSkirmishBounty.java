@@ -17,23 +17,24 @@ public class BountiesExpandedSpawnSkirmishBounty implements BaseCommand {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
-        } else {
-            SkirmishBountyManager manager = SkirmishBountyManager.getInstance();
-            if (isNull(manager)) {
-                Console.showMessage("the SkirmishBountyManager instance is missing!");
-                return CommandResult.ERROR;
-            } else {
-                Console.showMessage("attempting to spawn SkirmishBounty...");
-                SkirmishBountyIntel skirmishBountyEvent = manager.createSkirmishBountyEvent();
-                if (isNotNull(skirmishBountyEvent)) {
-                    Console.showMessage("it worked!");
-                    Console.showMessage("Spawned SkirmishBounty at " + skirmishBountyEvent.getHideout().getName());
-                    return CommandResult.SUCCESS;
-                } else {
-                    Console.showMessage("it didn't work!");
-                    return CommandResult.ERROR;
-                }
-            }
         }
+
+        SkirmishBountyManager manager = SkirmishBountyManager.getInstance();
+        if (isNull(manager)) {
+            Console.showMessage("the SkirmishBountyManager instance is missing!");
+            return CommandResult.ERROR;
+        }
+
+        Console.showMessage("attempting to spawn SkirmishBounty...");
+        SkirmishBountyIntel skirmishBountyEvent = manager.createSkirmishBountyEvent();
+        if (isNotNull(skirmishBountyEvent)) {
+            manager.addActive(skirmishBountyEvent);
+            Console.showMessage("it worked!");
+            Console.showMessage("Spawned SkirmishBounty at " + skirmishBountyEvent.getHideout().getName());
+            return CommandResult.SUCCESS;
+        }
+
+        Console.showMessage("it didn't work!");
+        return CommandResult.ERROR;
     }
 }

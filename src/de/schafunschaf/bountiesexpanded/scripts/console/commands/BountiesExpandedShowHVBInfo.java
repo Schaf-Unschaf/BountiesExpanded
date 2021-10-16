@@ -15,18 +15,18 @@ public class BountiesExpandedShowHVBInfo implements BaseCommand {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
-        } else {
-            HighValueBountyManager manager = HighValueBountyManager.getInstance();
-            if (isNull(manager)) {
-                Console.showMessage("the HighValueBountyManager instance is missing!");
-                return CommandResult.ERROR;
-            } else {
-                Console.showMessage("List of all available HVBs: " + manager.getBountiesList());
-                Console.showMessage("List of active HVBs: " + manager.getActiveBounties());
-                Console.showMessage("List of completed HVBs: " + manager.getCompletedBounties());
-                return CommandResult.SUCCESS;
-            }
         }
+
+        HighValueBountyManager manager = HighValueBountyManager.getInstance();
+        if (isNull(manager)) {
+            Console.showMessage("the HighValueBountyManager instance is missing!");
+            return CommandResult.ERROR;
+        }
+
+        Console.showMessage("List of all available HVBs: " + manager.getBountiesList());
+        Console.showMessage("List of active HVBs: " + manager.getActiveBounties());
+        Console.showMessage("List of completed HVBs: " + manager.getCompletedBounties());
+        return CommandResult.SUCCESS;
     }
 
 }

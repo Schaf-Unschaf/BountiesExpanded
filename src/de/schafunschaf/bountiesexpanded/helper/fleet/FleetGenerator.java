@@ -22,27 +22,24 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 public class FleetGenerator {
     public static final Logger log = Global.getLogger(FleetGenerator.class);
 
-    @Deprecated
-    public static CampaignFleetAPI createAndSpawnFleet(float fleetPoints,
+    public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
                                                        float qualityOverride,
                                                        MarketAPI fleetHomeMarket,
                                                        SectorEntityToken hideout,
                                                        PersonAPI fleetCaptain) {
-        CampaignFleetAPI fleet = createCombatFleet(fleetPoints, qualityOverride, fleetHomeMarket, hideout, fleetCaptain);
-        spawnFleet(fleet, hideout);
-        return fleet;
+        return createBountyFleetV2(fleetPoints, qualityOverride, fleetHomeMarket, hideout, fleetCaptain, false);
     }
 
-    public static CampaignFleetAPI createAndSpawnFleetV2(float fleetPoints,
-                                                         float qualityOverride,
-                                                         MarketAPI fleetHomeMarket,
-                                                         SectorEntityToken hideout,
-                                                         PersonAPI fleetCaptain) {
+    public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
+                                                       float qualityOverride,
+                                                       MarketAPI fleetHomeMarket,
+                                                       SectorEntityToken hideout,
+                                                       PersonAPI fleetCaptain, boolean priorityMode) {
         Random random = new Random();
         FactionAPI faction = fleetCaptain.getFaction();
         String factionID = faction.getId();
         String fleetName = fleetCaptain.getName().getLast() + "'s Fleet";
-        float initialFP = fleetPoints + 0.7f;
+        float initialFP = fleetPoints * 0.7f;
         float remainingFP = fleetPoints - initialFP;
 
         FleetParamsV3 fleetParams = new FleetParamsV3(fleetHomeMarket,
@@ -59,66 +56,40 @@ public class FleetGenerator {
                 0f // qualityMod
         );
         fleetParams.ignoreMarketFleetSizeMult = true;
-        fleetParams.mode = FactionAPI.ShipPickMode.PRIORITY_THEN_ALL;
-        fleetParams.maxNumShips = 60;
+        if (priorityMode)
+            fleetParams.mode = FactionAPI.ShipPickMode.PRIORITY_THEN_ALL;
+        if (fleetPoints < 400)
+            fleetParams.maxNumShips = 40;
+        if (fleetPoints < 500)
+            fleetParams.maxNumShips = 45;
+        if (fleetPoints < 600)
+            fleetParams.maxNumShips = 50;
+        if (fleetPoints >= 600)
+            fleetParams.maxNumShips = 65;
 
         FactionDoctrineAPI doctrine = faction.getDoctrine();
 
-        CampaignFleetAPI fleet = FleetFactoryV3.createFleet(fleetParams);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getWarships(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_LARGE);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_MEDIUM);
-        FleetFactoryV3.addPriorityOnlyThenAll(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_SMALL, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_MEDIUM);
-
+        CampaignFleetAPI fleet = FleetFactoryV3.createEmptyFleet(factionID, FleetTypes.PERSON_BOUNTY_FLEET, fleetHomeMarket);
+        CampaignFleetAPI mainForces = FleetFactoryV3.createFleet(fleetParams);
         FleetDataAPI fleetData = fleet.getFleetData();
-        fleet.setCommander(fleetCaptain);
-        if (isNotNull(fleet.getFlagship())) {
+        for (FleetMemberAPI fleetMember : mainForces.getFleetData().getMembersListCopy())
+            fleetData.addFleetMember(fleetMember);
+
+        // Support Forces to avoid Capital bloat
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getWarships(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_MEDIUM, ShipRoles.COMBAT_LARGE);
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getCarriers(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.CARRIER_SMALL, ShipRoles.CARRIER_MEDIUM, ShipRoles.CARRIER_LARGE);
+        FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE, ShipRoles.PHASE_CAPITAL);
+
+        if (isNull(fleet.getFlagship())) {
             FleetMemberAPI flagship = getShipWithHighestFP(fleetData.getMembersListCopy());
             flagship.setFlagship(true);
-            fleet.getFlagship().setCaptain(fleetCaptain);
         }
+        fleet.getFlagship().setCaptain(fleetCaptain);
+        fleet.setCommander(fleetCaptain);
         fleet.setFaction(factionID, true);
         fleet.setName(fleetName);
         FleetFactoryV3.addCommanderSkills(fleetCaptain, fleet, null);
         fleetData.sort();
-
-        spawnFleet(fleet, hideout);
-        return fleet;
-    }
-
-    public static CampaignFleetAPI createCombatFleet(float fleetPoints,
-                                                     float qualityOverride,
-                                                     MarketAPI fleetHomeMarket,
-                                                     SectorEntityToken hideout,
-                                                     PersonAPI fleetCaptain) {
-        String factionID = fleetCaptain.getFaction().getId();
-        String fleetName = fleetCaptain.getName().getLast() + "'s Fleet";
-        float freighterPoints = fleetPoints * 0.05f;
-        float tankerPoints = fleetPoints * 0.05f;
-
-        FleetParamsV3 fleetParams = new FleetParamsV3(fleetHomeMarket,
-                hideout.getLocationInHyperspace(),
-                factionID, // factionID
-                qualityOverride + 0.2f, // quality
-                FleetTypes.PERSON_BOUNTY_FLEET, // fleetType
-                fleetPoints, // combatPts
-                freighterPoints, // freighterPts
-                tankerPoints, // tankerPts
-                0f, // transportPts
-                0f, // linerPts
-                0f, // utilityPts
-                0f // qualityMod
-        );
-        fleetParams.ignoreMarketFleetSizeMult = true;
-        fleetParams.mode = FactionAPI.ShipPickMode.PRIORITY_THEN_ALL;
-
-        CampaignFleetAPI fleet = FleetFactoryV3.createFleet(fleetParams);
-
-        fleet.setCommander(fleetCaptain);
-        if (isNotNull(fleet.getFlagship()))
-            fleet.getFlagship().setCaptain(fleetCaptain);
-        fleet.setFaction(factionID, true);
-        fleet.setName(fleetName);
-        FleetFactoryV3.addCommanderSkills(fleetCaptain, fleet, null);
 
         return fleet;
     }
@@ -158,13 +129,13 @@ public class FleetGenerator {
             deflate = true;
         }
 
-        if (memberList.size() > numOfShips) {
+        if (!isNullOrEmpty(memberList)) {
             WeightedRandomPicker<FleetMemberAPI> picker = new WeightedRandomPicker<>();
             int shipsLeftToAdd = numOfShips;
             picker.setRandom(random);
             for (FleetMemberAPI member : memberList) {
                 if (member.isFlagship()) {
-                    copyList.add(createMemberCopy(member));
+                    copyList.add(member);
                     shipsLeftToAdd--;
                     continue;
                 }
@@ -173,9 +144,7 @@ public class FleetGenerator {
 
                 float weight = (float) member.getFleetPointCost();
 
-                FleetMemberAPI copy = createMemberCopy(member);
-
-                picker.add(copy, weight);
+                picker.add(member, weight);
             }
 
             while (!picker.isEmpty() && shipsLeftToAdd > 0) {
@@ -190,7 +159,7 @@ public class FleetGenerator {
         return isNullOrEmpty(copyList) ? memberList : copyList;
     }
 
-    private static FleetMemberAPI createMemberCopy(FleetMemberAPI member) {
+    public static FleetMemberAPI createMemberCopy(FleetMemberAPI member) {
         FleetMemberAPI copy = Global.getFactory().createFleetMember(FleetMemberType.SHIP, member.getVariant());
         if (isNotNull(member.getCaptain()))
             copy.setCaptain(member.getCaptain());

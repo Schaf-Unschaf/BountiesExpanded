@@ -23,9 +23,8 @@ public class Settings {
     public static int ASSASSINATION_MIN_BOUNTIES = 0;
     public static int ASSASSINATION_MAX_BOUNTIES = 2;
     public static double ASSASSINATION_MIN_TRAVEL_DISTANCE = 5;
-    public static double ASSASSINATION_MAX_DISTANCE_BONUS_MULTIPLIER = 1;
-    public static final double ASSASSINATION_BASE_REWARD_MULTIPLIER = 0.5;
-    public static final double ASSASSINATION_BONUS_REWARD_MULTIPLIER = 3;
+    public static final double ASSASSINATION_BASE_REWARD_MULTIPLIER = 1;
+    public static final double ASSASSINATION_BONUS_REWARD_MULTIPLIER = 4;
 
     public static boolean HIGH_VALUE_BOUNTY_ACTIVE = true;
     public static int HIGH_VALUE_BOUNTY_MAX_BOUNTIES = 3;

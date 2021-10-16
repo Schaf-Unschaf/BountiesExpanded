@@ -2,9 +2,19 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highval
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.FleetAssignment;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.util.IntervalUtil;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import org.apache.log4j.Logger;
 
@@ -16,6 +26,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpt
 public class HighValueBountyManager extends BaseEventManager {
     private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
     public static final String KEY = "$bountiesExpanded_highValueBountyManager";
+    public static final String HIGH_VALUE_BOUNTY_FLEET_KEY = "$bountiesExpanded_highValueBounty";
     private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     public static final Map<String, HighValueBountyData> highValueBountyData = new HashMap<>();
     private final Set<String> highValueBountyDataActive = new HashSet<>();
@@ -79,6 +90,10 @@ public class HighValueBountyManager extends BaseEventManager {
         highValueBountyDataCompleted.add(bountyId);
     }
 
+    public void removeBountyFromActiveList(String bountyId) {
+        highValueBountyDataActive.remove(bountyId);
+    }
+
     @Override
     protected int getMinConcurrent() {
         return 0;
@@ -107,7 +122,7 @@ public class HighValueBountyManager extends BaseEventManager {
 
     @Override
     protected EveryFrameScript createEvent() {
-        return createHighValueBountyEvent();
+        return createHighValueBountyEvent(null);
     }
 
     public EveryFrameScript forceSpawn(String bountyId) {
@@ -118,30 +133,68 @@ public class HighValueBountyManager extends BaseEventManager {
             return null;
         }
 
-        HighValueBountyIntel highValueBountyIntel = new HighValueBountyIntel(highValueBountyEntity, highValueBountyEntity.getFleet(), highValueBountyEntity.getPerson(), highValueBountyEntity.getHideout());
-        if (highValueBountyIntel.isDone()) {
+        HighValueBountyIntel highValueBountyIntel = createHighValueBountyEvent(highValueBountyEntity);
+
+        if (isNull(highValueBountyIntel) || highValueBountyIntel.isDone()) {
             log.info("failed to force-spawn HVB: " + bountyId);
             return null;
         }
 
-        addActive(highValueBountyIntel);
         Global.getSector().addScript(highValueBountyIntel);
         log.info("currently active HVBs: " + getActiveBounties());
 
         return highValueBountyIntel;
     }
 
-    private HighValueBountyIntel createHighValueBountyEvent() {
-        HighValueBountyEntity highValueBountyEntity = EntityProvider.highValueBountyEntity();
+    private HighValueBountyIntel createHighValueBountyEvent(HighValueBountyEntity highValueBountyEntity) {
+        if (isNull(highValueBountyEntity))
+            highValueBountyEntity = EntityProvider.highValueBountyEntity();
+
         if (isNull(highValueBountyEntity)) {
             log.warn("BountiesExpanded: Failed to create HighValueBountyEntity");
             return null;
         }
 
+        CampaignFleetAPI fleet = highValueBountyEntity.getFleet();
+        SectorEntityToken hideout = highValueBountyEntity.getHideout();
+        String bountyId = highValueBountyEntity.getBountyId();
+        HighValueBountyData bountyData = getBounty(bountyId);
+        String randomActionText = NameStringCollection.getFleetActionText();
+
+        fleet.setNoFactionInName(true);
+        fleet.setName(bountyData.fleetName);
+
+        FleetGenerator.spawnFleet(fleet, hideout);
+
+        MemoryAPI memory = fleet.getMemoryWithoutUpdate();
+        memory.set(HIGH_VALUE_BOUNTY_FLEET_KEY, highValueBountyEntity);
+        memory.set("$bountiesExpanded_highValueBountyGreeting", bountyData.greetingText);
+        memory.set(MemFlags.CAN_ONLY_BE_ENGAGED_WHEN_VISIBLE_TO_PLAYER, true);
+        memory.set(MemFlags.MEMORY_KEY_PIRATE, true);
+        memory.set(MemFlags.FLEET_NO_MILITARY_RESPONSE, true);
+        memory.set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+
+        fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
+        upgradeShips(fleet);
+
+        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getPerson(), hideout);
+
         log.info("BountiesExpanded: Creating HighValueBountyEvent");
-        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, highValueBountyEntity.getFleet(), highValueBountyEntity.getPerson(), highValueBountyEntity.getHideout());
+        markBountyAsActive(bountyId);
         addActive(bountyIntel);
+
         return bountyIntel;
+    }
+
+    public void upgradeShips(CampaignFleetAPI bountyFleet) {
+        Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
+        FleetMemberAPI flagship = bountyFleet.getFlagship();
+        if (flagship.getVariant().getSMods().isEmpty()) {
+            SModUpgradeHelper.upgradeShip(flagship, 3, random);
+            SModUpgradeHelper.addMinorUpgrades(flagship, random);
+        }
+
+        FleetUpgradeHelper.upgradeRandomShips(bountyFleet, 2, 0.2f, true, random);
     }
 
     @SuppressWarnings("unchecked")

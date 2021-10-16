@@ -17,23 +17,23 @@ public class BountiesExpandedSpawnHVB implements BaseCommand {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
-        } else {
-            HighValueBountyManager manager = HighValueBountyManager.getInstance();
-            if (isNull(manager)) {
-                Console.showMessage("the HighValueBountyManager instance is missing!");
-                return CommandResult.ERROR;
-            } else {
-                Console.showMessage("attempting to spawn HVB with ID: " + args);
-                EveryFrameScript bounty = manager.forceSpawn(args);
-                if (isNotNull(bounty)) {
-                    Console.showMessage("it worked!");
-                    Console.showMessage("current active HVBs are: " + manager.getActiveBounties());
-                    return CommandResult.SUCCESS;
-                } else {
-                    Console.showMessage("it didn't work!");
-                    return CommandResult.ERROR;
-                }
-            }
         }
+
+        HighValueBountyManager manager = HighValueBountyManager.getInstance();
+        if (isNull(manager)) {
+            Console.showMessage("the HighValueBountyManager instance is missing!");
+            return CommandResult.ERROR;
+        }
+
+        Console.showMessage("attempting to spawn HVB with ID: " + args);
+        EveryFrameScript bounty = manager.forceSpawn(args);
+        if (isNotNull(bounty)) {
+            Console.showMessage("it worked!");
+            Console.showMessage("current active HVBs are: " + manager.getActiveBounties());
+            return CommandResult.SUCCESS;
+
+        }
+        Console.showMessage("it didn't work!");
+        return CommandResult.ERROR;
     }
 }

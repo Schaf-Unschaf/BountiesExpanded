@@ -13,8 +13,10 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class HighValueBountyIntel extends BaseBountyIntel {
     private final HighValueBountyEntity bountyEntity;
@@ -30,9 +32,9 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean isCaptainAlive = fleet.getFlagship() != bountyEntity.flagship;
+        boolean isFlagshipAlive = fleet.getFlagship() == bountyEntity.flagship;
 
-        if (isDone || isNotInvolved || !isCaptainAlive) {
+        if (isDone || isNotInvolved || isFlagshipAlive) {
             return;
         }
 
@@ -43,15 +45,36 @@ public class HighValueBountyIntel extends BaseBountyIntel {
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
                 bountyEntity.getOfferingFaction().getId());
 
-        result = new BountyResult(BountyResult.BountyResultType.END_PLAYER_BOUNTY, payment, 0, 0f, rep);
+
+
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         HighValueBountyManager.getInstance().markBountyAsCompleted(bountyEntity.getBountyId());
         cleanUp(false);
     }
 
     @Override
+    protected void advanceImpl(float amount) {
+        if (isNull(fleet)) {
+            return;
+        }
+
+        if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            cleanUp(!fleet.isInCurrentLocation());
+        }
+    }
+
+    @Override
     protected void cleanUp(boolean onlyIfImportant) {
         super.cleanUp(onlyIfImportant);
+        HighValueBountyManager.getInstance().removeBountyFromActiveList(bountyEntity.getBountyId());
+    }
+
+    @Override
+    protected void cleanUpFleetAndEndIfNecessary() {
+        super.cleanUpFleetAndEndIfNecessary();
+        HighValueBountyManager.getInstance().removeBountyFromActiveList(bountyEntity.getBountyId());
     }
 
     public HighValueBountyEntity getEntity() {
