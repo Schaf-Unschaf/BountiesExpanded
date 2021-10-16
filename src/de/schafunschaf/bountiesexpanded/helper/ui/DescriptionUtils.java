@@ -2,6 +2,9 @@ package de.schafunschaf.bountiesexpanded.helper.ui;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.FactionAPI;
+import com.fs.starfarer.api.campaign.RepLevel;
+import com.fs.starfarer.api.campaign.ReputationActionResponsePlugin;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
@@ -23,18 +26,22 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
 public class DescriptionUtils {
-    public static void createShipListForIntel(TooltipMakerAPI info, float width, float padding, CampaignFleetAPI fleet, int maxShipsToDisplay, boolean showShipsRemaining) {
+    public static void createShipListForIntel(TooltipMakerAPI info, float width, float padding, CampaignFleetAPI fleet, int maxShipsToDisplay, int maxRows, boolean showShipsRemaining) {
         Random random = new Random(fleet.getCommander().getNameString().hashCode() * 170000L);
         List<FleetMemberAPI> fleetMemberList;
-        if (Settings.isDebugActive())
+        if (Settings.isDebugActive()) {
+            maxRows = 0;
             fleetMemberList = FleetGenerator.createCompleteCopyForIntel(fleet);
-        else
+        } else
             fleetMemberList = FleetGenerator.createCopyForIntel(fleet, maxShipsToDisplay, random);
 
         fleetMemberList = orderListBySize(fleetMemberList);
 
         int cols = 7;
         int rows = (int) Math.ceil(fleetMemberList.size() / (float) cols);
+        if (maxRows > 0 && rows > maxRows)
+            rows = maxRows;
+
         float iconSize = width / cols;
         if (Settings.isDebugActive()) {
             int enemyFP = fleet.getFleetPoints();
@@ -44,7 +51,7 @@ public class DescriptionUtils {
             info.addPara("Player FP -> " + playerFP, padding, Misc.getHighlightColor(), String.valueOf(playerFP));
         }
 
-        info.addShipList(cols, rows, iconSize, Color.BLACK, fleetMemberList, padding);
+        info.addShipList(cols, rows, iconSize, fleet.getFaction().getBaseUIColor(), fleetMemberList, padding);
 
         if (showShipsRemaining && !Settings.isDebugActive()) {
             int num = fleet.getNumShips() - maxShipsToDisplay;
@@ -106,7 +113,7 @@ public class DescriptionUtils {
         return sortedList;
     }
 
-    private static void generateCommanderDescription(TooltipMakerAPI info, float padding, CampaignFleetAPI fleet, PersonAPI person) {
+    private static void generateFancyCommanderDescription(TooltipMakerAPI info, float padding, CampaignFleetAPI fleet, PersonAPI person) {
         if (isNull(person))
             return;
         if (isNull(person.getStats()))
@@ -190,7 +197,7 @@ public class DescriptionUtils {
         info.addPara("%s is %s known for %s.", padding, commander.getFaction().getBaseUIColor(), Misc.ucFirst(heOrShe), levelDesc, skillDesc);
     }
 
-    public static void generateTargetDescription(TooltipMakerAPI info, float padding, CampaignFleetAPI fleet, PersonAPI person) {
+    public static void generateFancyFleetDescription(TooltipMakerAPI info, float padding, CampaignFleetAPI fleet, PersonAPI person) {
         if (isNull(person))
             return;
 
@@ -210,5 +217,39 @@ public class DescriptionUtils {
 
         info.addPara("%s is in command of a %s and personally commands the %s, a %s, as %s flagship.", padding, commander.getFaction().getBaseUIColor(),
                 commander.getFaction().getRank(commander.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType, hisOrHer);
+    }
+
+    public static void addRepMessage(TooltipMakerAPI info, float width, float pad, FactionAPI faction, ReputationActionResponsePlugin.ReputationAdjustmentResult rep, boolean showRepBar) {
+        if (isNull(info) || isNull(faction) || isNull(rep))
+            return;
+
+        String factionName = faction.getDisplayName();
+        float delta = rep.delta;
+        int deltaInt = Math.round(Math.abs(delta) * 100f);
+        FactionAPI player = Global.getSector().getPlayerFaction();
+        int repInt = RepLevel.getRepInt(player.getRelationship(faction.getId()));
+        RepLevel repLevel = player.getRelationshipLevel(faction.getId());
+        Color factionColor = faction.getBaseUIColor();
+        Color deltaColor = Misc.getPositiveHighlightColor();
+        Color relationColor = faction.getRelColor(player.getId());
+
+        String deltaString = "improved by " + deltaInt;
+        String standing = "" + repInt + "/100" + " (" + repLevel.getDisplayName().toLowerCase() + ")";
+
+        if (delta < 0) {
+            deltaColor = Misc.getNegativeHighlightColor();
+            deltaString = "reduced by " + deltaInt;
+        } else if (delta == 0) {
+            deltaString = "not affected";
+            deltaColor = Misc.getTextColor();
+        }
+
+        Color[] highlightColors = {factionColor, deltaColor, relationColor};
+
+        if (showRepBar) {
+            info.addPara("Relationship with %s %s", pad, highlightColors, factionName, deltaString, standing);
+            info.addRelationshipBar(faction, width, 3f);
+        } else
+            info.addPara("Relationship with %s %s, currently at %s", pad, highlightColors, factionName, deltaString, standing);
     }
 }

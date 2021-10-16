@@ -7,7 +7,6 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.fleets.RouteLocationCalculator;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Random;
 
 import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.createShipListForIntel;
-import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.generateTargetDescription;
+import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.generateFancyFleetDescription;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.aOrAn;
@@ -44,7 +43,6 @@ public class AssassinationBountyEntity implements BountyEntity {
     private final SectorEntityToken endingPoint;
 
     private final int obfuscatedFleetSize;
-    private final List<FleetMemberAPI> flagshipAsList;
 
     public static final Object ENTERED_HYPERSPACE = new Object();
     private static final String ASSASSINATION_ICON = "bountiesExpanded_assassination";
@@ -61,7 +59,6 @@ public class AssassinationBountyEntity implements BountyEntity {
         this.level = level;
 
         this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 4 + new Random().nextInt(9), 1);
-        this.flagshipAsList = getFlagshipCopy();
     }
 
     @Override
@@ -204,6 +201,10 @@ public class AssassinationBountyEntity implements BountyEntity {
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
+                    if (mode == ListInfoMode.IN_DESC)
+                        info.addPara("Max reward was: %s", initPad, bulletColor, highlightColor,
+                                Misc.getDGSCredits(baseReward + bonusReward));
+
                     info.addPara("%s received", initPad, bulletColor, highlightColor,
                             Misc.getDGSCredits(result.payment + result.bonus));
                     if (result.bonus > 0)
@@ -225,6 +226,7 @@ public class AssassinationBountyEntity implements BountyEntity {
     @Override
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
         Color highlightColor = Misc.getHighlightColor();
+        List<FleetMemberAPI> flagshipCopy = getFlagshipCopy();
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
 
@@ -245,13 +247,13 @@ public class AssassinationBountyEntity implements BountyEntity {
             float iconSize = width / 3;
             info.addPara("The message had an intel file containing the targets ship attached.", opad);
             if (!Settings.isDebugActive())
-                info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipAsList, opad);
-            generateTargetDescription(info, opad, fleet, person);
+                info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipCopy, opad);
+            generateFancyFleetDescription(info, opad, fleet, person);
             info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional ship" + singularOrPlural(obfuscatedFleetSize) + ".", opad, highlightColor, String.valueOf(obfuscatedFleetSize));
             info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.", opad, difficulty.getColor(), difficulty.getShortDescription());
 
             if (Settings.isDebugActive()) {
-                createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), false);
+                createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 1, false);
                 info.addPara("SPAWN LOCATION: " + startingPoint.getName(), 0f);
                 info.addPara("DESTINATION: " + endingPoint.getName(), 0f);
             }
@@ -301,9 +303,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             if (!member.isFlagship())
                 continue;
 
-            FleetMemberAPI copy = Global.getFactory().createFleetMember(FleetMemberType.SHIP, member.getVariant());
-
-            copyList.add(copy);
+            copyList.add(member);
         }
         if (deflate)
             fleet.deflate();

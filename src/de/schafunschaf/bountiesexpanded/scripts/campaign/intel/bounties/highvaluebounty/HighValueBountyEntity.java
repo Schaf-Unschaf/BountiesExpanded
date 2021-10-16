@@ -214,7 +214,7 @@ public class HighValueBountyEntity implements BountyEntity {
                     targetedFaction.getBaseUIColor(),
                     targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType);
             info.addSectionHeading("Fleet Intel", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
-            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, true);
+            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, 3, true);
         }
     }
 
@@ -325,7 +325,7 @@ public class HighValueBountyEntity implements BountyEntity {
             fleetDesc = "large fleet";
         } else if (fleetSize <= 45) {
             fleetDesc = "very large fleet";
-        } else if (fleetSize <= 55){
+        } else if (fleetSize <= 55) {
             fleetDesc = "gigantic fleet";
         } else if (fleetSize <= 65) {
             fleetDesc = "freaking armada";

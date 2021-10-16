@@ -53,7 +53,8 @@ public class EntityProvider {
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier());
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
         int bountyLevel = BountyEventData.getSharedData().getLevel();
-        fp += level * bountyLevel;
+        fp += level / 100 + 1;
+        fp += bountyLevel / 100 + 1;
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist(), true);
