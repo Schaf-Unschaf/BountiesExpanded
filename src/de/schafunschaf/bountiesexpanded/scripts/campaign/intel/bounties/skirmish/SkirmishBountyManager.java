@@ -4,6 +4,7 @@ import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
@@ -95,10 +96,12 @@ public class SkirmishBountyManager extends BaseEventManager {
 
         fleet.setName(FLEET_NAME);
         FleetGenerator.spawnFleet(fleet, hideout);
+        MemoryAPI memory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
-        fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
-        fleet.getMemoryWithoutUpdate().set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
+        memory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
+        memory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        memory.set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
 
         Global.getSector().getMemoryWithoutUpdate().set(BOUNTY_ACTIVE_AT_KEY + hideout.getMarket().getName(), null);
 
@@ -118,6 +121,9 @@ public class SkirmishBountyManager extends BaseEventManager {
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
+        if (isNull(bountyFleet))
+            return;
+
         Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
         int modValue = ((SkirmishBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY)).getDifficulty().getFlatModifier();
         FleetUpgradeHelper.upgradeRandomShips(bountyFleet, modValue, modValue * 0.1f, false, random);

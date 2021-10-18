@@ -3,6 +3,7 @@ package de.schafunschaf.bountiesexpanded.helper.credits;
 import com.fs.starfarer.api.Global;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.level.LevelPicker;
+import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 
 public class CreditCalculator {
     public static int vanillaCalculation(float multiplier) {
@@ -15,7 +16,7 @@ public class CreditCalculator {
     }
 
     public static int getRewardByFP(float fleetPoints, float multiplier) {
-        return Math.round((int) (Settings.BASE_REWARD_PER_FP * fleetPoints * multiplier / 1000)) * 1000;
+        return FormattingTools.roundWholeNumber((int) (Settings.BASE_REWARD_PER_FP * fleetPoints * multiplier), 3);
     }
 
     private static int calculate(int level, float multiplier) {
@@ -23,6 +24,6 @@ public class CreditCalculator {
         float perLevel = Global.getSettings().getFloat("personBountyPerLevel");
         float random = perLevel * (int) (Math.random() * 15) / 15f;
 
-        return Math.round((int) ((base + perLevel * level + random) * multiplier) / 1000) * 1000;
+        return FormattingTools.roundWholeNumber((int) ((base + perLevel * level + random) * multiplier), 3);
     }
 }

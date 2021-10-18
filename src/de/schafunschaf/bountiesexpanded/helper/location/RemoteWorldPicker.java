@@ -13,7 +13,7 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.Settings;
 
-import java.util.Collection;
+import java.util.Map;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
@@ -23,7 +23,7 @@ public class RemoteWorldPicker {
         return pickPlanet(system);
     }
 
-    public static SectorEntityToken pickRandomHideout(Collection<String> requiredTags) {
+    public static SectorEntityToken pickRandomHideout(Map<String, Integer> requiredTags) {
         StarSystemAPI system = pickSystem(requiredTags);
         return pickPlanet(system);
     }
@@ -44,13 +44,21 @@ public class RemoteWorldPicker {
         }
     }
 
-    protected static StarSystemAPI pickSystem(Collection<String> requiredTags) {
+    protected static StarSystemAPI pickSystem(Map<String, Integer> requiredTags) {
         WeightedRandomPicker<StarSystemAPI> systemPicker = new WeightedRandomPicker<>();
+        int mult = isNull(requiredTags) ? 1 : 0;
         for (StarSystemAPI system : Global.getSector().getStarSystems()) {
-            if (!containsAny(system.getTags(), requiredTags))
+            if (system.hasPulsar())
                 continue;
 
-            if (system.hasPulsar()) continue;
+            if (isNotNull(requiredTags)) {
+                if (!containsAny(system.getTags(), requiredTags.keySet()))
+                    continue;
+
+                if (!isNullOrEmpty(requiredTags))
+                    for (Map.Entry<String, Integer> entry : requiredTags.entrySet())
+                        mult = system.hasTag(entry.getKey()) ? entry.getValue() : 0;
+            }
 
             boolean hasHiddenMarket = false;
             for (MarketAPI market : Misc.getMarketsInLocation(system)) {
@@ -86,7 +94,7 @@ public class RemoteWorldPicker {
             float dist = system.getLocation().length();
             float distMult = Math.max(0, 50000f - dist);
 
-            systemPicker.add(system, weight * distMult);
+            systemPicker.add(system, weight * distMult * mult);
         }
 
         return systemPicker.pick();

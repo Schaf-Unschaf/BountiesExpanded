@@ -45,7 +45,7 @@ public class FleetGenerator {
         FleetParamsV3 fleetParams = new FleetParamsV3(fleetHomeMarket,
                 hideout.getLocationInHyperspace(),
                 factionID, // factionID
-                qualityOverride + 0.2f, // quality
+                qualityOverride, // quality
                 FleetTypes.PERSON_BOUNTY_FLEET, // fleetType
                 initialFP, // combatPts
                 0f, // freighterPts
@@ -82,6 +82,9 @@ public class FleetGenerator {
 
         if (isNull(fleet.getFlagship())) {
             FleetMemberAPI flagship = getShipWithHighestFP(fleetData.getMembersListCopy());
+            if (isNull(flagship))
+                return null;
+
             flagship.setFlagship(true);
         }
         fleet.getFlagship().setCaptain(fleetCaptain);

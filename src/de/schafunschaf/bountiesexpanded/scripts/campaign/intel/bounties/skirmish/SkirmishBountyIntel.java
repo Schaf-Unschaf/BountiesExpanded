@@ -14,6 +14,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 
 import java.util.*;
 
@@ -65,15 +66,12 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             numBattles++;
             playerInvolvement += battle.getPlayerInvolvementFraction();
 
-            for (CampaignFleetAPI otherFleet : battle.getSnapshotSideFor(fleet))
-                for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(otherFleet)) {
-                    increaseShipByOne(loss, destroyedShips);
-                }
+            for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(fleet))
+                increaseShipByOne(loss, destroyedShips);
         }
 
-        if (isDone || isNotInvolved || !hasLostEnoughShips) {
+        if (isDone || isNotInvolved || !hasLostEnoughShips)
             return;
-        }
 
         playerInvolvement = Math.round((playerInvolvement / numBattles) * 100) / 100;
         if (playerInvolvement <= 0) {
@@ -105,7 +103,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             paymentModifier = 100;
         }
 
-        payment = Math.round(payment / 100) * 100;
+        payment = FormattingTools.roundWholeNumber(payment / 100, 2);
 
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
 
@@ -138,7 +136,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             int[] destroyedShipsData = entry.getValue();
             bonusPerSize += baseShipBounty * mult * destroyedShipsData[0];
             payoutPerSize += bonusPerSize * paymentModifier * playerInvolvement / 100;
-            payoutPerSize = Math.round(payoutPerSize / 100) * 100;
+            payoutPerSize = FormattingTools.roundWholeNumber(payoutPerSize, 2);
             destroyedShipsData[1] = payoutPerSize;
             destroyedShipsData[2] = (int) (numFleetMembers * baseShipBounty * mult);
             bonusPayment += payoutPerSize;
@@ -159,9 +157,8 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             }
         }
 
-        if (isNull(fleet) || isNull(result)) {
+        if (isNull(fleet) || isNull(result))
             return;
-        }
 
         if (fleet.getFleetSizeCount() <= maxFleetSizeForCompletion) {
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0);

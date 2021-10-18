@@ -45,8 +45,6 @@ public class HighValueBountyIntel extends BaseBountyIntel {
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
                 bountyEntity.getOfferingFaction().getId());
 
-
-
         result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         HighValueBountyManager.getInstance().markBountyAsCompleted(bountyEntity.getBountyId());

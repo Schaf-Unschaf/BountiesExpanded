@@ -25,6 +25,7 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
 
         List<FleetMemberAPI> recoverableShips = super.getRecoverableShips(battle, winningFleet, otherFleet);
         List<FleetMemberAPI> storyRecoverableShips = getStoryRecoverableShips();
+        List<FleetMemberData> enemyCasualties = getDataFor(winningFleet).getEnemyCasualties();
 
         if (Misc.isPlayerOrCombinedContainingPlayer(otherFleet))
             return recoverableShips;
@@ -39,9 +40,11 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
 
         boolean uniqueFlagshipDestroyed = false;
 
-        for (FleetMemberAPI destroyedShips : Misc.getSnapshotMembersLost(otherFleet))
-            if (flagshipVariantId.equals(destroyedShips.getVariant().getHullVariantId()))
+        for (FleetMemberData fleetMemberData : enemyCasualties) {
+            FleetMemberAPI destroyedShip = fleetMemberData.getMember();
+            if (flagshipVariantId.equals(destroyedShip.getVariant().getHullVariantId()))
                 uniqueFlagshipDestroyed = true;
+        }
 
         if (!uniqueFlagshipDestroyed)
             return recoverableShips;
@@ -61,7 +64,7 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
         fleetMember.setShipName(bountyData.flagshipName);
 
         float dp = fleetMember.getBaseDeployCost();
-        int num = (int) (dp / 5f);
+        int num = (int) (dp * 100 / 5f);
         if (num < 4) num = 4;
 
         DModManager.addDMods(fleetMember, true, num, null);

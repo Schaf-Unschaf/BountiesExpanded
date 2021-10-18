@@ -86,7 +86,8 @@ public class EntityProvider {
         FactionAPI targetedFaction = ParticipatingFactionPicker.pickFaction(Blacklists.getSkirmishBountyBlacklist());
         if (isNull(targetedFaction)) return null;
 
-        float qf = MarketUtils.createFakeMarket(targetedFaction).getShipQualityFactor();
+        MarketAPI fakeMarket = MarketUtils.createFakeMarket(targetedFaction);
+        float qf = fakeMarket.getShipQualityFactor();
 
         PersonAPI person = OfficerGenerator.generateOfficer(targetedFaction, level);
         MarketAPI startingPoint = CoreWorldPicker.pickSafeHideout(targetedFaction).getMarket();
@@ -97,7 +98,7 @@ public class EntityProvider {
         if (isNull(endingPoint))
             return null;
 
-        CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, qf, null, startingPoint.getPrimaryEntity(), person);
+        CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, qf, fakeMarket, startingPoint.getPrimaryEntity(), person);
 
         return new AssassinationBountyEntity(bountyCredits, targetedFaction, bountyFleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty, level);
     }
@@ -122,7 +123,7 @@ public class EntityProvider {
         FactionAPI offeringFaction = bountyData.getOfferingFaction();
         FactionAPI targetedFaction = isNull(bountyData.getTargetedFaction()) ? Global.getSector().getFaction(Factions.MERCENARY) : bountyData.getTargetedFaction();
 
-        SectorEntityToken hideout = RemoteWorldPicker.pickRandomHideout(TagCollection.VANILLA_BOUNTY_SYSTEM_TAGS);
+        SectorEntityToken hideout = RemoteWorldPicker.pickRandomHideout(TagCollection.getDefaultTagMap(TagCollection.VANILLA_BOUNTY_SYSTEM_TAGS));
         if (isNull(hideout)) {
             log.warn("BountiesExpanded: Failed to generate HighValueBounty Hideout");
             return null;

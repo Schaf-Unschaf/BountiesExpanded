@@ -1,6 +1,7 @@
 package de.schafunschaf.bountiesexpanded.util;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class ComparisonTools {
     public static boolean containsAny(final Collection<?> collection1, final Collection<?> collection2) {
@@ -23,6 +24,12 @@ public class ComparisonTools {
     }
 
     public static boolean isNullOrEmpty(Collection<?> collection) {
+        if (isNotNull(collection))
+            return collection.isEmpty();
+        return true;
+    }
+
+    public static boolean isNullOrEmpty(Map<?, ?> collection) {
         if (isNotNull(collection))
             return collection.isEmpty();
         return true;

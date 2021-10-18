@@ -173,6 +173,8 @@ public class HighValueBountyManager extends BaseEventManager {
         memory.set(MemFlags.MEMORY_KEY_PIRATE, true);
         memory.set(MemFlags.FLEET_NO_MILITARY_RESPONSE, true);
         memory.set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+        memory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        memory.set(MemFlags.FLEET_DO_NOT_IGNORE_PLAYER, true);
 
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
         upgradeShips(fleet);
@@ -187,14 +189,28 @@ public class HighValueBountyManager extends BaseEventManager {
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
+        if (isNull(bountyFleet))
+            return;
+
         Random random = new Random(bountyFleet.getId().hashCode() * 1337L);
         FleetMemberAPI flagship = bountyFleet.getFlagship();
+        if (isNull(flagship))
+            return;
+
         if (flagship.getVariant().getSMods().isEmpty()) {
             SModUpgradeHelper.upgradeShip(flagship, 3, random);
             SModUpgradeHelper.addMinorUpgrades(flagship, random);
         }
 
-        FleetUpgradeHelper.upgradeRandomShips(bountyFleet, 2, 0.2f, true, random);
+        String bountyId = ((HighValueBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(HIGH_VALUE_BOUNTY_FLEET_KEY)).getBountyId();
+        HighValueBountyData highValueBountyData = getBounty(bountyId);
+        List<String> fleetVariantIds = highValueBountyData.fleetVariantIds;
+        if (!fleetVariantIds.isEmpty())
+            for (FleetMemberAPI fleetMember : bountyFleet.getFleetData().getMembersListCopy())
+                if (fleetVariantIds.contains(fleetMember.getVariant().getHullVariantId()))
+                    SModUpgradeHelper.upgradeShip(fleetMember, 2, random);
+
+        FleetUpgradeHelper.upgradeRandomShips(bountyFleet, 1, 0.3f, true, random);
     }
 
     @SuppressWarnings("unchecked")
