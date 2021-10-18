@@ -13,6 +13,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
             bonusPayment = 0;
 
         if (occurredInHyperspace)
-            bonusPayment = Math.round((int) (bonusPayment * (1 / travelDistance * remainingDistance)) / 1000) * 1000;
+            bonusPayment = FormattingTools.roundWholeNumber((int) (bonusPayment * (1 / travelDistance * remainingDistance)), 3);
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);

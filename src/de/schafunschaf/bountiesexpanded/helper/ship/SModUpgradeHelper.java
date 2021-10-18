@@ -13,6 +13,9 @@ import java.util.*;
 
 public class SModUpgradeHelper {
     public static void upgradeShip(FleetMemberAPI fleetMember, int numSMods, Random random) {
+        if (!fleetMember.getVariant().getSMods().isEmpty())
+            return;
+
         if (numSMods <= 0)
             return;
 

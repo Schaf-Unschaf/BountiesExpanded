@@ -1,10 +1,9 @@
 package de.schafunschaf.bountiesexpanded.helper.location;
 
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class TagCollection {
     private static final String[] vanillaBountySystemTagArray = {
@@ -34,4 +33,15 @@ public class TagCollection {
     public static final Set<String> DERELICT_SYSTEM_TAGS = new HashSet<>(Arrays.asList(derelictSystemTagArray));
     public static final Set<String> REMNANT_SYSTEM_TAGS = new HashSet<>(Arrays.asList(remnantSystemTagArray));
     public static final Set<String> VANILLA_BOUNTY_SYSTEM_TAGS = new HashSet<>(Arrays.asList(vanillaBountySystemTagArray));
+
+    public static Map<String, Integer> getDefaultTagMap(Set<String> tagCollection) {
+        if (ComparisonTools.isNullOrEmpty(tagCollection))
+            return null;
+
+        HashMap<String, Integer> tagMap = new HashMap<>();
+        for (String tagName : tagCollection)
+            tagMap.put(tagName, 1);
+
+        return tagMap;
+    }
 }

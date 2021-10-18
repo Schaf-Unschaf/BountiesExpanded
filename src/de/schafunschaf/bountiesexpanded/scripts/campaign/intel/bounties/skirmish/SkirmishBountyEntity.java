@@ -21,6 +21,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyRe
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
+import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -61,15 +62,15 @@ public class SkirmishBountyEntity implements BountyEntity {
         this.hideout = hideout;
         this.difficulty = difficulty;
         this.level = level;
-        this.baseShipBounty = Math.round((int) (Settings.SKIRMISH_BASE_SHIP_BOUNTY * (1 - fractionToKill)) / 10f) * 10;
+        this.baseShipBounty = (int) FormattingTools.roundWholeNumber((Settings.SKIRMISH_BASE_SHIP_BOUNTY * (1 - fractionToKill)), 1);
         this.shipsToDestroy = Math.max((int) (fleet.getFleetData().getMembersListCopy().size() * fractionToKill), 1);
         this.maxFleetSizeForCompletion = fleet.getNumShips() - shipsToDestroy;
         this.maxPayout = calculateMaxPayout();
         this.creditsPerSize = new String[]{
-                Misc.getDGSCredits(Math.round(baseShipBounty * Misc.getSizeNum(HullSize.FRIGATE) / 100) * 100),
-                Misc.getDGSCredits(Math.round(baseShipBounty * Misc.getSizeNum(HullSize.DESTROYER) / 100) * 100),
-                Misc.getDGSCredits(Math.round(baseShipBounty * Misc.getSizeNum(HullSize.CRUISER) / 100) * 100),
-                Misc.getDGSCredits(Math.round(baseShipBounty * Misc.getSizeNum(HullSize.CAPITAL_SHIP) / 100) * 100)};
+                Misc.getDGSCredits(FormattingTools.roundWholeNumber(baseShipBounty * Misc.getSizeNum(HullSize.FRIGATE), 2)),
+                Misc.getDGSCredits(FormattingTools.roundWholeNumber(baseShipBounty * Misc.getSizeNum(HullSize.DESTROYER), 2)),
+                Misc.getDGSCredits(FormattingTools.roundWholeNumber(baseShipBounty * Misc.getSizeNum(HullSize.CRUISER), 2)),
+                Misc.getDGSCredits(FormattingTools.roundWholeNumber(baseShipBounty * Misc.getSizeNum(HullSize.CAPITAL_SHIP), 2))};
         numFleetMembers = new HashMap<>();
         initHullSizeMap(numFleetMembers);
         for (FleetMemberAPI fleetMember : fleet.getFleetData().getMembersListCopy())
@@ -79,7 +80,7 @@ public class SkirmishBountyEntity implements BountyEntity {
     private int calculateMaxBonus() {
         int maxBonus = 0;
         for (FleetMemberAPI ship : fleet.getFleetData().getMembersListCopy())
-            maxBonus += Math.round(Misc.getSizeNum(ship.getHullSpec().getHullSize()) * baseShipBounty / 100) * 100;
+            maxBonus += FormattingTools.roundWholeNumber(Misc.getSizeNum(ship.getHullSpec().getHullSize()) * baseShipBounty, 2);
         return maxBonus;
     }
 

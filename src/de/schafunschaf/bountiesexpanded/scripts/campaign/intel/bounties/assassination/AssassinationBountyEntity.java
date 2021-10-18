@@ -16,6 +16,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
+import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -48,8 +49,8 @@ public class AssassinationBountyEntity implements BountyEntity {
     private static final String ASSASSINATION_ICON = "bountiesExpanded_assassination";
 
     public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, SectorEntityToken endingPoint, Difficulty difficulty, int level) {
-        this.baseReward = (int) ((Math.round(baseReward * Settings.ASSASSINATION_BASE_REWARD_MULTIPLIER) / 1000) * 1000);
-        this.bonusReward = (int) ((Math.round(baseReward * Settings.ASSASSINATION_BONUS_REWARD_MULTIPLIER) / 1000) * 1000);
+        this.baseReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.ASSASSINATION_BASE_REWARD_MULTIPLIER, 3);
+        this.bonusReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.ASSASSINATION_BONUS_REWARD_MULTIPLIER, 3);
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
         this.person = person;

@@ -17,4 +17,19 @@ public class FormattingTools {
         vowels.add('u');
         return vowels.contains(name.charAt(0)) ? "an" : "a";
     }
+
+    public static int roundWholeNumber(int number, int numPlaces) {
+        double pow = Math.pow(10, numPlaces);
+        return (int) (Math.round(number / pow) * pow);
+    }
+
+    public static float roundWholeNumber(float number, int numPlaces) {
+        double pow = Math.pow(10, numPlaces);
+        return (float) (Math.round(number / pow) * pow);
+    }
+
+    public static double roundWholeNumber(double number, int numPlaces) {
+        double pow = Math.pow(10, numPlaces);
+        return (Math.round(number / pow) * pow);
+    }
 }
