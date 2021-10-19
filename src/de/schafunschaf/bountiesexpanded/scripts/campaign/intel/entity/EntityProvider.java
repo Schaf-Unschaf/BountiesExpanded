@@ -57,11 +57,17 @@ public class EntityProvider {
         fp += bountyLevel / 100 + 1;
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction();
+        if (isNull(offeringFaction))
+            return null;
+
         FactionAPI targetedFaction = HostileFactionPicker.pickParticipatingFaction(offeringFaction, Blacklists.getSkirmishBountyBlacklist(), true);
         if (isNull(targetedFaction))
             return null;
 
         PersonAPI person = OfficerManagerEvent.createOfficer(targetedFaction, level);
+        if (isNull(person))
+            return null;
+
         person.setPersonality(Personalities.AGGRESSIVE);
 
         SectorEntityToken hideout = CoreWorldPicker.pickSafeHideout(targetedFaction);
@@ -73,6 +79,8 @@ public class EntityProvider {
             homeMarket = MarketUtils.createFakeMarket(targetedFaction);
 
         CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, homeMarket.getShipQualityFactor(), homeMarket, hideout, person);
+        if (isNull(bountyFleet))
+            return null;
 
         return new SkirmishBountyEntity(bountyCredits, offeringFaction, targetedFaction, bountyFleet, person, hideout, fractionToKill, difficulty, level);
     }
@@ -87,9 +95,13 @@ public class EntityProvider {
         if (isNull(targetedFaction)) return null;
 
         MarketAPI fakeMarket = MarketUtils.createFakeMarket(targetedFaction);
+
         float qf = fakeMarket.getShipQualityFactor();
 
         PersonAPI person = OfficerGenerator.generateOfficer(targetedFaction, level);
+        if (isNull(person))
+            return null;
+
         MarketAPI startingPoint = CoreWorldPicker.pickSafeHideout(targetedFaction).getMarket();
         if (isNull(startingPoint))
             return null;
@@ -99,6 +111,8 @@ public class EntityProvider {
             return null;
 
         CampaignFleetAPI bountyFleet = FleetGenerator.createBountyFleetV2(fp, qf, fakeMarket, startingPoint.getPrimaryEntity(), person);
+        if (isNull(bountyFleet))
+            return null;
 
         return new AssassinationBountyEntity(bountyCredits, targetedFaction, bountyFleet, person, startingPoint.getPrimaryEntity(), endingPoint.getPrimaryEntity(), difficulty, level);
     }
