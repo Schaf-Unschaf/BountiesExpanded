@@ -103,7 +103,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             paymentModifier = 100;
         }
 
-        payment = FormattingTools.roundWholeNumber(payment / 100, 2);
+        payment = FormattingTools.roundWholeNumber(payment, 2);
 
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
 

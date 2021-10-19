@@ -7,9 +7,11 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyInteractionDialogPlugin;
 
 public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
+    public static final String PLUGIN_ID = "BountiesExpandedCampaignPlugin";
+
     @Override
     public String getId() {
-        return "BountiesExpandedCampaignPlugin";
+        return PLUGIN_ID;
     }
 
     @Override
