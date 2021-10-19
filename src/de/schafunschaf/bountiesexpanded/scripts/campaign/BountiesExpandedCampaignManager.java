@@ -5,14 +5,14 @@ import com.fs.starfarer.api.campaign.BaseCampaignEventListener;
 import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.FleetEncounterContextPlugin;
 import com.fs.starfarer.api.campaign.SpecialItemData;
+import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 
 import java.util.List;
 import java.util.Set;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
 public class BountiesExpandedCampaignManager extends BaseCampaignEventListener implements EveryFrameScript {
     public BountiesExpandedCampaignManager() {
@@ -21,7 +21,28 @@ public class BountiesExpandedCampaignManager extends BaseCampaignEventListener i
 
     @Override
     public void reportEncounterLootGenerated(FleetEncounterContextPlugin plugin, CargoAPI loot) {
+        if (Settings.HIGH_VALUE_BOUNTY_ACTIVE) generateHighValueBountyLoot(plugin, loot);
+    }
+
+    @Override
+    public boolean isDone() {
+        return false;
+    }
+
+    @Override
+    public boolean runWhilePaused() {
+        return false;
+    }
+
+    @Override
+    public void advance(float amount) {
+
+    }
+
+    private void generateHighValueBountyLoot(FleetEncounterContextPlugin plugin, CargoAPI loot) {
         HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
         HighValueBountyData bountyData = null;
         Set<String> flagshipVariantIds = bountyManager.getAllVariantIds();
         List<FleetEncounterContextPlugin.FleetMemberData> enemyCasualties = plugin.getWinnerData().getEnemyCasualties();
@@ -43,20 +64,5 @@ public class BountiesExpandedCampaignManager extends BaseCampaignEventListener i
                 for (String specialItemReward : bountyData.specialItemRewards)
                     loot.addSpecial(new SpecialItemData(specialItemReward, null), 1);
         }
-    }
-
-    @Override
-    public boolean isDone() {
-        return false;
-    }
-
-    @Override
-    public boolean runWhilePaused() {
-        return false;
-    }
-
-    @Override
-    public void advance(float amount) {
-
     }
 }

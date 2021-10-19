@@ -36,8 +36,8 @@ public class SkirmishBountyManager extends BaseEventManager {
     }
 
     public static SkirmishBountyManager getInstance() {
-        Object test = Global.getSector().getMemoryWithoutUpdate().get(KEY);
-        return (SkirmishBountyManager) test;
+        Object instance = Global.getSector().getMemoryWithoutUpdate().get(KEY);
+        return (SkirmishBountyManager) instance;
     }
 
     @Override
