@@ -205,7 +205,7 @@ public class HighValueBountyManager extends BaseEventManager {
         String bountyId = ((HighValueBountyEntity) bountyFleet.getMemoryWithoutUpdate().get(HIGH_VALUE_BOUNTY_FLEET_KEY)).getBountyId();
         HighValueBountyData highValueBountyData = getBounty(bountyId);
         List<String> fleetVariantIds = highValueBountyData.fleetVariantIds;
-        if (!fleetVariantIds.isEmpty())
+        if (!isNullOrEmpty(fleetVariantIds))
             for (FleetMemberAPI fleetMember : bountyFleet.getFleetData().getMembersListCopy())
                 if (fleetVariantIds.contains(fleetMember.getVariant().getHullVariantId()))
                     SModUpgradeHelper.upgradeShip(fleetMember, 2, random);
