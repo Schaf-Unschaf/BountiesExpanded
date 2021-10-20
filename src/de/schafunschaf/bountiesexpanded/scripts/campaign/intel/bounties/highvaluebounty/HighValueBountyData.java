@@ -131,11 +131,12 @@ public class HighValueBountyData {
         WeightedRandomPicker<HighValueBountyData> candidates = new WeightedRandomPicker<>();
         HighValueBountyManager manager = HighValueBountyManager.getInstance();
 
-        if (isNotNull(bountyId)) if (isNull(manager.getBounty(bountyId))) {
-            log.error("the bounty manager doesn't know what " + bountyId + " is");
-            return null;
-        } else
-            return manager.getBounty(bountyId);
+        if (isNotNull(bountyId))
+            if (isNull(manager.getBounty(bountyId))) {
+                log.error("the bounty manager doesn't know what " + bountyId + " is");
+                return null;
+            } else
+                return manager.getBounty(bountyId);
 
         for (String id : manager.getBountiesList()) {
             HighValueBountyData bountyData = manager.getBounty(id);
