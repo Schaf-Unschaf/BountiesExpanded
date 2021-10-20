@@ -32,6 +32,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
 
 public class SkirmishBountyEntity implements BountyEntity {
+    private float targetRepBeforeBattle = 0;
     private static final String SKIRMISH_ICON = "bountiesExpanded_skirmish";
     private final int baseReward;
     private final int level;
@@ -46,7 +47,7 @@ public class SkirmishBountyEntity implements BountyEntity {
     private final CampaignFleetAPI fleet;
     private final PersonAPI person;
     private final SectorEntityToken hideout;
-    final String[] creditsPerSize;
+    private final String[] creditsPerSize;
     private final Map<HullSize, Integer> numFleetMembers;
 
     public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, float fractionToKill, Difficulty difficulty, int level) {
@@ -77,8 +78,8 @@ public class SkirmishBountyEntity implements BountyEntity {
     private int calculateMaxBonus() {
         int maxBonus = 0;
         for (FleetMemberAPI ship : fleet.getFleetData().getMembersListCopy())
-            maxBonus += FormattingTools.roundWholeNumber(Misc.getSizeNum(ship.getHullSpec().getHullSize()) * baseShipBounty, 2);
-        return maxBonus;
+            maxBonus += Misc.getSizeNum(ship.getHullSpec().getHullSize()) * baseShipBounty;
+        return FormattingTools.roundWholeNumber(maxBonus, 2);
     }
 
     private int calculateMaxPayout() {
@@ -151,6 +152,10 @@ public class SkirmishBountyEntity implements BountyEntity {
         return level;
     }
 
+    public float getTargetRepBeforeBattle() {
+        return targetRepBeforeBattle;
+    }
+
     public String[] getCreditsPerSize() {
         return creditsPerSize;
     }
@@ -181,6 +186,10 @@ public class SkirmishBountyEntity implements BountyEntity {
 
     public SectorEntityToken getHideout() {
         return hideout;
+    }
+
+    public void setTargetRepBeforeBattle(float targetRepBeforeBattle) {
+        this.targetRepBeforeBattle = targetRepBeforeBattle;
     }
 
     @Override
@@ -215,7 +224,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    String payout = Misc.getDGSCredits(Math.round((result.payment + result.bonus) * result.share));
+                    String payout = Misc.getDGSCredits(result.payment + result.bonus);
 
                     if (mode != ListInfoMode.IN_DESC) {
                         info.addPara("%s received", initPad, bulletColor, highlightColor, payout);
@@ -286,12 +295,13 @@ public class SkirmishBountyEntity implements BountyEntity {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
                     float rewardAdjustment = result.rewardAdjustment;
+                    float targetRepChange = result.targetRepAfterBattle - targetRepBeforeBattle;
                     String increasedDecreased;
                     Color rewardColor;
                     int percent;
                     String percentage;
 
-                    DescriptionUtils.addFactionFlagsWithRepChange(info, width, opad, opad, offeringFaction, result.rep.delta, targetedFaction, result.lastRepChange);
+                    DescriptionUtils.addFactionFlagsWithRepChange(info, width, opad, opad, offeringFaction, result.rep.delta, targetedFaction, targetRepChange);
 
                     info.addSectionHeading("Briefing", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
                     info.addPara("%s officials have offered a reward for thinning out a hostile %s fleet.", opad,
@@ -404,7 +414,7 @@ public class SkirmishBountyEntity implements BountyEntity {
             totalMaxBonus += maxBonus;
             column.add(Alignment.RMID);
             column.add(grayColor);
-            column.add(Misc.getDGSCredits(maxBonus));
+            column.add(Misc.getDGSCredits(FormattingTools.roundWholeNumber(maxBonus, 2)));
 
             shipBonusRowList.add(column);
         }
@@ -443,7 +453,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         // Max Received
         bonusPayoutRow.add(Alignment.RMID);
         bonusPayoutRow.add(grayColor);
-        bonusPayoutRow.add(Misc.getDGSCredits(totalMaxBonus));
+        bonusPayoutRow.add(Misc.getDGSCredits(FormattingTools.roundWholeNumber(totalMaxBonus, 2)));
 
         List<Object> totalPayoutRow = new ArrayList<>();
         // Name

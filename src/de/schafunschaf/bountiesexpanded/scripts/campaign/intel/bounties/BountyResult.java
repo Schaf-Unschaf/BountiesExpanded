@@ -11,18 +11,18 @@ public class BountyResult {
     public int bonus = 0;
     public Float share = 0f;
     public ReputationAdjustmentResult rep = null;
-    public float lastRepChange = 0;
+    public float targetRepAfterBattle = 0;
     public float rewardAdjustment = 0;
     public Map<HullSize, int[]> destroyedShips = null;
 
     // Skirmish Result
-    public BountyResult(BountyResultType type, int payment, int bonus, Float share, ReputationAdjustmentResult rep, float lastRepChange, float rewardAdjustment, Map<HullSize, int[]> destroyedShips) {
+    public BountyResult(BountyResultType type, int payment, int bonus, Float share, ReputationAdjustmentResult rep, float targetRepAfterBattle, float rewardAdjustment, Map<HullSize, int[]> destroyedShips) {
         this.type = type;
         this.payment = payment;
         this.bonus = bonus;
         this.share = share;
         this.rep = rep;
-        this.lastRepChange = lastRepChange;
+        this.targetRepAfterBattle = targetRepAfterBattle;
         this.rewardAdjustment = rewardAdjustment;
         this.destroyedShips = destroyedShips;
     }

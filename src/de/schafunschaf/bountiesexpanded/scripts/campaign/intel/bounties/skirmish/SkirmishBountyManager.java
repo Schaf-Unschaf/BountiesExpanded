@@ -96,12 +96,12 @@ public class SkirmishBountyManager extends BaseEventManager {
 
         fleet.setName(FLEET_NAME);
         FleetGenerator.spawnFleet(fleet, hideout);
-        MemoryAPI memory = fleet.getMemoryWithoutUpdate();
+        MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
-        memory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
-        memory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
-        memory.set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
+        fleetMemory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
+        fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        fleetMemory.set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
 
         Global.getSector().getMemoryWithoutUpdate().set(BOUNTY_ACTIVE_AT_KEY + hideout.getMarket().getName(), null);
 
