@@ -67,7 +67,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             playerInvolvement += battle.getPlayerInvolvementFraction();
 
             for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(fleet))
-                increaseShipByOne(loss, destroyedShips);
+                increaseLossByOne(loss, destroyedShips);
         }
 
         if (isDone || isNotInvolved || !hasLostEnoughShips)
@@ -80,10 +80,13 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             return;
         }
 
-        int paymentModifier;
+        int paymentModifier = 100;
         FactionAPI offeringFaction = bountyEntity.getOfferingFaction();
+        FactionAPI targetedFaction = bountyEntity.getTargetedFaction();
         float repToPlayer = offeringFaction.getRelToPlayer().getRel();
-        float lastRepChange = new ReputationChangeTracker().getDataFor(bountyEntity.getTargetedFaction().getId()).getLastValue();
+        ReputationChangeTracker repChangeTracker = SharedData.getData().getPlayerActivityTracker().getRepChangeTracker();
+        repChangeTracker.advance(0);
+        float targetRepAfterBattle = repChangeTracker.getDataFor(targetedFaction.getId()).getLastValue();
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
@@ -92,16 +95,14 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             customRepImpact.delta = ((maxRepGain - neutralRepGain) * -repToPlayer + neutralRepGain) / 100;
             paymentModifier = -Math.round(100 + repToPlayer * maxRewardDeduction);
             payment *= (float) -paymentModifier * playerInvolvement / 100;
-            calculateBonusPayment(paymentModifier);
         } else if (repToPlayer > 0f) {
             customRepImpact.delta = (neutralRepGain - repToPlayer * neutralRepGain) / 100;
             paymentModifier = Math.round(100 + repToPlayer * maxRewardIncrease);
             payment *= (float) paymentModifier * playerInvolvement / 100;
-            calculateBonusPayment(paymentModifier);
         } else {
             customRepImpact.delta = neutralRepGain / 100;
-            paymentModifier = 100;
         }
+        calculateBonusPayment(paymentModifier);
 
         payment = FormattingTools.roundWholeNumber(payment, 2);
 
@@ -110,12 +111,12 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact, null, null, true, false),
                 offeringFaction.getId());
-        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, playerInvolvement, rep, lastRepChange, paymentModifier, destroyedShips);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, playerInvolvement, rep, targetRepAfterBattle, paymentModifier, destroyedShips);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }
 
-    private void increaseShipByOne(FleetMemberAPI fleetMember, Map<HullSize, int[]> destroyedShips) {
+    private void increaseLossByOne(FleetMemberAPI fleetMember, Map<HullSize, int[]> destroyedShips) {
         ShipAPI.HullSize hullSize = fleetMember.getHullSpec().getHullSize();
         int[] destroyedShipsData = destroyedShips.get(hullSize);
         if (destroyedShips.containsKey(hullSize)) {
