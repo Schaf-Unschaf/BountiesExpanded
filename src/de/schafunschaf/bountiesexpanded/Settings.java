@@ -32,6 +32,8 @@ public class Settings {
     public static double HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS = 14;
     public static double HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS = 28;
 
+    public static boolean RETRIEVAL_BOUNTY_ACTIVE = true;
+
     public static boolean isDebugActive() {
         return DebugFlags.PERSON_BOUNTY_DEBUG_INFO || Settings.SHEEP_DEBUG;
     }

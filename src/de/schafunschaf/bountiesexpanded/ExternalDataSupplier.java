@@ -4,15 +4,14 @@ import com.fs.starfarer.api.Global;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.retrieval.RareFlagshipData;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static de.schafunschaf.bountiesexpanded.util.ParsingTools.parseJSONArray;
 
@@ -141,6 +140,36 @@ public class ExternalDataSupplier {
         } catch (IOException | JSONException exception) {
             log.error("BountiesExpanded - Failed to load HighValueBountyData! - " + exception.getMessage());
         }
+    }
 
+    public static Map<String, RareFlagshipData> loadRareFlagshipData(String fileName) {
+        Map<String, RareFlagshipData> rareFlagshipDataMap = new HashMap<>();
+
+        try {
+            JSONArray uniqueBountyDataJSON = Global.getSettings().getMergedSpreadsheetDataForMod("bounty", fileName, "BountiesExpanded");
+
+            for (int i = 0; i < uniqueBountyDataJSON.length(); ++i) {
+                JSONObject row = uniqueBountyDataJSON.getJSONObject(i);
+                if (row.has("bounty") && row.getString("bounty") != null && !row.getString("bounty").isEmpty()) {
+                    String flagshipID = row.getString("bounty");
+                    log.info("loading rare flagship " + flagshipID);
+
+                    RareFlagshipData flagshipData = new RareFlagshipData(flagshipID,
+                            row.getString("variant"),
+                            row.getString("factions"),
+                            (float) row.getDouble("weight"),
+                            row.getString("source")
+                    );
+                    log.info("loaded rare flagship " + flagshipID);
+                    rareFlagshipDataMap.put(flagshipID, flagshipData);
+                } else {
+                    log.info("hit empty line, rare flagship loading ended");
+                }
+            }
+        } catch (IOException | JSONException exception) {
+            log.error("BountiesExpanded - Failed to load RareFlagshipData! - " + exception.getMessage());
+        }
+
+        return rareFlagshipDataMap;
     }
 }

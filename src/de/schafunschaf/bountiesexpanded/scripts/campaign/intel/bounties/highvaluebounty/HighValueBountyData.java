@@ -7,6 +7,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetParamsV3;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.ShipRoles;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
@@ -96,7 +97,7 @@ public class HighValueBountyData {
         this.fleetName = fleetName;
         this.flagshipName = flagshipName;
         this.gender = gender;
-        this.supportFleetFactionId = supportFleetFactionId.equals("hvb_hostile") ? "hvb_hostile_dummy" : supportFleetFactionId;
+        this.supportFleetFactionId = supportFleetFactionId.equals("hvb_hostile") ? "hvb_hostile_dummy" : supportFleetFactionId.equals("persean_league") ? Factions.PERSEAN : supportFleetFactionId;
         try {
             Global.getSettings().loadTexture(portrait);
         } catch (IOException e) {
@@ -105,7 +106,7 @@ public class HighValueBountyData {
         this.portrait = portrait;
         this.greetingText = greetingText;
         this.suppressIntel = suppressIntel;
-        this.postedByFactionId = postedByFactionId;
+        this.postedByFactionId = postedByFactionId.equals("persean_league") ? Factions.PERSEAN : postedByFactionId;
         this.creditReward = creditReward;
         this.repReward = repReward;
         this.intelText = intelText;

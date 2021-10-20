@@ -18,6 +18,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaig
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.retrieval.RetrievalBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
 import org.apache.log4j.Logger;
 
@@ -34,6 +35,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     public static final String SETTINGS_FILE = "bounties_expanded_settings.ini";
     public static final String NAME_STRINGS_FILE = "data/config/bountiesExpanded/name_strings.json";
     public static final String VAYRA_UNIQUE_BOUNTIES_FILE = "data/config/vayraBounties/unique_bounty_data.csv";
+    public static final String RARE_FLAGSHIPS_FILE = "data/config/vayraBounties/rare_flagships.csv";
     public static final Logger log = Global.getLogger(BountiesExpandedPlugin.class);
 
     @Override
@@ -101,6 +103,12 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
 
             uninstallManager(highValueBountyManager);
             Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
+        }
+
+        if (Settings.RETRIEVAL_BOUNTY_ACTIVE) addRetrievalManager();
+        else {
+            uninstallManager(RetrievalBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(RetrievalBountyManager.KEY);
         }
 
         addCampaignPlugins();
@@ -178,6 +186,16 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         } else {
             log.info("BountiesExpanded: Found existing HighValueBountyManager");
             printCompletedBounties();
+        }
+    }
+
+    private void addRetrievalManager() {
+        if (!Global.getSector().hasScript(RetrievalBountyManager.class)) {
+            Global.getSector().addScript(new RetrievalBountyManager());
+            log.info("BountiesExpanded: RetrievalBountyManager added");
+        } else {
+            RetrievalBountyManager.getInstance().loadRareFlagshipData();
+            log.info("BountiesExpanded: Found existing RetrievalBountyManager");
         }
     }
 

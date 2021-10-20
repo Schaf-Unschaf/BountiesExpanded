@@ -151,7 +151,6 @@ public class EntityProvider {
 
         person.setName(new FullName(bountyData.firstName, bountyData.lastName, FullName.Gender.valueOf(bountyData.gender)));
         person.setPersonality(bountyData.captainPersonality);
-        person.setPortraitSprite(bountyData.portrait);
         person.setRankId(bountyData.rank);
 
         FleetParamsV3 fleetParams = new FleetParamsV3(null, hideout.getLocationInHyperspace(), targetedFaction.getId(), 2f, FleetTypes.PERSON_BOUNTY_FLEET, bountyData.minimumFleetFP, 0f, 0f, 0f, 0f, 0f, 0f);
