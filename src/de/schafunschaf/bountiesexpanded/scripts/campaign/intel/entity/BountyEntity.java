@@ -8,7 +8,8 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 
 
 public interface BountyEntity {
@@ -28,6 +29,8 @@ public interface BountyEntity {
     String getIcon();
 
     String getTitle(BountyResult result);
+
+    MissionType getMissionType();
 
     Difficulty getDifficulty();
 

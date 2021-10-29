@@ -13,8 +13,9 @@ import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 
 import java.awt.*;
 import java.util.Set;
@@ -23,18 +24,19 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
-
-    protected float duration;
     protected final Difficulty difficulty;
     protected final CampaignFleetAPI fleet;
     protected final BountyEntity entity;
     protected final PersonAPI person;
     protected final SectorEntityToken hideout;
+    protected final MissionType missionType;
+    protected float duration;
     protected float elapsedDays = 0f;
     protected BountyResult result;
 
-    public BaseBountyIntel(BountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
+    public BaseBountyIntel(BountyEntity bountyEntity, MissionType missionType, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         this.entity = bountyEntity;
+        this.missionType = missionType;
         this.fleet = campaignFleetAPI;
         this.hideout = sectorEntityToken;
         this.person = personAPI;
@@ -55,7 +57,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     @Override
     public void createSmallDescription(TooltipMakerAPI info, float width, float height) {
         entity.createSmallDescription(this, info, width, height);
-        if (Settings.isDebugActive())
+        if (Settings.isDebugActive() || isNotNull(result))
             addDeleteButton(info, width);
     }
 
@@ -101,7 +103,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
         if (this.fleet == fleet) {
             fleet.setCommander(fleet.getFaction().createRandomPerson());
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0);
             cleanUp(true);
         }
     }
@@ -132,6 +134,10 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    public MissionType getMissionType() {
+        return missionType;
     }
 
     public BountyResult getResult() {
@@ -169,7 +175,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         if (elapsedDays >= duration && !isDone()) {
             boolean canEnd = isNull(fleet) || !fleet.isInCurrentLocation();
             if (canEnd) {
-                result = new BountyResult(BountyResultType.END_TIME, 0, 0);
+                result = new BountyResult(BountyResultType.END_TIME, 0, 0, 0);
                 cleanUp(true);
                 return;
             }
@@ -180,7 +186,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
 
         if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0);
             cleanUp(!fleet.isInCurrentLocation());
         }
 

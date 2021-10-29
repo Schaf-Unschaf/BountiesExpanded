@@ -13,12 +13,12 @@ public class NameStringCollection {
         return suspiciousNames;
     }
 
-    public static String getSuspiciousName() {
-        return suspiciousNames.get(new Random().nextInt(suspiciousNames.size()));
-    }
-
     public static void setSuspiciousNames(Collection<String> suspiciousNames) {
         NameStringCollection.suspiciousNames.addAll(suspiciousNames);
+    }
+
+    public static String getSuspiciousName() {
+        return suspiciousNames.get(new Random().nextInt(suspiciousNames.size()));
     }
 
     public static List<String> getfleetActionTexts() {

@@ -20,8 +20,9 @@ import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -32,6 +33,9 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class HighValueBountyEntity implements BountyEntity {
+    public static final Logger log = Global.getLogger(HighValueBountyEntity.class);
+    final String shipType;
+    final FleetMemberAPI flagship;
     private final String bountyId;
     private final int baseReward;
     private final String intelText;
@@ -44,9 +48,6 @@ public class HighValueBountyEntity implements BountyEntity {
     String levelDesc;
     String skillDesc;
     String fleetDesc;
-    final String shipType;
-    final FleetMemberAPI flagship;
-    public static final Logger log = Global.getLogger(HighValueBountyEntity.class);
 
     public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, String intelText, String bountyId) {
         this.baseReward = baseReward;
@@ -116,6 +117,11 @@ public class HighValueBountyEntity implements BountyEntity {
             }
         }
         return "High Value Bounty - " + person.getNameString();
+    }
+
+    @Override
+    public MissionType getMissionType() {
+        return null;
     }
 
     @Override
@@ -330,7 +336,7 @@ public class HighValueBountyEntity implements BountyEntity {
         } else if (fleetSize <= 65) {
             fleetDesc = "freaking armada";
         } else {
-            fleetDesc = "enough ships to push Jangala into the sun";
+            fleetDesc = "force big enough to push Jangala into the sun";
         }
 
         String targetDesc = String.format("%s is in command of a %s and personally commands the %s, a %s, as %s flagship.",

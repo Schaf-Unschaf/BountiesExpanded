@@ -25,6 +25,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 public class AssassinationBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_assassinationBountyManager";
     public static final String ASSASSINATION_BOUNTY_FLEET_KEY = "$bountiesExpanded_assassinationBountyFleet";
+    public static final String ASSASSINATION_BOUNTY_RARE_SHIP_KEY = "$bountiesExpanded_assassinationBountyFleet_rareFlagship";
     public static final Logger log = Global.getLogger(AssassinationBountyManager.class);
 
     public AssassinationBountyManager() {
@@ -60,9 +61,12 @@ public class AssassinationBountyManager extends BaseEventManager {
     }
 
     public AssassinationBountyIntel createAssassinationBountyEvent() {
+        log.info("BountiesExpanded: creating new Assassination Bounty");
         final AssassinationBountyEntity assassinationBountyEntity = EntityProvider.assassinationBountyEntity();
-        if (isNull(assassinationBountyEntity))
+        if (isNull(assassinationBountyEntity)) {
+            log.warn("BountiesExpanded: failed to create Assassination Bounty");
             return null;
+        }
         final CampaignFleetAPI bountyFleet = assassinationBountyEntity.getFleet();
         bountyFleet.setNoFactionInName(true);
         bountyFleet.setName(NameStringCollection.getSuspiciousName());

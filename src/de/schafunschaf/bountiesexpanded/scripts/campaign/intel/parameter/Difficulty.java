@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter;
 
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 

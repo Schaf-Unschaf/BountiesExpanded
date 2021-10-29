@@ -3,10 +3,14 @@ package de.schafunschaf.bountiesexpanded.helper.fleet;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.LocationAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class FleetUtils {
     public static Set<CampaignFleetAPI> getAllFleets() {
@@ -30,5 +34,15 @@ public class FleetUtils {
                 returnSet.add(campaignFleetAPI);
 
         return returnSet;
+    }
+
+    public static FleetMemberAPI getShipWithHighestFP(List<FleetMemberAPI> fleet) {
+        FleetMemberAPI highestFP = null;
+        for (FleetMemberAPI member : fleet) {
+            if (isNull(highestFP)) highestFP = member;
+            else if (member.getFleetPointCost() > highestFP.getFleetPointCost())
+                highestFP = member;
+        }
+        return highestFP;
     }
 }

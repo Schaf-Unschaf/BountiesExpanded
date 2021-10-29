@@ -3,8 +3,9 @@ package de.schafunschaf.bountiesexpanded.helper.fleet;
 import com.fs.starfarer.api.Global;
 
 public class FleetPointCalculator {
-    public static float getPlayerBasedFP(float modifier) {
+    public static float getPlayerBasedFP(float modifier, float minFP) {
         float fleetPoints = Global.getSector().getPlayerFleet().getFleetPoints() * modifier;
+        fleetPoints = Math.max(fleetPoints, minFP);
         fleetPoints *= 1f + (float) Math.random() * 0.15f;
         return fleetPoints;
     }

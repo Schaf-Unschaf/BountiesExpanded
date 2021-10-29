@@ -10,6 +10,7 @@ import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.FleetEncounterContext;
 import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -60,23 +61,26 @@ public class HighValueBountyFleetEncounterContext extends FleetEncounterContext 
         if (!(new Random().nextFloat() <= bountyData.chanceToAutoRecover))
             return recoverableShips;
 
-        FleetMemberAPI fleetMember = Global.getFactory().createFleetMember(FleetMemberType.SHIP, variant);
-        fleetMember.setShipName(bountyData.flagshipName);
+        FleetMemberAPI flagship = otherFleet.getFlagship();
+        if (ComparisonTools.isNull(flagship) || !variant.equals(flagship.getVariant())) {
+            flagship = Global.getFactory().createFleetMember(FleetMemberType.SHIP, variant);
+            flagship.setShipName(bountyData.flagshipName);
+        }
 
-        float dp = fleetMember.getBaseDeployCost();
+        float dp = flagship.getBaseDeployCost();
         int num = (int) (dp * 100 / 5f);
         if (num < 4) num = 4;
 
-        DModManager.addDMods(fleetMember, true, num, null);
+        DModManager.addDMods(flagship, true, num, null);
         if (DModManager.getNumDMods(variant) > 0)
             DModManager.setDHull(variant);
 
         float weaponProb = Global.getSettings().getFloat("salvageWeaponProb");
         float wingProb = Global.getSettings().getFloat("salvageWingProb");
 
-        prepareShipForRecovery(fleetMember, false, true, true, weaponProb, wingProb, getSalvageRandom());
+        prepareShipForRecovery(flagship, false, true, true, weaponProb, wingProb, getSalvageRandom());
 
-        storyRecoverableShips.add(fleetMember);
+        storyRecoverableShips.add(flagship);
 
         return recoverableShips;
     }

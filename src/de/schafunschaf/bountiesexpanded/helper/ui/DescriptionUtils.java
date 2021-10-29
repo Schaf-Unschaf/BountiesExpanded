@@ -1,10 +1,7 @@
 package de.schafunschaf.bountiesexpanded.helper.ui;
 
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.CampaignFleetAPI;
-import com.fs.starfarer.api.campaign.FactionAPI;
-import com.fs.starfarer.api.campaign.RepLevel;
-import com.fs.starfarer.api.campaign.ReputationActionResponsePlugin;
+import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
@@ -15,6 +12,8 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -201,10 +200,12 @@ public class DescriptionUtils {
         if (isNull(person))
             return;
 
+        boolean hasRareFlagship = fleet.getMemoryWithoutUpdate().contains(AssassinationBountyManager.ASSASSINATION_BOUNTY_RARE_SHIP_KEY);
         int fleetSize = fleet.getNumShips();
         FleetMemberAPI flagship = fleet.getFlagship();
         PersonAPI commander = fleet.getCommander();
-        String shipType = flagship.getHullSpec().getHullNameWithDashClass() + " " + flagship.getHullSpec().getDesignation().toLowerCase();
+        String rareString = hasRareFlagship ? "rare " : "";
+        String shipType = String.format("%s%s %s", rareString, flagship.getHullSpec().getHullNameWithDashClass(), flagship.getHullSpec().getDesignation().toLowerCase());
         String hisOrHer = person.getHisOrHer();
         String fleetDesc;
 
@@ -311,6 +312,30 @@ public class DescriptionUtils {
         info.getPrev().getPosition().setXAlignOffset(-(flagWidth + flagPadding + innerPadding));
     }
 
+    public static void addRepBarWithChange(TooltipMakerAPI info, float width, float pad, FactionAPI faction, float repDelta) {
+        int deltaInt = Math.round(Math.abs(repDelta) * 100f);
+        Color deltaColor = Misc.getPositiveHighlightColor();
+        String deltaString = "improved by " + deltaInt;
+
+        if (repDelta < 0) {
+            deltaColor = Misc.getNegativeHighlightColor();
+            deltaString = "reduced by " + deltaInt;
+        } else if (repDelta == 0) {
+            deltaString = "not affected";
+            deltaColor = Misc.getTextColor();
+        }
+
+        float textPad = 8f;
+
+        info.addRelationshipBar(faction, width, 5f);
+        float barWidth = info.getPrev().getPosition().getWidth();
+        info.addPara(deltaString, textPad, deltaColor, deltaString);
+        info.getPrev().getPosition().setXAlignOffset(barWidth / 3 + 5f);
+
+        info.addSpacer(0f);
+        info.getPrev().getPosition().setXAlignOffset(-(barWidth / 3 + 5f));
+    }
+
     public static void addFactionFlagsWithRep(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, FactionAPI rightFaction) {
         info.addImages(width, 100, pad, itemPad, leftFaction.getLogo(), rightFaction.getLogo());
 
@@ -361,5 +386,14 @@ public class DescriptionUtils {
 
         info.addSpacer(0f);
         info.getPrev().getPosition().setXAlignOffset(-(rightBarWidth / 6) - width / 2 - itemPad + 2f);
+    }
+
+    public static void generateHideoutDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, Color highlightColor) {
+        String isOrWas = isNull(baseBountyIntel.getFleet().getAI().getCurrentAssignmentType()) ? "was last seen " : "is ";
+        SectorEntityToken hideout = baseBountyIntel.getHideout();
+        info.addPara(
+                "The fleet " + isOrWas + "near " + hideout.getName() + " in the "
+                        + hideout.getStarSystem().getName() + ".",
+                10f, highlightColor, hideout.getName(), hideout.getStarSystem().getName());
     }
 }

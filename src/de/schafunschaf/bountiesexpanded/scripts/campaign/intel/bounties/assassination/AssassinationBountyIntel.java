@@ -18,6 +18,7 @@ import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdatedRep;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
@@ -30,7 +31,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
     private int bonusPayment;
 
     public AssassinationBountyIntel(AssassinationBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
+        super(bountyEntity, bountyEntity.getMissionType(), campaignFleetAPI, personAPI, sectorEntityToken);
         Misc.makeImportant(fleet, "pbe", 100f);
         this.bountyEntity = bountyEntity;
         this.payment = bountyEntity.getBaseReward();
@@ -48,6 +49,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         boolean occurredInDestinationSystem = bountyEntity.getEndingPoint().getContainingLocation().equals(fleet.getContainingLocation());
         boolean occurredInHyperspace = fleet.isInHyperspace();
         float remainingDistance = Misc.getDistanceLY(fleet.getLocationInHyperspace(), destination.getLocationInHyperspace());
+        float targetRepAfterBattle = getUpdatedRep(bountyEntity.getTargetedFaction());
 
         if (isDone || isNotInvolved || isFlagshipAlive) {
             return;
@@ -56,7 +58,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (battle.isInvolved(fleet) && !battle.isPlayerInvolved()) {
             if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
                 fleet.setCommander(fleet.getFaction().createRandomPerson());
-                result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+                result = new BountyResult(BountyResultType.END_OTHER, 0, 0, targetRepAfterBattle);
                 cleanUp(true);
                 return;
             }
@@ -70,7 +72,8 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         playerFleet.getCargo().getCredits().add(payment + bonusPayment);
-        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment);
+
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, bonusPayment, targetRepAfterBattle);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
         cleanUp(false);
     }
@@ -85,8 +88,13 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (!fleet.isInHyperspace()) return null;
 
         List<ArrowData> result = new ArrayList<>();
+        ArrowData arrow;
 
-        ArrowData arrow = new ArrowData(bountyEntity.getStartingPoint(), bountyEntity.getEndingPoint());
+        if (Settings.isDebugActive() && fleet.isInHyperspace())
+            arrow = new ArrowData(fleet, bountyEntity.getEndingPoint());
+        else
+            arrow = new ArrowData(bountyEntity.getStartingPoint(), bountyEntity.getEndingPoint());
+
         arrow.color = getFactionForUIColors().getBaseUIColor();
         result.add(arrow);
 
@@ -110,5 +118,9 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
 
     public Object getListInfo() {
         return getListInfoParam();
+    }
+
+    public float getTravelDistance() {
+        return travelDistance;
     }
 }

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FormattingTools {
-    public static String singularOrPlural(int number) {
-        return (number == 1) ? "" : "s";
+    public static String singularOrPlural(int number, String word) {
+        return (number == 1) ? word : word + "s";
     }
 
     public static String aOrAn(String name) {

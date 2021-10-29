@@ -11,4 +11,6 @@ public class HighValueBountyInteractionDialogPlugin extends FleetInteractionDial
         super(params);
         context = new HighValueBountyFleetEncounterContext();
     }
+
+
 }

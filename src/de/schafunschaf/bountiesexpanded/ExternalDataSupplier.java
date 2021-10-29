@@ -2,9 +2,9 @@ package de.schafunschaf.bountiesexpanded;
 
 import com.fs.starfarer.api.Global;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.retrieval.RareFlagshipData;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.*;
 
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ParsingTools.parseJSONArray;
 
 public class ExternalDataSupplier {
@@ -154,11 +155,16 @@ public class ExternalDataSupplier {
                     String flagshipID = row.getString("bounty");
                     log.info("loading rare flagship " + flagshipID);
 
+                    String factionStrings = row.optString("factions");
+                    Set<String> factionList = new HashSet<>();
+                    if (isNotNull(factionStrings)) {
+                        factionList.addAll(Arrays.asList(factionStrings.split("\\s*(,\\s*)+")));
+                    }
+
                     RareFlagshipData flagshipData = new RareFlagshipData(flagshipID,
                             row.getString("variant"),
-                            row.getString("factions"),
-                            (float) row.getDouble("weight"),
-                            row.getString("source")
+                            factionList,
+                            (float) row.getDouble("weight")
                     );
                     log.info("loaded rare flagship " + flagshipID);
                     rareFlagshipDataMap.put(flagshipID, flagshipData);

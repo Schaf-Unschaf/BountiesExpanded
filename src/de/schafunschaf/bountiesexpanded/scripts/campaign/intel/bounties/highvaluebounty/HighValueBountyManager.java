@@ -24,14 +24,14 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
 public class HighValueBountyManager extends BaseEventManager {
-    private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
     public static final String KEY = "$bountiesExpanded_highValueBountyManager";
     public static final String HIGH_VALUE_BOUNTY_FLEET_KEY = "$bountiesExpanded_highValueBounty";
-    private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     public static final Map<String, HighValueBountyData> highValueBountyData = new HashMap<>();
+    public static final Logger log = Global.getLogger(HighValueBountyManager.class);
+    private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
+    private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     private final Set<String> highValueBountyDataActive = new HashSet<>();
     private final Set<String> highValueBountyDataCompleted = new HashSet<>();
-    public static final Logger log = Global.getLogger(HighValueBountyManager.class);
 
     public HighValueBountyManager() {
         super();

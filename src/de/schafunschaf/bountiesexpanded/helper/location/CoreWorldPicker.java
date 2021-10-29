@@ -76,7 +76,7 @@ public class CoreWorldPicker {
         for (MarketAPI market : factionMarketList) {
             if (Settings.IGNORE_PLAYER_MARKETS && market.isPlayerOwned())
                 continue;
-            if (!market.isHidden()&& !market.isInHyperspace())
+            if (!market.isHidden() && !market.isInHyperspace())
                 filteredFactionMarketList.add(market);
         }
         return pickHideout(filteredFactionMarketList);

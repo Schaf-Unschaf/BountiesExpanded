@@ -28,10 +28,11 @@ public class BountyResult {
     }
 
     // Assassination Result
-    public BountyResult(BountyResultType type, int payment, int bonus) {
+    public BountyResult(BountyResultType type, int payment, int bonus, float targetRepAfterBattle) {
         this.type = type;
         this.payment = payment;
         this.bonus = bonus;
+        this.targetRepAfterBattle = targetRepAfterBattle;
     }
 
     // HVB Result

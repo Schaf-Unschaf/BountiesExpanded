@@ -81,7 +81,7 @@ public class FleetGenerator {
         FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE, ShipRoles.PHASE_CAPITAL);
 
         if (isNull(fleet.getFlagship())) {
-            FleetMemberAPI flagship = getShipWithHighestFP(fleetData.getMembersListCopy());
+            FleetMemberAPI flagship = FleetUtils.getShipWithHighestFP(fleetData.getMembersListCopy());
             if (isNull(flagship))
                 return null;
 
@@ -103,16 +103,6 @@ public class FleetGenerator {
         location.addEntity(fleet);
         fleet.setLocation(hideout.getLocation().x - 500, hideout.getLocation().y + 500);
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 1000000f, null);
-    }
-
-    public static FleetMemberAPI getShipWithHighestFP(List<FleetMemberAPI> fleet) {
-        FleetMemberAPI highestFP = null;
-        for (FleetMemberAPI member : fleet) {
-            if (isNull(highestFP)) highestFP = member;
-            else if (member.getFleetPointCost() > highestFP.getFleetPointCost())
-                highestFP = member;
-        }
-        return highestFP;
     }
 
     public static List<FleetMemberAPI> createCompleteCopyForIntel(CampaignFleetAPI fleet) {

@@ -23,7 +23,7 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     private final int payment;
 
     public HighValueBountyIntel(HighValueBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
+        super(bountyEntity, bountyEntity.getMissionType(), campaignFleetAPI, personAPI, sectorEntityToken);
         this.bountyEntity = bountyEntity;
         this.payment = bountyEntity.getBaseReward();
     }
@@ -58,7 +58,7 @@ public class HighValueBountyIntel extends BaseBountyIntel {
         }
 
         if (isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != person) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0);
             cleanUp(!fleet.isInCurrentLocation());
         }
     }

@@ -11,8 +11,8 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import org.apache.log4j.Logger;
 
 import java.util.HashSet;
@@ -22,13 +22,13 @@ import java.util.Set;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class SkirmishBountyManager extends BaseEventManager {
-    private final Set<String> activeFactionBountyList = new HashSet<>();
     public static final String FLEET_NAME = "Skirmisher Fleet";
     public static final String FLEET_ACTION_TEXT = "practicing military maneuvers";
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
     public static final String BOUNTY_ACTIVE_AT_KEY = "$bountiesExpanded_skirmishBountyActive_";
     public static final String SKIRMISH_BOUNTY_FLEET_KEY = "$bountiesExpanded_skirmishBountyFleet";
     public static final Logger log = Global.getLogger(SkirmishBountyManager.class);
+    private final Set<String> activeFactionBountyList = new HashSet<>();
 
     public SkirmishBountyManager() {
         super();

@@ -6,6 +6,8 @@ import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.impl.campaign.shared.ReputationChangeTracker;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyInteractionDialogPlugin;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyEntity;
@@ -35,6 +37,12 @@ public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
             ReputationChangeTracker repChangeTracker = SharedData.getData().getPlayerActivityTracker().getRepChangeTracker();
             float lastValue = repChangeTracker.getDataFor(skirmishBountyEntity.getTargetedFaction().getId()).getLastValue();
             skirmishBountyEntity.setTargetRepBeforeBattle(lastValue);
+        }
+        if (interactionTarget.getMemoryWithoutUpdate().contains(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY)) {
+            AssassinationBountyEntity assassinationBountyEntity = (AssassinationBountyEntity) interactionTarget.getMemoryWithoutUpdate().get(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY);
+            ReputationChangeTracker repChangeTracker = SharedData.getData().getPlayerActivityTracker().getRepChangeTracker();
+            float lastValue = repChangeTracker.getDataFor(assassinationBountyEntity.getTargetedFaction().getId()).getLastValue();
+            assassinationBountyEntity.setTargetRepBeforeBattle(lastValue);
         }
         return null;
     }
