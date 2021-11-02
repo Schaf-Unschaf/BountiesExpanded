@@ -21,7 +21,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassin
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.List;
 import java.util.Set;
@@ -30,14 +30,13 @@ import static de.schafunschaf.bountiesexpanded.ExternalDataSupplier.*;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
-
+@Log4j
 public class BountiesExpandedPlugin extends BaseModPlugin {
     public static final String DEFAULT_BLACKLIST_FILE = "data/config/bountiesExpanded/default_blacklist.json";
     public static final String SETTINGS_FILE = "bounties_expanded_settings.ini";
     public static final String NAME_STRINGS_FILE = "data/config/bountiesExpanded/name_strings.json";
     public static final String VAYRA_UNIQUE_BOUNTIES_FILE = "data/config/vayraBounties/unique_bounty_data.csv";
     public static final String RARE_FLAGSHIPS_FILE = "data/config/vayraBounties/rare_flagships.csv";
-    public static final Logger log = Global.getLogger(BountiesExpandedPlugin.class);
 
     public static void prepareForUpdate() {
         Settings.PREPARE_UPDATE = true;
@@ -148,7 +147,7 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
             Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
         }
 
-        if (Settings.HIGH_VALUE_BOUNTY_ACTIVE) addHVBRevengeManager();
+        if (Settings.HIGH_VALUE_BOUNTY_REVENGE_ACTIVE) addHVBRevengeManager();
         else {
             uninstallManager(HVBRevengeManager.getInstance());
             Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);

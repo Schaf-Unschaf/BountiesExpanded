@@ -13,7 +13,7 @@ import com.fs.starfarer.api.impl.campaign.ids.ShipRoles;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.market.MarketUtils;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,9 +22,8 @@ import java.util.Random;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
+@Log4j
 public class HighValueBountyData {
-    public static final Logger log = Global.getLogger(HighValueBountyData.class);
-
     public final String bountyId;
     public final int level;
     public final String rank;
@@ -161,7 +160,7 @@ public class HighValueBountyData {
         HighValueBountyManager manager = HighValueBountyManager.getInstance();
         if (isNotNull(getOfferingFaction()) && isNotNull(getTargetedFaction())) {
             if (!Global.getSettings().doesVariantExist(flagshipVariantId)) {
-                HighValueBountyManager.log.warn(bountyId + " has invalid flagship variant ID");
+                log.warn(bountyId + " has invalid flagship variant ID");
                 return false;
             } else {
                 if (Settings.isDebugActive())
@@ -187,7 +186,7 @@ public class HighValueBountyData {
                 return (float) Global.getSector().getPlayerFleet().getFleetPoints() * 1.33F >= (float) this.neverSpawnBeforeFleetPoints;
             }
         } else {
-            HighValueBountyManager.log.warn(this.bountyId + " has invalid factionId or bountyFactionId");
+            log.warn(this.bountyId + " has invalid factionId or bountyFactionId");
             return false;
         }
     }

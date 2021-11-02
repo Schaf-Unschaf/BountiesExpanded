@@ -16,17 +16,17 @@ import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.Random;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Log4j
 public class AssassinationBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_assassinationBountyManager";
     public static final String ASSASSINATION_BOUNTY_FLEET_KEY = "$bountiesExpanded_assassinationBountyFleet";
     public static final String ASSASSINATION_BOUNTY_RARE_SHIP_KEY = "$bountiesExpanded_assassinationBountyFleet_rareFlagship";
-    public static final Logger log = Global.getLogger(AssassinationBountyManager.class);
 
     public AssassinationBountyManager() {
         super();

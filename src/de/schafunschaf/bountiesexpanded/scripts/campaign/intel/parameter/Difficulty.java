@@ -1,9 +1,11 @@
 package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter;
 
 import com.fs.starfarer.api.util.WeightedRandomPicker;
+import lombok.Getter;
 
 import java.awt.*;
 
+@Getter
 public final class Difficulty {
 
     public static final Difficulty EASY = new Difficulty(
@@ -49,25 +51,5 @@ public final class Difficulty {
         picker.add(CHALLENGING, 2);
         picker.add(HARD, 1);
         return picker.pick();
-    }
-
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public String getShortDescriptionAnOrA() {
-        return shortDescriptionAnOrA;
-    }
-
-    public float getModifier() {
-        return modifier;
-    }
-
-    public int getFlatModifier() {
-        return flatModifier;
-    }
-
-    public Color getColor() {
-        return color;
     }
 }

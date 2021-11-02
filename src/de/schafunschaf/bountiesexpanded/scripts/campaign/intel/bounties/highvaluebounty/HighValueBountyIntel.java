@@ -14,10 +14,12 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import lombok.Getter;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Getter
 public class HighValueBountyIntel extends BaseBountyIntel {
     private final HighValueBountyEntity bountyEntity;
     private final int payment;
@@ -32,7 +34,7 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean isFlagshipAlive = fleet.getFlagship() == bountyEntity.flagship;
+        boolean isFlagshipAlive = fleet.getFlagship() == bountyEntity.getFlagship();
 
         if (isDone || isNotInvolved || isFlagshipAlive) {
             return;
@@ -73,10 +75,6 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     protected void cleanUpFleetAndEndIfNecessary() {
         super.cleanUpFleetAndEndIfNecessary();
         HighValueBountyManager.getInstance().removeBountyFromActiveList(bountyEntity.getBountyId());
-    }
-
-    public HighValueBountyEntity getEntity() {
-        return bountyEntity;
     }
 
     @Override

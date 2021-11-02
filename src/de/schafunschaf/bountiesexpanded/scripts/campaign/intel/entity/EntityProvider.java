@@ -46,7 +46,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcrimi
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.*;
 
@@ -56,8 +56,8 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 /**
  * A convenience class for providing supported bounties
  */
+@Log4j
 public class EntityProvider {
-    public static final Logger log = Global.getLogger(EntityProvider.class);
     private static final String NO_OFFERING_FACTION = "BountiesExpanded: failed to pick valid offering faction";
     private static final String NO_TARGETED_FACTION = "BountiesExpanded: failed to pick valid targeted faction";
     private static final String NO_COMMANDER = "BountiesExpanded: failed to generate fleet commander for faction '%s'";
@@ -304,6 +304,7 @@ public class EntityProvider {
     public static WarCriminalEntity warCriminalEntity() {
         MissionType missionType = MissionType.getRandomMissionType();
         Difficulty difficulty = Difficulty.randomDifficulty();
+        float fractionToKill = missionType == MissionType.SKIRMISH ? (50 - new Random().nextInt(26)) / 100f : 0;
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier(), 100f);
         int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier());
@@ -351,6 +352,6 @@ public class EntityProvider {
             }
         }
 
-        return new WarCriminalEntity(bountyCredits, level, difficulty, targetedFaction, offeringFaction, bountyFleet, fleetCommander, hideout, missionType);
+        return new WarCriminalEntity(bountyCredits, level, fractionToKill, difficulty, targetedFaction, offeringFaction, bountyFleet, fleetCommander, hideout, missionType);
     }
 }

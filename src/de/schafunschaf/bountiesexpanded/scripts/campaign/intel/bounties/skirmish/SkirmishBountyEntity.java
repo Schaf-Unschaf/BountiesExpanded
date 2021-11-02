@@ -20,6 +20,8 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEnti
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
 
+@Getter
+@Setter
 public class SkirmishBountyEntity implements BountyEntity {
     private static final String SKIRMISH_ICON = "bountiesExpanded_skirmish";
     private final int baseReward;
@@ -46,19 +50,21 @@ public class SkirmishBountyEntity implements BountyEntity {
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
     private final PersonAPI person;
-    private final SectorEntityToken hideout;
+    private final SectorEntityToken startingPoint;
+    private final SectorEntityToken endingPoint = null;
     private final String[] creditsPerSize;
     private final Map<HullSize, Integer> numFleetMembers;
+    private final MissionType missionType = MissionType.SKIRMISH;
     private float targetRepBeforeBattle = 0;
 
-    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, float fractionToKill, Difficulty difficulty, int level) {
+    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, float fractionToKill, Difficulty difficulty, int level) {
         this.baseReward = baseReward;
         this.fractionToKill = fractionToKill;
         this.offeringFaction = offeringFaction;
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
         this.person = person;
-        this.hideout = hideout;
+        this.startingPoint = startingPoint;
         this.difficulty = difficulty;
         this.level = level;
         this.baseShipBounty = (int) FormattingTools.roundWholeNumber((Settings.SKIRMISH_BASE_SHIP_BOUNTY * (1 - fractionToKill)), 1);
@@ -88,36 +94,6 @@ public class SkirmishBountyEntity implements BountyEntity {
     }
 
     @Override
-    public FactionAPI getOfferingFaction() {
-        return offeringFaction;
-    }
-
-    @Override
-    public FactionAPI getTargetedFaction() {
-        return targetedFaction;
-    }
-
-    @Override
-    public CampaignFleetAPI getFleet() {
-        return fleet;
-    }
-
-    @Override
-    public PersonAPI getPerson() {
-        return person;
-    }
-
-    @Override
-    public SectorEntityToken getStartingPoint() {
-        return hideout;
-    }
-
-    @Override
-    public SectorEntityToken getEndingPoint() {
-        return null;
-    }
-
-    @Override
     public String getIcon() {
         return Global.getSettings().getSpriteName("intel", SKIRMISH_ICON);
     }
@@ -136,66 +112,6 @@ public class SkirmishBountyEntity implements BountyEntity {
             }
         }
         return "Military Bounty - Skirmish";
-    }
-
-    @Override
-    public MissionType getMissionType() {
-        return null;
-    }
-
-    @Override
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    @Override
-    public int getBaseReward() {
-        return baseReward;
-    }
-
-    @Override
-    public int getLevel() {
-        return level;
-    }
-
-    public float getTargetRepBeforeBattle() {
-        return targetRepBeforeBattle;
-    }
-
-    public void setTargetRepBeforeBattle(float targetRepBeforeBattle) {
-        this.targetRepBeforeBattle = targetRepBeforeBattle;
-    }
-
-    public String[] getCreditsPerSize() {
-        return creditsPerSize;
-    }
-
-    public float getFractionToKill() {
-        return fractionToKill;
-    }
-
-    public int getMaxPayout() {
-        return maxPayout;
-    }
-
-    public int getBaseShipBounty() {
-        return baseShipBounty;
-    }
-
-    public int getShipsToDestroy() {
-        return shipsToDestroy;
-    }
-
-    public int getMaxFleetSizeForCompletion() {
-        return maxFleetSizeForCompletion;
-    }
-
-    public Map<HullSize, Integer> getNumFleetMembers() {
-        return numFleetMembers;
-    }
-
-    public SectorEntityToken getHideout() {
-        return hideout;
     }
 
     @Override

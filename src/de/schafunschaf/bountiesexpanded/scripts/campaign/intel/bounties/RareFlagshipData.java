@@ -1,7 +1,10 @@
 package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties;
 
+import lombok.Getter;
+
 import java.util.Set;
 
+@Getter
 public class RareFlagshipData {
     private final String flagshipID;
     private final String flagshipVariantID;
@@ -13,22 +16,6 @@ public class RareFlagshipData {
         this.flagshipVariantID = flagshipVariantID;
         this.factionIDs = factionIDs;
         this.weight = weight;
-    }
-
-    public String getFlagshipID() {
-        return flagshipID;
-    }
-
-    public String getFlagshipVariantID() {
-        return flagshipVariantID;
-    }
-
-    public Set<String> getFactionIDs() {
-        return factionIDs;
-    }
-
-    public float getWeight() {
-        return weight;
     }
 }
 

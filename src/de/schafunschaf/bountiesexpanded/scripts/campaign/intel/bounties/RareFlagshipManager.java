@@ -11,7 +11,7 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.ExternalDataSupplier;
 import de.schafunschaf.bountiesexpanded.plugins.BountiesExpandedPlugin;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,8 +21,8 @@ import java.util.Set;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Log4j
 public class RareFlagshipManager {
-    public static final Logger log = Global.getLogger(RareFlagshipManager.class);
     private static final Map<String, RareFlagshipData> rareFlagshipData = new HashMap<>();
 
     public static void loadRareFlagshipData() {

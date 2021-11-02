@@ -13,7 +13,9 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
+import lombok.Getter;
 
 import java.util.*;
 
@@ -22,8 +24,8 @@ import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdated
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Getter
 public class SkirmishBountyIntel extends BaseBountyIntel {
-    private final int maxFleetSizeForCompletion;
     private final SkirmishBountyEntity bountyEntity;
     private final int baseShipBounty;
     private int payment;
@@ -35,11 +37,11 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
     public SkirmishBountyIntel(SkirmishBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
         super(bountyEntity, bountyEntity.getMissionType(), campaignFleetAPI, personAPI, sectorEntityToken);
         this.duration = new Random().nextInt((Settings.SKIRMISH_MAX_DURATION - Settings.SKIRMISH_MIN_DURATION) + 1) + Settings.SKIRMISH_MIN_DURATION;
-        Misc.makeImportant(fleet, "pbe", duration + 20f);
         this.maxFleetSizeForCompletion = bountyEntity.getMaxFleetSizeForCompletion();
         this.bountyEntity = bountyEntity;
         this.baseShipBounty = bountyEntity.getBaseShipBounty();
         this.payment = bountyEntity.getBaseReward();
+        Misc.makeImportant(fleet, "pbe", duration + 20f);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
 
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean hasLostEnoughShips = fleet.getNumShips() <= maxFleetSizeForCompletion;
+        boolean isNotCompleted = !MissionType.haveObjectivesBeenCompleted(this, fleet, battle);
 
         if (battle.isPlayerInvolved()) {
             numBattles++;
@@ -70,7 +72,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
                 increaseLossByOne(loss, destroyedShips);
         }
 
-        if (isDone || isNotInvolved || !hasLostEnoughShips)
+        if (isDone || isNotInvolved || isNotCompleted)
             return;
 
         playerInvolvement = Math.round((playerInvolvement / numBattles) * 100);
@@ -169,14 +171,14 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
 
     @Override
     protected void cleanUp(boolean onlyIfImportant) {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getStartingPoint().getMarket().getName());
         SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
         super.cleanUp(onlyIfImportant);
     }
 
     @Override
     public void endImmediately() {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
+        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getStartingPoint().getMarket().getName());
         SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
         super.endImmediately();
     }

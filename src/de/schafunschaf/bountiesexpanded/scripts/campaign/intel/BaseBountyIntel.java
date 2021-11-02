@@ -16,6 +16,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyRe
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import lombok.Getter;
 
 import java.awt.*;
 import java.util.Set;
@@ -23,6 +24,7 @@ import java.util.Set;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Getter
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
     protected final Difficulty difficulty;
     protected final CampaignFleetAPI fleet;
@@ -30,6 +32,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     protected final PersonAPI person;
     protected final SectorEntityToken hideout;
     protected final MissionType missionType;
+    protected int maxFleetSizeForCompletion;
     protected float duration;
     protected float elapsedDays = 0f;
     protected BountyResult result;
@@ -42,6 +45,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         this.person = personAPI;
         this.duration = 100f;
         this.difficulty = entity.getDifficulty();
+        this.maxFleetSizeForCompletion = bountyEntity.getMaxFleetSizeForCompletion();
 
         fleet.addEventListener(this);
         Global.getSector().getIntelManager().queueIntel(this);
@@ -106,42 +110,6 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0);
             cleanUp(true);
         }
-    }
-
-    public CampaignFleetAPI getFleet() {
-        return fleet;
-    }
-
-    public BountyEntity getEntity() {
-        return entity;
-    }
-
-    public PersonAPI getPerson() {
-        return person;
-    }
-
-    public SectorEntityToken getHideout() {
-        return hideout;
-    }
-
-    public float getElapsedDays() {
-        return elapsedDays;
-    }
-
-    public float getDuration() {
-        return duration;
-    }
-
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    public MissionType getMissionType() {
-        return missionType;
-    }
-
-    public BountyResult getResult() {
-        return result;
     }
 
     public void addDays(TooltipMakerAPI info, String after, float days, Color c) {

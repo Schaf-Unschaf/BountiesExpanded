@@ -14,6 +14,8 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyRe
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.*;
 
@@ -22,6 +24,8 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
 
+@Getter
+@Setter
 public class WarCriminalEntity implements BountyEntity {
     private static final String WAR_CRIMINAL_ICON = "bountiesExpanded_assassination";
     private final int baseReward;
@@ -33,10 +37,12 @@ public class WarCriminalEntity implements BountyEntity {
     private final PersonAPI person;
     private final SectorEntityToken startingPoint;
     private final MissionType missionType;
+    private final int shipsToDestroy;
+    private final int maxFleetSizeForCompletion;
     private float targetRepBeforeBattle = 0;
     private WarCriminalIntel intel;
 
-    public WarCriminalEntity(int baseReward, int level, Difficulty difficulty, FactionAPI targetedFaction, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, MissionType missionType) {
+    public WarCriminalEntity(int baseReward, int level, float fractionToKill, Difficulty difficulty, FactionAPI targetedFaction, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, MissionType missionType) {
         this.baseReward = baseReward;
         this.level = level;
         this.difficulty = difficulty;
@@ -46,6 +52,8 @@ public class WarCriminalEntity implements BountyEntity {
         this.person = person;
         this.startingPoint = startingPoint;
         this.missionType = missionType;
+        this.shipsToDestroy = Math.max((int) (fleet.getFleetData().getMembersListCopy().size() * fractionToKill), 1);
+        this.maxFleetSizeForCompletion = fleet.getNumShips() - shipsToDestroy;
     }
 
     @Override
@@ -130,47 +138,6 @@ public class WarCriminalEntity implements BountyEntity {
         }
     }
 
-    public float getTargetRepBeforeBattle() {
-        return targetRepBeforeBattle;
-    }
-
-    public void setTargetRepBeforeBattle(float targetRepBeforeBattle) {
-        this.targetRepBeforeBattle = targetRepBeforeBattle;
-    }
-
-    public WarCriminalIntel getIntel() {
-        return intel;
-    }
-
-    public void setIntel(WarCriminalIntel intel) {
-        this.intel = intel;
-    }
-
-    @Override
-    public FactionAPI getOfferingFaction() {
-        return offeringFaction;
-    }
-
-    @Override
-    public FactionAPI getTargetedFaction() {
-        return targetedFaction;
-    }
-
-    @Override
-    public CampaignFleetAPI getFleet() {
-        return fleet;
-    }
-
-    @Override
-    public PersonAPI getPerson() {
-        return person;
-    }
-
-    @Override
-    public SectorEntityToken getStartingPoint() {
-        return startingPoint;
-    }
-
     @Override
     public SectorEntityToken getEndingPoint() {
         return null;
@@ -195,24 +162,5 @@ public class WarCriminalEntity implements BountyEntity {
             }
         }
         return String.format("Military Contract - %s", getMissionType().getMissionTypeUCFirst());
-    }
-
-    @Override
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    @Override
-    public int getBaseReward() {
-        return baseReward;
-    }
-
-    @Override
-    public int getLevel() {
-        return level;
-    }
-
-    public MissionType getMissionType() {
-        return missionType;
     }
 }

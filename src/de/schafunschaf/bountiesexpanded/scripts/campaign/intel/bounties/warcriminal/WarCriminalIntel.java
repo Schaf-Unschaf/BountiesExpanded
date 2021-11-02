@@ -7,9 +7,11 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import lombok.Getter;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 
+@Getter
 public class WarCriminalIntel extends BaseBountyIntel {
     private final WarCriminalEntity bountyEntity;
     private final int payment;
@@ -40,7 +42,7 @@ public class WarCriminalIntel extends BaseBountyIntel {
         if (playerInvolvement <= 0) {
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null, 0, 0f, null);
             cleanUp(true);
-
+            return;
         }
     }
 }

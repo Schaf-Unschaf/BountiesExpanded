@@ -5,7 +5,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollect
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,9 +16,8 @@ import java.util.*;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ParsingTools.parseJSONArray;
 
+@Log4j
 public class ExternalDataSupplier {
-    public static final Logger log = Global.getLogger(ExternalDataSupplier.class);
-
     public static void loadSettings(String fileName) {
         try {
             JSONObject settings = Global.getSettings().loadJSON(fileName);

@@ -38,6 +38,8 @@ public interface BountyEntity {
 
     int getLevel();
 
+    int getMaxFleetSizeForCompletion();
+
     void addBulletPoints(BaseBountyIntel plugin, TooltipMakerAPI info, ListInfoMode mode);
 
     void createSmallDescription(BaseBountyIntel plugin, TooltipMakerAPI info, float width, float height);

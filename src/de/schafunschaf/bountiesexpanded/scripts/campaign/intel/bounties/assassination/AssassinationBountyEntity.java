@@ -19,6 +19,8 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEnti
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.aOrAn;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
 
+@Getter
+@Setter
 public class AssassinationBountyEntity implements BountyEntity {
     public static final Object ENTERED_HYPERSPACE = new Object();
     private static final String ASSASSINATION_ICON = "bountiesExpanded_assassination";
@@ -72,30 +76,6 @@ public class AssassinationBountyEntity implements BountyEntity {
     }
 
     @Override
-    public FactionAPI getTargetedFaction() {
-        return targetedFaction;
-    }
-
-    @Override
-    public CampaignFleetAPI getFleet() {
-        return fleet;
-    }
-
-    @Override
-    public PersonAPI getPerson() {
-        return person;
-    }
-
-    @Override
-    public SectorEntityToken getStartingPoint() {
-        return startingPoint;
-    }
-
-    public SectorEntityToken getEndingPoint() {
-        return endingPoint;
-    }
-
-    @Override
     public String getIcon() {
         return Global.getSettings().getSpriteName("intel", ASSASSINATION_ICON);
     }
@@ -119,27 +99,8 @@ public class AssassinationBountyEntity implements BountyEntity {
     }
 
     @Override
-    public MissionType getMissionType() {
-        return missionType;
-    }
-
-    @Override
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    @Override
-    public int getBaseReward() {
-        return baseReward;
-    }
-
-    public int getBonusReward() {
-        return bonusReward;
-    }
-
-    @Override
-    public int getLevel() {
-        return level;
+    public int getMaxFleetSizeForCompletion() {
+        return 0;
     }
 
     @Override
@@ -322,14 +283,6 @@ public class AssassinationBountyEntity implements BountyEntity {
         intel.sendUpdateIfPlayerHasIntel(ENTERED_HYPERSPACE, true);
     }
 
-    public AssassinationBountyIntel getIntel() {
-        return intel;
-    }
-
-    public void setIntel(AssassinationBountyIntel intel) {
-        this.intel = intel;
-    }
-
     private List<FleetMemberAPI> getFlagshipCopy() {
         List<FleetMemberAPI> copyList = new ArrayList<>();
 
@@ -348,9 +301,5 @@ public class AssassinationBountyEntity implements BountyEntity {
         if (deflate)
             fleet.deflate();
         return copyList;
-    }
-
-    public void setTargetRepBeforeBattle(float targetRepBeforeBattle) {
-        this.targetRepBeforeBattle = targetRepBeforeBattle;
     }
 }

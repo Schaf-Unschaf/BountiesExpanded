@@ -14,6 +14,7 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdated
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Getter
 public class AssassinationBountyIntel extends BaseBountyIntel {
     private final AssassinationBountyEntity bountyEntity;
     private final int payment;
@@ -118,9 +120,5 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
 
     public Object getListInfo() {
         return getListInfoParam();
-    }
-
-    public float getTravelDistance() {
-        return travelDistance;
     }
 }

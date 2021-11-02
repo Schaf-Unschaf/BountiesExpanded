@@ -23,7 +23,8 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyRe
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
-import org.apache.log4j.Logger;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j;
 
 import java.awt.*;
 import java.util.List;
@@ -32,24 +33,30 @@ import java.util.Random;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Log4j
+@Getter
 public class HighValueBountyEntity implements BountyEntity {
-    public static final Logger log = Global.getLogger(HighValueBountyEntity.class);
-    final String shipType;
-    final FleetMemberAPI flagship;
+    private final String shipType;
+    private final FleetMemberAPI flagship;
     private final String bountyId;
     private final int baseReward;
+    private final int level = 69;
     private final String intelText;
     private final FactionAPI offeringFaction;
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
     private final PersonAPI person;
-    private final SectorEntityToken hideout;
+    private final SectorEntityToken startingPoint;
+    private final SectorEntityToken endingPoint = null;
+    private final int maxFleetSizeForCompletion = 0;
     private final float repReward;
-    String levelDesc;
-    String skillDesc;
-    String fleetDesc;
+    private final Difficulty difficulty = Difficulty.BOSS;
+    private final MissionType missionType = MissionType.ASSASSINATION;
+    private String levelDesc;
+    private String skillDesc;
+    private String fleetDesc;
 
-    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken hideout, String intelText, String bountyId) {
+    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, String intelText, String bountyId) {
         this.baseReward = baseReward;
         this.repReward = repReward;
         this.intelText = intelText;
@@ -57,45 +64,11 @@ public class HighValueBountyEntity implements BountyEntity {
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
         this.person = person;
-        this.hideout = hideout;
+        this.startingPoint = startingPoint;
         this.bountyId = bountyId;
         this.flagship = fleet.getFlagship();
         this.shipType = flagship.getHullSpec().getHullNameWithDashClass() + " " + flagship.getHullSpec().getDesignation().toLowerCase();
         Misc.makeImportant(fleet, "pbe", 69420f);
-    }
-
-    public String getBountyId() {
-        return bountyId;
-    }
-
-    @Override
-    public FactionAPI getOfferingFaction() {
-        return offeringFaction;
-    }
-
-    @Override
-    public FactionAPI getTargetedFaction() {
-        return targetedFaction;
-    }
-
-    @Override
-    public CampaignFleetAPI getFleet() {
-        return fleet;
-    }
-
-    @Override
-    public PersonAPI getPerson() {
-        return person;
-    }
-
-    @Override
-    public SectorEntityToken getStartingPoint() {
-        return hideout;
-    }
-
-    @Override
-    public SectorEntityToken getEndingPoint() {
-        return null;
     }
 
     @Override
@@ -117,30 +90,6 @@ public class HighValueBountyEntity implements BountyEntity {
             }
         }
         return "High Value Bounty - " + person.getNameString();
-    }
-
-    @Override
-    public MissionType getMissionType() {
-        return null;
-    }
-
-    @Override
-    public Difficulty getDifficulty() {
-        return Difficulty.BOSS;
-    }
-
-    @Override
-    public int getBaseReward() {
-        return baseReward;
-    }
-
-    public float getRepReward() {
-        return repReward;
-    }
-
-    @Override
-    public int getLevel() {
-        return 69;
     }
 
     @Override
@@ -202,9 +151,9 @@ public class HighValueBountyEntity implements BountyEntity {
         addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
         if (isNull(result)) {
-            if (isNotNull(hideout)) {
-                SectorEntityToken fake = hideout.getContainingLocation().createToken(0.0F, 0.0F);
-                fake.setOrbit(Global.getFactory().createCircularOrbit(hideout, 0.0F, 1000.0F, 100.0F));
+            if (isNotNull(startingPoint)) {
+                SectorEntityToken fake = startingPoint.getContainingLocation().createToken(0.0F, 0.0F);
+                fake.setOrbit(Global.getFactory().createCircularOrbit(startingPoint, 0.0F, 1000.0F, 100.0F));
                 String loc = BreadcrumbSpecial.getLocatedString(fake);
                 loc = loc.replaceAll("orbiting", "hiding out near");
                 loc = loc.replaceAll("located in", "hiding out in");
@@ -222,10 +171,6 @@ public class HighValueBountyEntity implements BountyEntity {
             info.addSectionHeading("Fleet Intel", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
             DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, 3, true);
         }
-    }
-
-    public SectorEntityToken getHideout() {
-        return hideout;
     }
 
     private String getTargetDesc() {

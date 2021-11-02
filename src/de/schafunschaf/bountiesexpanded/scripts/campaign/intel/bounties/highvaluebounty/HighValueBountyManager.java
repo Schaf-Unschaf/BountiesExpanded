@@ -16,18 +16,18 @@ import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.*;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
+@Log4j
 public class HighValueBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_highValueBountyManager";
     public static final String HIGH_VALUE_BOUNTY_FLEET_KEY = "$bountiesExpanded_highValueBounty";
     public static final Map<String, HighValueBountyData> highValueBountyData = new HashMap<>();
-    public static final Logger log = Global.getLogger(HighValueBountyManager.class);
     private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
     private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     private final Set<String> highValueBountyDataActive = new HashSet<>();
@@ -156,7 +156,7 @@ public class HighValueBountyManager extends BaseEventManager {
         }
 
         CampaignFleetAPI fleet = highValueBountyEntity.getFleet();
-        SectorEntityToken hideout = highValueBountyEntity.getHideout();
+        SectorEntityToken hideout = highValueBountyEntity.getStartingPoint();
         String bountyId = highValueBountyEntity.getBountyId();
         HighValueBountyData bountyData = getBounty(bountyId);
         String randomActionText = NameStringCollection.getFleetActionText();
