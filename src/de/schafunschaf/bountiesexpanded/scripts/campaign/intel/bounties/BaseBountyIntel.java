@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
@@ -11,11 +11,9 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 
 import java.awt.*;
@@ -28,51 +26,49 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEventListener {
     protected final Difficulty difficulty;
     protected final CampaignFleetAPI fleet;
-    protected final BountyEntity entity;
+    protected final BountyEntity bountyEntity;
     protected final PersonAPI person;
-    protected final SectorEntityToken hideout;
-    protected final MissionType missionType;
+    protected final SectorEntityToken startingPoint;
+    protected final MissionHandler missionHandler;
     protected int maxFleetSizeForCompletion;
     protected float duration;
     protected float elapsedDays = 0f;
     protected BountyResult result;
 
-    public BaseBountyIntel(BountyEntity bountyEntity, MissionType missionType, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        this.entity = bountyEntity;
-        this.missionType = missionType;
+    public BaseBountyIntel(BountyEntity bountyEntity, MissionHandler missionHandler, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
+        this.bountyEntity = bountyEntity;
+        this.missionHandler = missionHandler;
         this.fleet = campaignFleetAPI;
-        this.hideout = sectorEntityToken;
+        this.startingPoint = sectorEntityToken;
         this.person = personAPI;
         this.duration = 100f;
-        this.difficulty = entity.getDifficulty();
-        this.maxFleetSizeForCompletion = bountyEntity.getMaxFleetSizeForCompletion();
+        this.difficulty = this.bountyEntity.getDifficulty();
 
         fleet.addEventListener(this);
         Global.getSector().getIntelManager().queueIntel(this);
     }
 
-    @Deprecated
     @Override
     public void createIntelInfo(TooltipMakerAPI info, ListInfoMode mode) {
-        info.addPara(entity.getTitle(result), getTitleColor(mode), 0f);
-        entity.addBulletPoints(this, info, mode);
+        info.addPara(bountyEntity.getTitle(result), getTitleColor(mode), 0f);
+        bountyEntity.addBulletPoints(this, info, mode);
     }
 
     @Override
     public void createSmallDescription(TooltipMakerAPI info, float width, float height) {
-        entity.createSmallDescription(this, info, width, height);
+        bountyEntity.createSmallDescription(this, info, width, height);
         if (Settings.isDebugActive() || isNotNull(result))
             addDeleteButton(info, width);
     }
 
     @Override
     public FactionAPI getFactionForUIColors() {
-        return entity.getOfferingFaction();
+        return bountyEntity.getOfferingFaction();
     }
 
     @Override
     public String getIcon() {
-        return entity.getIcon();
+        return bountyEntity.getIcon();
     }
 
     @Override
@@ -86,12 +82,12 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
     @Override
     public SectorEntityToken getMapLocation(SectorMapAPI map) {
-        return hideout;
+        return startingPoint;
     }
 
     @Override
     public String getSmallDescriptionTitle() {
-        return entity.getTitle(result);
+        return bountyEntity.getTitle(result);
     }
 
     @Override
@@ -112,8 +108,9 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         }
     }
 
-    public void addDays(TooltipMakerAPI info, String after, float days, Color c) {
-        super.addDays(info, after, days, c);
+    @Override
+    public void addDays(TooltipMakerAPI info, String after, float days, Color c, float pad) {
+        super.addDays(info, after, days, c, pad);
     }
 
     @Override
@@ -131,6 +128,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         super.indent(info);
     }
 
+    @Override
     public Color getBulletColorForMode(ListInfoMode mode) {
         return super.getBulletColorForMode(mode);
     }
@@ -176,8 +174,8 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             Misc.makeUnimportant(fleet, "pbe");
             fleet.clearAssignments();
 
-            if (!Settings.PREPARE_UPDATE && hideout != null) {
-                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, hideout, 1000000f, null);
+            if (!Settings.prepareUpdate && startingPoint != null) {
+                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, startingPoint, 1000000f, null);
             } else {
                 fleet.despawn();
             }

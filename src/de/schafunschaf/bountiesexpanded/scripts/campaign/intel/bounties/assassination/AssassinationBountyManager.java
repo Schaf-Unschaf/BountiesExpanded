@@ -26,7 +26,6 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 public class AssassinationBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_assassinationBountyManager";
     public static final String ASSASSINATION_BOUNTY_FLEET_KEY = "$bountiesExpanded_assassinationBountyFleet";
-    public static final String ASSASSINATION_BOUNTY_RARE_SHIP_KEY = "$bountiesExpanded_assassinationBountyFleet_rareFlagship";
 
     public AssassinationBountyManager() {
         super();
@@ -40,20 +39,20 @@ public class AssassinationBountyManager extends BaseEventManager {
 
     @Override
     protected int getMinConcurrent() {
-        return Settings.ASSASSINATION_MIN_BOUNTIES;
+        return Settings.assassinationMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
-        return Settings.ASSASSINATION_MAX_BOUNTIES;
+        return Settings.assassinationMaxBounties;
     }
 
     @Override
     protected EveryFrameScript createEvent() {
-        if (Settings.ASSASSINATION_ACTIVE) {
+        if (Settings.assassinationActive) {
             if (Settings.isDebugActive())
                 return createAssassinationBountyEvent();
-            if (new Random().nextFloat() <= Settings.ASSASSINATION_SPAWN_CHANCE)
+            if (new Random().nextFloat() <= Settings.assassinationSpawnChance)
                 return createAssassinationBountyEvent();
         }
 
@@ -129,7 +128,7 @@ public class AssassinationBountyManager extends BaseEventManager {
 
         upgradeShips(bountyFleet);
 
-        return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getPerson(), assassinationBountyEntity.getStartingPoint());
+        return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getTargetedPerson(), assassinationBountyEntity.getStartingPoint());
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {

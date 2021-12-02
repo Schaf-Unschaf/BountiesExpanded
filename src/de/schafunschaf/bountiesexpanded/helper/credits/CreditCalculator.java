@@ -16,7 +16,7 @@ public class CreditCalculator {
     }
 
     public static int getRewardByFP(float fleetPoints, float multiplier) {
-        return FormattingTools.roundWholeNumber((int) (Settings.BASE_REWARD_PER_FP * fleetPoints * multiplier), 3);
+        return FormattingTools.roundWholeNumber((int) (Settings.baseRewardPerFP * fleetPoints * multiplier), 3);
     }
 
     private static int calculate(int level, float multiplier) {

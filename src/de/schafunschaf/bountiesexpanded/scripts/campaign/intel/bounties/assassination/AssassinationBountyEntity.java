@@ -8,16 +8,18 @@ import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.fleets.RouteLocationCalculator;
+import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
+import de.schafunschaf.bountiesexpanded.helper.ui.TooltipAPIUtils;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.createShipListForIntel;
-import static de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils.generateFancyFleetDescription;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.aOrAn;
@@ -38,16 +38,16 @@ import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPl
 @Setter
 public class AssassinationBountyEntity implements BountyEntity {
     public static final Object ENTERED_HYPERSPACE = new Object();
-    private static final String ASSASSINATION_ICON = "bountiesExpanded_assassination";
+    private final String assassinationIcon = "bountiesExpanded_assassination";
     private final int baseReward;
     private final int bonusReward;
     private final int level;
-    private final MissionType missionType;
+    private final MissionHandler missionHandler;
     private final Difficulty difficulty;
 
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
-    private final PersonAPI person;
+    private final PersonAPI targetedPerson;
     private final SectorEntityToken startingPoint;
     private final SectorEntityToken endingPoint;
 
@@ -55,19 +55,24 @@ public class AssassinationBountyEntity implements BountyEntity {
     private float targetRepBeforeBattle = 0;
     private AssassinationBountyIntel intel;
 
-    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionType missionType, Difficulty difficulty, int level) {
-        this.baseReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.ASSASSINATION_BASE_REWARD_MULTIPLIER, 3);
-        this.bonusReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.ASSASSINATION_BONUS_REWARD_MULTIPLIER, 3);
+    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionHandler missionHandler, Difficulty difficulty, int level) {
+        this.baseReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.assassinationBaseRewardMultiplier, 3);
+        this.bonusReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.assassinationBonusRewardMultiplier, 3);
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
-        this.person = person;
+        this.targetedPerson = targetedPerson;
         this.startingPoint = startingPoint;
         this.endingPoint = endingPoint;
-        this.missionType = missionType;
+        this.missionHandler = missionHandler;
         this.difficulty = difficulty;
         this.level = level;
 
         this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 4 + new Random().nextInt(9), 1);
+    }
+
+    @Override
+    public BaseEventManager getBountyManager() {
+        return AssassinationBountyManager.getInstance();
     }
 
     @Override
@@ -76,31 +81,36 @@ public class AssassinationBountyEntity implements BountyEntity {
     }
 
     @Override
+    public PersonAPI getOfferingPerson() {
+        return null;
+    }
+
+    @Override
     public String getIcon() {
-        return Global.getSettings().getSpriteName("intel", ASSASSINATION_ICON);
+        return Global.getSettings().getSpriteName("intel", assassinationIcon);
     }
 
     @Override
     public String getTitle(BountyResult result) {
         if (intel.getListInfo() == ENTERED_HYPERSPACE)
-            return String.format("%s - Target entered Hyperspace", missionType.getMissionTypeUCFirst());
+            return String.format("%s - Target entered Hyperspace", missionHandler.getMissionType().getMissionTypeUCFirst());
         if (isNotNull(result)) {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    return String.format("%s successful", missionType.getMissionTypeUCFirst());
+                    return String.format("%s successful", missionHandler.getMissionType().getMissionTypeUCFirst());
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
                 case END_OTHER:
                 case END_TIME:
-                    return String.format("%s failed", missionType.getMissionTypeUCFirst());
+                    return String.format("%s failed", missionHandler.getMissionType().getMissionTypeUCFirst());
             }
         }
-        return String.format("Private Contract - %s", missionType.getMissionTypeUCFirst());
+        return String.format("Private Contract - %s", missionHandler.getMissionType().getMissionTypeUCFirst());
     }
 
     @Override
-    public int getMaxFleetSizeForCompletion() {
-        return 0;
+    public BaseBountyIntel getBountyIntel() {
+        return intel;
     }
 
     @Override
@@ -114,7 +124,7 @@ public class AssassinationBountyEntity implements BountyEntity {
 
         if (intel.getListInfo() == ENTERED_HYPERSPACE) {
             info.addPara("Target: %s", initPad, bulletColor,
-                    targetedFaction.getBaseUIColor(), person.getNameString());
+                    targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
             info.addPara("Origin: %s", 0f, bulletColor,
                     highlightColor, startingPoint.getStarSystem().getName());
             info.addPara("Destination: %s", 0f, bulletColor,
@@ -136,7 +146,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                     String factionName = startingPoint.getFaction().getDisplayNameWithArticleWithoutArticle();
                     currentLocation = "Near " + aOrAn(factionName) + " " + factionName + " controlled world";
                 } else if (getDifficulty() == Difficulty.MEDIUM) {
-                    String factionName = person.getFaction().getDisplayNameWithArticle();
+                    String factionName = targetedPerson.getFaction().getDisplayNameWithArticle();
                     currentLocation = "Near a world not at war with " + factionName;
                 } else
                     currentLocation = "Unknown";
@@ -146,7 +156,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                 boolean isFleetInHyperspace = (fleet.isInHyperspace() || fleet.isInHyperspaceTransition());
 
                 float travelPad = isFleetInHyperspace ? 10f : 3f;
-                info.addPara("Target: %s", initPad, targetedFaction.getBaseUIColor(), person.getNameString());
+                info.addPara("Target: %s", initPad, targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
                 if (hasBonusReduced)
                     info.addPara("Reward: %s / %s", 3f,
                             new Color[]{highlightColor, Misc.getGrayColor()}, Misc.getDGSCredits(baseReward + remainingBonus), Misc.getDGSCredits(baseReward + bonusReward));
@@ -167,7 +177,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                 }
             } else {
                 info.addPara("Target: %s", initPad, bulletColor,
-                        targetedFaction.getBaseUIColor(), person.getNameString());
+                        targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
 
                 if (!baseBountyIntel.isEnding())
                     info.addPara("Reward: %s", 0f, bulletColor, highlightColor, Misc.getDGSCredits(baseReward + remainingBonus));
@@ -221,12 +231,11 @@ public class AssassinationBountyEntity implements BountyEntity {
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
 
-        info.addImages(width, 128, opad, opad, person.getPortraitSprite(), targetedFaction.getCrest());
         if (isNull(result))
-            info.addRelationshipBar(targetedFaction, width, opad);
+            TooltipAPIUtils.addPersonWithFactionRepBar(info, width, opad, opad, targetedPerson);
         else {
             float targetRepChange = result.targetRepAfterBattle - targetRepBeforeBattle;
-            DescriptionUtils.addRepBarWithChange(info, width, opad, targetedFaction, targetRepChange);
+            TooltipAPIUtils.addRepBarWithChange(info, width, opad, targetedFaction, targetRepChange);
         }
 
         info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
@@ -235,7 +244,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             String voidNet = "VoidNet™";
             info.addPara("Our communications officer decrypted the following message sent over '%s':", opad, highlightColor, voidNet);
             info.addSectionHeading("######  HIGH PRIORITY MESSAGE  ######", Misc.getNegativeHighlightColor(), Color.DARK_GRAY, Alignment.MID, opad);
-            info.addPara(String.format("Requesting immediate %s of specified target. Window of opportunity is short. Generous reward offered. Additional payment available if killed in Hyperspace. Hidden transponder smuggled successfully on board. Will transmit more information once triggered in hyperspace.", missionType.getMissionType()), opad);
+            info.addPara(String.format("Requesting immediate %s of specified target. Window of opportunity is short. Generous reward offered. Additional payment available if killed in Hyperspace. Hidden transponder smuggled successfully on board. Will transmit more information once triggered in hyperspace.", missionHandler.getMissionType()), opad);
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
@@ -247,14 +256,13 @@ public class AssassinationBountyEntity implements BountyEntity {
             info.addPara("The message had an intel file containing the targets ship attached.", opad);
             if (!Settings.isDebugActive())
                 info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipCopy, opad);
-            generateFancyFleetDescription(info, opad, fleet, person);
-            info.addPara("Intercepted communications suggest that " + person.getHisOrHer() + " escort contains roughly %s additional " + singularOrPlural(obfuscatedFleetSize, "ship") + ".",
+            DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
+            info.addPara("Intercepted communications suggest that " + targetedPerson.getHisOrHer() + " escort contains roughly %s additional " + singularOrPlural(obfuscatedFleetSize, "ship") + ".",
                     opad, highlightColor, String.valueOf(obfuscatedFleetSize));
-            info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.",
-                    opad, difficulty.getColor(), difficulty.getShortDescription());
+            DescriptionUtils.addDifficultyText(info, opad, difficulty);
 
             if (Settings.isDebugActive()) {
-                createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 1, false);
+                DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 1, false);
                 info.addPara("SPAWN LOCATION: " + startingPoint.getName(), 0f);
                 info.addPara("DESTINATION: " + endingPoint.getName(), 0f);
             }

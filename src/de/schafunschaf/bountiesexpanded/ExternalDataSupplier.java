@@ -21,26 +21,26 @@ public class ExternalDataSupplier {
     public static void loadSettings(String fileName) {
         try {
             JSONObject settings = Global.getSettings().loadJSON(fileName);
-            Settings.SHEEP_DEBUG = settings.getBoolean("SHEEP_DEBUG");
+            Settings.sheepDebug = settings.getBoolean("SHEEP_DEBUG");
 
-            Settings.SKIRMISH_ACTIVE = settings.getBoolean("SKIRMISH_ACTIVE");
-            Settings.SKIRMISH_SPAWN_CHANCE = settings.getDouble("SKIRMISH_SPAWN_CHANCE");
-            Settings.SKIRMISH_MAX_BOUNTIES = settings.getInt("SKIRMISH_MAX_BOUNTIES");
-            Settings.SKIRMISH_MIN_BOUNTIES = settings.getInt("SKIRMISH_MIN_BOUNTIES");
-            Settings.SKIRMISH_MAX_DURATION = settings.getInt("SKIRMISH_MAX_DURATION");
-            Settings.SKIRMISH_MIN_DURATION = settings.getInt("SKIRMISH_MIN_DURATION");
+            Settings.skirmishActive = settings.getBoolean("SKIRMISH_ACTIVE");
+            Settings.skirmishSpawnChance = settings.getDouble("SKIRMISH_SPAWN_CHANCE");
+            Settings.skirmishMaxBounties = settings.getInt("SKIRMISH_MAX_BOUNTIES");
+            Settings.skirmishMinBounties = settings.getInt("SKIRMISH_MIN_BOUNTIES");
+            Settings.skirmishMaxDuration = settings.getInt("SKIRMISH_MAX_DURATION");
+            Settings.skirmishMinDuration = settings.getInt("SKIRMISH_MIN_DURATION");
 
-            Settings.ASSASSINATION_ACTIVE = settings.getBoolean("ASSASSINATION_ACTIVE");
-            Settings.ASSASSINATION_SPAWN_CHANCE = settings.getDouble("ASSASSINATION_SPAWN_CHANCE");
-            Settings.ASSASSINATION_MIN_TRAVEL_DISTANCE = settings.getDouble("ASSASSINATION_MIN_TRAVEL_DISTANCE");
-            Settings.ASSASSINATION_MAX_BOUNTIES = settings.getInt("ASSASSINATION_MAX_BOUNTIES");
-            Settings.ASSASSINATION_MIN_BOUNTIES = settings.getInt("ASSASSINATION_MIN_BOUNTIES");
+            Settings.assassinationActive = settings.getBoolean("ASSASSINATION_ACTIVE");
+            Settings.assassinationSpawnChance = settings.getDouble("ASSASSINATION_SPAWN_CHANCE");
+            Settings.assassinationMinTravelDistance = settings.getDouble("ASSASSINATION_MIN_TRAVEL_DISTANCE");
+            Settings.assassinationMaxBounties = settings.getInt("ASSASSINATION_MAX_BOUNTIES");
+            Settings.assassinationMinBounties = settings.getInt("ASSASSINATION_MIN_BOUNTIES");
 
-            Settings.HIGH_VALUE_BOUNTY_ACTIVE = settings.getBoolean("HIGH_VALUE_BOUNTY_ACTIVE");
-            Settings.HIGH_VALUE_BOUNTY_MAX_BOUNTIES = settings.getInt("HIGH_VALUE_BOUNTY_MAX_BOUNTIES");
-            Settings.HIGH_VALUE_BOUNTY_SPAWN_CHANCE = settings.getDouble("HIGH_VALUE_BOUNTY_SPAWN_CHANCE");
-            Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS = settings.getDouble("HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS");
-            Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS = settings.getDouble("HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS");
+            Settings.highValueBountyActive = settings.getBoolean("HIGH_VALUE_BOUNTY_ACTIVE");
+            Settings.highValueBountyMaxBounties = settings.getInt("HIGH_VALUE_BOUNTY_MAX_BOUNTIES");
+            Settings.highValueBountySpawnChance = settings.getDouble("HIGH_VALUE_BOUNTY_SPAWN_CHANCE");
+            Settings.highValueBountyMinTimeBetweenSpawns = settings.getDouble("HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS");
+            Settings.highValueBountyMaxTimeBetweenSpawns = settings.getDouble("HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS");
         } catch (IOException | JSONException exception) {
             log.error("BountiesExpanded - Failed to load custom Settings! - " + exception.getMessage());
         }

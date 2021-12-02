@@ -1,8 +1,13 @@
 {
   "graphics": {
     "intel": {
+      "bountiesExpanded_placeholder": "graphics/icons/intel/placeholder.png",
       "bountiesExpanded_assassination": "graphics/icons/intel/assassination_bounty.png",
-      "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png"
+      "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png",
+      "bountiesExpanded_retrieval": "graphics/icons/intel/retrieval_mission.png"
+    },
+    "misc": {
+      "bountiesExpanded_hullmod_placeholder": "graphics/hullmods/placeholder.png"
     }
   }
 }

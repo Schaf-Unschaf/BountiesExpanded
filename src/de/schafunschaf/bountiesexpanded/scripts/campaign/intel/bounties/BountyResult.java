@@ -41,4 +41,12 @@ public class BountyResult {
         this.payment = payment;
         this.rep = rep;
     }
+
+    // War Criminal Result
+    public BountyResult(BountyResultType type, int payment, ReputationAdjustmentResult rep, float targetRepAfterBattle) {
+        this.type = type;
+        this.payment = payment;
+        this.rep = rep;
+        this.targetRepAfterBattle = targetRepAfterBattle;
+    }
 }

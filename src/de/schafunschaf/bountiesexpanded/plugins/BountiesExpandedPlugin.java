@@ -5,22 +5,20 @@ import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
-import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import data.scripts.VayraModPlugin;
 import data.scripts.campaign.intel.VayraUniqueBountyIntel;
 import data.scripts.campaign.intel.VayraUniqueBountyManager;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.ModUpdateHelper;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUtils;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignPlugin;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
+import de.schafunschaf.bountiesexpanded.helper.ship.ShipUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
 import lombok.extern.log4j.Log4j;
 
 import java.util.List;
@@ -38,48 +36,6 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     public static final String VAYRA_UNIQUE_BOUNTIES_FILE = "data/config/vayraBounties/unique_bounty_data.csv";
     public static final String RARE_FLAGSHIPS_FILE = "data/config/vayraBounties/rare_flagships.csv";
 
-    public static void prepareForUpdate() {
-        Settings.PREPARE_UPDATE = true;
-        HighValueBountyManager.getInstance().saveCompletedBountyData();
-
-        uninstallManager(SkirmishBountyManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.KEY);
-        uninstallManager(AssassinationBountyManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
-        uninstallManager(HighValueBountyManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
-        uninstallManager(HVBRevengeManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);
-
-        uninstallPlugins();
-        Settings.PREPARE_UPDATE = false;
-    }
-
-    private static void uninstallManager(BaseEventManager bountyManager) {
-        if (isNull(bountyManager))
-            return;
-        for (EveryFrameScript script : bountyManager.getActive()) {
-            ((BaseBountyIntel) script).endImmediately();
-            Global.getSector().removeScript(script);
-        }
-        Global.getSector().removeScript(bountyManager);
-    }
-
-    private static void uninstallPlugins() {
-        Global.getSector().unregisterPlugin(BountiesExpandedCampaignPlugin.PLUGIN_ID);
-        removeCampaignManager();
-    }
-
-    private static void removeCampaignManager() {
-        if (Global.getSector().hasScript(BountiesExpandedCampaignManager.class)) {
-            for (EveryFrameScript script : Global.getSector().getScripts())
-                if (script instanceof BountiesExpandedCampaignManager) {
-                    Global.getSector().removeScript(script);
-                    break;
-                }
-        }
-    }
-
     @Override
     public void onApplicationLoad() {
         initBountiesExpanded();
@@ -87,21 +43,24 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
 
     @Override
     public void onGameLoad(boolean newGame) {
-        if (Settings.PREPARE_UPDATE) {
-            prepareForUpdate();
+        if (Settings.prepareUpdate) {
+            ModUpdateHelper.prepareForUpdate();
             return;
         }
 
         setBlacklists();
 
-        initManagerAndPlugins();
+        ModUpdateHelper.initManagerAndPlugins();
 
         reloadSMods();
 
-        if (Settings.HIGH_VALUE_BOUNTY_ACTIVE && Global.getSettings().getModManager().isModEnabled("vayrasector"))
+        if (Settings.highValueBountyActive && Global.getSettings().getModManager().isModEnabled("vayrasector"))
             removeVayraUniqueBounties();
 
-        if (Settings.SHEEP_DEBUG) printDebugInfo();
+        if (Settings.sheepDebug) printDebugInfo();
+
+        ShipUtils.generateShipWithESU();
+        ShipUtils.generateShipWithESU();
     }
 
     private void removeVayraUniqueBounties() {
@@ -124,44 +83,12 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         }
     }
 
-    private void initManagerAndPlugins() {
-        if (Settings.SKIRMISH_ACTIVE) addSkirmishManager();
-        else {
-            uninstallManager(SkirmishBountyManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.KEY);
-        }
-
-        if (Settings.ASSASSINATION_ACTIVE) addAssassinationManager();
-        else {
-            uninstallManager(AssassinationBountyManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
-        }
-
-        if (Settings.HIGH_VALUE_BOUNTY_ACTIVE) addHighValueBountyManager();
-        else {
-            HighValueBountyManager highValueBountyManager = HighValueBountyManager.getInstance();
-            if (isNotNull(highValueBountyManager))
-                highValueBountyManager.saveCompletedBountyData();
-
-            uninstallManager(highValueBountyManager);
-            Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
-        }
-
-        if (Settings.HIGH_VALUE_BOUNTY_REVENGE_ACTIVE) addHVBRevengeManager();
-        else {
-            uninstallManager(HVBRevengeManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);
-        }
-
-        RareFlagshipManager.loadRareFlagshipData();
-        addCampaignPlugins();
-    }
-
     private void reloadSMods() {
         reloadSkirmishSMods();
         reloadHVBSMods();
         reloadAssassinationSMods();
         reloadHVBRevengeSMods();
+        reloadWarCriminalSMods();
     }
 
     private void reloadSkirmishSMods() {
@@ -208,68 +135,23 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         }
     }
 
+    private void reloadWarCriminalSMods() {
+        WarCriminalManager bountyManager = WarCriminalManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> warCriminalFleets = FleetUtils.findFleetWithMemKey(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI warCriminalFleet : warCriminalFleets) {
+            bountyManager.upgradeShips(warCriminalFleet);
+        }
+    }
+
     private void initBountiesExpanded() {
         loadSettings(SETTINGS_FILE);
         loadBlacklists(DEFAULT_BLACKLIST_FILE);
         loadNameStringFiles(NAME_STRINGS_FILE);
 
         loadHighValueBountyData(VAYRA_UNIQUE_BOUNTIES_FILE);
-    }
-
-    private void addSkirmishManager() {
-        if (!Global.getSector().hasScript(SkirmishBountyManager.class)) {
-            Global.getSector().addScript(new SkirmishBountyManager());
-            log.info("BountiesExpanded: SkirmishBountyManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing SkirmishBountyManager");
-        }
-    }
-
-    private void addAssassinationManager() {
-        if (!Global.getSector().hasScript(AssassinationBountyManager.class)) {
-            Global.getSector().addScript(new AssassinationBountyManager());
-            log.info("BountiesExpanded: AssassinationBountyManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing AssassinationBountyManager");
-        }
-    }
-
-    private void addHighValueBountyManager() {
-        if (!Global.getSector().hasScript(HighValueBountyManager.class)) {
-            Global.getSector().addScript(new HighValueBountyManager());
-            log.info("BountiesExpanded: HighValueBountyManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing HighValueBountyManager");
-            printCompletedBounties();
-        }
-    }
-
-    private void addHVBRevengeManager() {
-        if (!Global.getSector().hasScript(HVBRevengeManager.class)) {
-            Global.getSector().addScript(new HVBRevengeManager());
-            log.info("BountiesExpanded: HVBRevengeManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing HVBRevengeManager");
-        }
-    }
-
-    private void addCampaignPlugins() {
-        Global.getSector().registerPlugin(new BountiesExpandedCampaignPlugin());
-
-        if (!Global.getSector().hasScript(BountiesExpandedCampaignManager.class)) {
-            Global.getSector().addScript(new BountiesExpandedCampaignManager());
-            log.info("BountiesExpanded: BountiesExpandedCampaignManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing BountiesExpandedCampaignManager");
-        }
-    }
-
-    private void printCompletedBounties() {
-        HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
-        log.info("BountiesExpanded: List of completed HVBs:");
-        for (String completedBounty : bountyManager.getCompletedBounties()) {
-            log.info(completedBounty);
-        }
     }
 
     private void setBlacklists() {

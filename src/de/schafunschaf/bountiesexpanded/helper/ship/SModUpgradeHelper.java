@@ -76,7 +76,7 @@ public class SModUpgradeHelper {
             else if (!hasModBuiltIn(shipVariant, HullMods.HEAVYARMOR))
                 id = HullMods.HEAVYARMOR;
             else
-                id = getRandomFreeHullMod(shipVariant, random);
+                id = getRandomFreeSMod(shipVariant, random);
 
         shipVariant.addPermaMod(id, true);
     }
@@ -98,10 +98,20 @@ public class SModUpgradeHelper {
         if (!hasModBuiltIn(shipVariant, HullMods.REINFORCEDHULL))
             shipVariant.addPermaMod(HullMods.REINFORCEDHULL, true);
         else
-            shipVariant.addPermaMod(getRandomFreeHullMod(shipVariant, random), true);
+            shipVariant.addPermaMod(getRandomFreeSMod(shipVariant, random), true);
 
         if (hasSafetyOverrides && !shipVariant.hasHullMod(HullMods.HARDENED_SUBSYSTEMS))
             shipVariant.addMod(HullMods.HARDENED_SUBSYSTEMS);
+
+        fleetMember.setVariant(shipVariant, true, true);
+    }
+
+    public static void addBuiltInMods(FleetMemberAPI fleetMember, Random random) {
+        if (ComparisonTools.isNull(random))
+            random = new Random();
+        ShipVariantAPI shipVariant = fleetMember.getVariant();
+
+        shipVariant.addPermaMod(getRandomFreeHullMod(shipVariant, random));
 
         fleetMember.setVariant(shipVariant, true, true);
     }
@@ -110,10 +120,46 @@ public class SModUpgradeHelper {
         return shipVariant.getPermaMods().contains(hullModId) || shipVariant.getHullSpec().getBuiltInMods().contains(hullModId);
     }
 
-    public static String getRandomFreeHullMod(ShipVariantAPI shipVariant, Random random) {
+    public static boolean hasWeaponRangeMod(ShipVariantAPI shipVariant, String hullModId) {
+        Set<String> permaMods = shipVariant.getPermaMods();
+        List<String> builtInMods = shipVariant.getHullSpec().getBuiltInMods();
+        if (hullModId.equals("advancedcore") && permaMods.contains(HullMods.INTEGRATED_TARGETING_UNIT))
+            return true;
+        if (hullModId.equals("advancedcore") && builtInMods.contains(HullMods.INTEGRATED_TARGETING_UNIT))
+            return true;
+        if (hullModId.equals(HullMods.INTEGRATED_TARGETING_UNIT) && permaMods.contains("advancedcore"))
+            return true;
+        if (hullModId.equals(HullMods.INTEGRATED_TARGETING_UNIT) && builtInMods.contains("advancedcore"))
+            return true;
+
+        return false;
+    }
+
+    public static String getRandomFreeSMod(ShipVariantAPI shipVariant, Random random) {
         if (ComparisonTools.isNull(random))
             random = new Random();
-        List<String> hullMods = new ArrayList<>(Arrays.asList(HullMods.ARMOREDWEAPONS, HullMods.AUTOREPAIR, HullMods.AUXILIARY_THRUSTERS, HullMods.BLAST_DOORS, HullMods.ECM, HullMods.FLUX_COIL, HullMods.FLUX_DISTRIBUTOR, HullMods.HARDENED_SHIELDS, HullMods.HEAVYARMOR, HullMods.INSULATEDENGINE, HullMods.POINTDEFENSEAI, HullMods.REINFORCEDHULL, HullMods.SOLAR_SHIELDING, HullMods.STABILIZEDSHIELDEMITTER));
+        List<String> hullMods = new ArrayList<>(Arrays.asList(HullMods.ARMOREDWEAPONS,
+                HullMods.ADVANCEDOPTICS,
+                HullMods.ACCELERATED_SHIELDS,
+                HullMods.ARMOREDWEAPONS,
+                HullMods.AUTOREPAIR,
+                HullMods.AUXILIARY_THRUSTERS,
+                HullMods.BLAST_DOORS,
+                HullMods.ECCM,
+                HullMods.ECM,
+                HullMods.FLUXBREAKERS,
+                HullMods.FLUX_COIL,
+                HullMods.FLUX_DISTRIBUTOR,
+                HullMods.HARDENED_SUBSYSTEMS,
+                HullMods.HARDENED_SHIELDS,
+                HullMods.HEAVYARMOR,
+                HullMods.INSULATEDENGINE,
+                HullMods.POINTDEFENSEAI,
+                HullMods.REINFORCEDHULL,
+                HullMods.SOLAR_SHIELDING,
+                HullMods.STABILIZEDSHIELDEMITTER,
+                HullMods.TURRETGYROS,
+                HullMods.UNSTABLE_INJECTOR));
         for (int i = 0; i < hullMods.size(); i++) {
             String selectedHullMod = hullMods.get(random.nextInt(hullMods.size()));
             if (!hasModBuiltIn(shipVariant, selectedHullMod))
@@ -121,4 +167,53 @@ public class SModUpgradeHelper {
         }
         return null;
     }
+
+    public static String getRandomFreeHullMod(ShipVariantAPI shipVariant, Random random) {
+        if (ComparisonTools.isNull(random))
+            random = new Random();
+        List<String> hullMods = new ArrayList<>(Arrays.asList(
+                HullMods.OMNI_SHIELD_CONVERSION,
+                "advancedcore",
+                HullMods.ADVANCEDOPTICS,
+                HullMods.ACCELERATED_SHIELDS,
+                HullMods.ARMOREDWEAPONS,
+                HullMods.AUTOREPAIR,
+                HullMods.AUXILIARY_THRUSTERS,
+                HullMods.BLAST_DOORS,
+                HullMods.ECCM,
+                HullMods.ECM,
+                HullMods.EFFICIENCY_OVERHAUL,
+                HullMods.EXTENDED_SHIELDS,
+                HullMods.FLUXBREAKERS,
+                HullMods.FLUX_COIL,
+                HullMods.FLUX_DISTRIBUTOR,
+                HullMods.FRONT_SHIELD_CONVERSION,
+                HullMods.HARDENED_SUBSYSTEMS,
+                HullMods.HARDENED_SHIELDS,
+                HullMods.HEAVYARMOR,
+                "high_scatter_amp",
+                HullMods.INSULATEDENGINE,
+                HullMods.MAGAZINES,
+                "missile_reload",
+                HullMods.MISSLERACKS,
+                HullMods.NAV_RELAY,
+                HullMods.OPERATIONS_CENTER,
+                HullMods.POINTDEFENSEAI,
+                HullMods.REINFORCEDHULL,
+                HullMods.SAFETYOVERRIDES,
+                HullMods.SOLAR_SHIELDING,
+                HullMods.STABILIZEDSHIELDEMITTER,
+                HullMods.SURVEYING_EQUIPMENT,
+                HullMods.INTEGRATED_TARGETING_UNIT,
+                HullMods.TURRETGYROS,
+                HullMods.UNSTABLE_INJECTOR
+        ));
+        for (int i = 0; i < hullMods.size(); i++) {
+            String selectedHullMod = hullMods.get(random.nextInt(hullMods.size()));
+            if (!hasModBuiltIn(shipVariant, selectedHullMod) && !hasWeaponRangeMod(shipVariant, selectedHullMod))
+                return selectedHullMod;
+        }
+        return null;
+    }
+
 }

@@ -9,16 +9,18 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
+import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
+import de.schafunschaf.bountiesexpanded.helper.ui.TooltipAPIUtils;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +39,7 @@ import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPl
 @Getter
 @Setter
 public class SkirmishBountyEntity implements BountyEntity {
-    private static final String SKIRMISH_ICON = "bountiesExpanded_skirmish";
+    private final String skirmishIcon = "bountiesExpanded_skirmish";
     private final int baseReward;
     private final int level;
     private final int maxPayout;
@@ -49,25 +51,28 @@ public class SkirmishBountyEntity implements BountyEntity {
     private final FactionAPI offeringFaction;
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
-    private final PersonAPI person;
+    private final PersonAPI targetedPerson;
     private final SectorEntityToken startingPoint;
+    private final String startingPointID;
     private final SectorEntityToken endingPoint = null;
     private final String[] creditsPerSize;
     private final Map<HullSize, Integer> numFleetMembers;
-    private final MissionType missionType = MissionType.SKIRMISH;
+    private final MissionHandler missionHandler = null;
     private float targetRepBeforeBattle = 0;
+    private SkirmishBountyIntel bountyIntel;
 
-    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, float fractionToKill, Difficulty difficulty, int level) {
+    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, float fractionToKill, Difficulty difficulty, int level) {
         this.baseReward = baseReward;
         this.fractionToKill = fractionToKill;
         this.offeringFaction = offeringFaction;
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
-        this.person = person;
+        this.targetedPerson = targetedPerson;
         this.startingPoint = startingPoint;
+        this.startingPointID = startingPoint.getId();
         this.difficulty = difficulty;
         this.level = level;
-        this.baseShipBounty = (int) FormattingTools.roundWholeNumber((Settings.SKIRMISH_BASE_SHIP_BOUNTY * (1 - fractionToKill)), 1);
+        this.baseShipBounty = (int) FormattingTools.roundWholeNumber((Settings.skirmishBaseShipBounty * (1 - fractionToKill)), 1);
         this.shipsToDestroy = Math.max((int) (fleet.getFleetData().getMembersListCopy().size() * fractionToKill), 1);
         this.maxFleetSizeForCompletion = fleet.getNumShips() - shipsToDestroy;
         this.maxPayout = calculateMaxPayout();
@@ -94,8 +99,18 @@ public class SkirmishBountyEntity implements BountyEntity {
     }
 
     @Override
+    public BaseEventManager getBountyManager() {
+        return SkirmishBountyManager.getInstance();
+    }
+
+    @Override
+    public PersonAPI getOfferingPerson() {
+        return null;
+    }
+
+    @Override
     public String getIcon() {
-        return Global.getSettings().getSpriteName("intel", SKIRMISH_ICON);
+        return Global.getSettings().getSpriteName("intel", skirmishIcon);
     }
 
     @Override
@@ -105,13 +120,13 @@ public class SkirmishBountyEntity implements BountyEntity {
                 case END_PLAYER_BOUNTY:
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
-                    return "Bounty Completed";
+                    return "Skirmish Bounty - Completed";
                 case END_OTHER:
                 case END_TIME:
-                    return "Bounty Ended";
+                    return "Skirmish Bounty - Ended";
             }
         }
-        return "Military Bounty - Skirmish";
+        return "Faction Mission - Skirmish";
     }
 
     @Override
@@ -132,7 +147,7 @@ public class SkirmishBountyEntity implements BountyEntity {
             if (mode == ListInfoMode.IN_DESC) {
                 info.addPara("%s reward on completion", initPad, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
                 info.addPara("%s maximum reward", 0f, bulletColor, highlightColor, Misc.getDGSCredits(maxPayout));
-                baseBountyIntel.addDays(info, "remaining", days, bulletColor);
+                baseBountyIntel.addDays(info, "remaining", days, bulletColor, 0f);
             } else {
                 info.addPara("Offered by: %s", initPad, bulletColor,
                         offeringFaction.getBaseUIColor(), offeringFaction.getDisplayName());
@@ -180,7 +195,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         float opad = 10f;
 
         if (isNull(result)) { // Bounty not completed
-            DescriptionUtils.addFactionFlagsWithRep(info, width, opad, opad, offeringFaction, targetedFaction);
+            TooltipAPIUtils.addFactionFlagsWithRep(info, width, opad, opad, offeringFaction, targetedFaction);
 
             info.addSectionHeading("Briefing", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
             info.addPara(briefingText, opad,
@@ -208,9 +223,8 @@ public class SkirmishBountyEntity implements BountyEntity {
 
             info.addPara("Since this is an official military operation, %s transmitted a complete intel report.",
                     opad, offeringFaction.getBaseUIColor(), offeringFaction.getDisplayNameWithArticle());
-            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 3, false);
-            info.addPara("Your tactical officer classifies this fleet as " + difficulty.getShortDescriptionAnOrA() + " %s encounter.",
-                    opad, difficulty.getColor(), difficulty.getShortDescription());
+            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 3, false);
+            DescriptionUtils.addDifficultyText(info, opad, difficulty);
         } else { // Bounty completed
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
@@ -221,7 +235,7 @@ public class SkirmishBountyEntity implements BountyEntity {
                     int percent;
                     String percentage;
 
-                    DescriptionUtils.addFactionFlagsWithRepChange(info, width, opad, opad, offeringFaction, result.rep.delta, targetedFaction, targetRepChange);
+                    TooltipAPIUtils.addFactionFlagsWithRepChange(info, width, opad, opad, offeringFaction, result.rep.delta, targetedFaction, targetRepChange);
 
                     info.addSectionHeading("Briefing", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
                     info.addPara(briefingText, opad,

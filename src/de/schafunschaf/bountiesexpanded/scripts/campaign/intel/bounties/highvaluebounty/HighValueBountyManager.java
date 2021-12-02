@@ -28,7 +28,7 @@ public class HighValueBountyManager extends BaseEventManager {
     public static final String KEY = "$bountiesExpanded_highValueBountyManager";
     public static final String HIGH_VALUE_BOUNTY_FLEET_KEY = "$bountiesExpanded_highValueBounty";
     public static final Map<String, HighValueBountyData> highValueBountyData = new HashMap<>();
-    private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.HIGH_VALUE_BOUNTY_MIN_TIME_BETWEEN_SPAWNS, (float) Settings.HIGH_VALUE_BOUNTY_MAX_TIME_BETWEEN_SPAWNS);
+    private final IntervalUtil spawnTimer = new IntervalUtil((float) Settings.highValueBountyMinTimeBetweenSpawns, (float) Settings.highValueBountyMaxTimeBetweenSpawns);
     private final String completedBountyDataKey = "$bountiesExpanded_completedBountyData";
     private final Set<String> highValueBountyDataActive = new HashSet<>();
     private final Set<String> highValueBountyDataCompleted = new HashSet<>();
@@ -101,18 +101,18 @@ public class HighValueBountyManager extends BaseEventManager {
 
     @Override
     protected int getMaxConcurrent() {
-        return Settings.HIGH_VALUE_BOUNTY_MAX_BOUNTIES;
+        return Settings.highValueBountyMaxBounties;
     }
 
     @Override
     public void advance(float amount) {
-        if (Settings.HIGH_VALUE_BOUNTY_ACTIVE) {
+        if (Settings.highValueBountyActive) {
             spawnTimer.advance(Global.getSector().getClock().convertToDays(amount));
 
             if (spawnTimer.intervalElapsed()) {
                 if (getActiveBounties().size() < getMaxConcurrent()) {
                     log.info("BountiesExpanded: HVB spawn slot is available [" + getActiveBounties().size() + "/" + getMaxConcurrent() + "]");
-                    if (Settings.HIGH_VALUE_BOUNTY_SPAWN_CHANCE <= new Random().nextFloat())
+                    if (Settings.highValueBountySpawnChance <= new Random().nextFloat())
                         createEvent();
                 } else
                     log.info("BountiesExpanded: No available HVB slot! [" + getActiveBounties().size() + "/" + getMaxConcurrent() + "]");
@@ -179,7 +179,7 @@ public class HighValueBountyManager extends BaseEventManager {
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
         upgradeShips(fleet);
 
-        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getPerson(), hideout);
+        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getTargetedPerson(), hideout);
 
         log.info("BountiesExpanded: Creating HighValueBountyEvent");
         markBountyAsActive(bountyId);

@@ -10,10 +10,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class BountiesExpandedSpawnSkirmishBounty implements BaseCommand {
-    public BountiesExpandedSpawnSkirmishBounty() {
-    }
-
-    public CommandResult runCommand(@NotNull String args, @NotNull CommandContext context) {
+     public CommandResult runCommand(@NotNull String args, @NotNull CommandContext context) {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
@@ -30,7 +27,7 @@ public class BountiesExpandedSpawnSkirmishBounty implements BaseCommand {
         if (isNotNull(skirmishBountyEvent)) {
             manager.addActive(skirmishBountyEvent);
             Console.showMessage("it worked!");
-            Console.showMessage("Spawned SkirmishBounty at " + skirmishBountyEvent.getHideout().getName());
+            Console.showMessage("Spawned SkirmishBounty at " + skirmishBountyEvent.getStartingPoint().getName());
             return CommandResult.SUCCESS;
         }
 

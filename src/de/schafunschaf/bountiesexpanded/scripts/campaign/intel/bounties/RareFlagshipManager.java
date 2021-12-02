@@ -23,6 +23,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Log4j
 public class RareFlagshipManager {
+    public static final String RARE_FLAGSHIP_KEY = "$bountiesExpanded_rareFlagship";
     private static final Map<String, RareFlagshipData> rareFlagshipData = new HashMap<>();
 
     public static void loadRareFlagshipData() {

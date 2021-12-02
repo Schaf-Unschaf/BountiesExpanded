@@ -11,18 +11,19 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
+import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.BreadcrumbSpecial;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
-import de.schafunschaf.bountiesexpanded.helper.ui.DescriptionUtils;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
 
@@ -30,6 +31,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.*;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
@@ -45,25 +47,25 @@ public class HighValueBountyEntity implements BountyEntity {
     private final FactionAPI offeringFaction;
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
-    private final PersonAPI person;
+    private final PersonAPI targetedPerson;
     private final SectorEntityToken startingPoint;
     private final SectorEntityToken endingPoint = null;
     private final int maxFleetSizeForCompletion = 0;
     private final float repReward;
     private final Difficulty difficulty = Difficulty.BOSS;
-    private final MissionType missionType = MissionType.ASSASSINATION;
+    private final MissionHandler missionHandler = createNewMissionGoal(MissionType.ASSASSINATION);
     private String levelDesc;
     private String skillDesc;
     private String fleetDesc;
 
-    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI person, SectorEntityToken startingPoint, String intelText, String bountyId) {
+    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, String intelText, String bountyId) {
         this.baseReward = baseReward;
         this.repReward = repReward;
         this.intelText = intelText;
         this.offeringFaction = offeringFaction;
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
-        this.person = person;
+        this.targetedPerson = targetedPerson;
         this.startingPoint = startingPoint;
         this.bountyId = bountyId;
         this.flagship = fleet.getFlagship();
@@ -72,8 +74,18 @@ public class HighValueBountyEntity implements BountyEntity {
     }
 
     @Override
+    public BaseEventManager getBountyManager() {
+        return HighValueBountyManager.getInstance();
+    }
+
+    @Override
+    public PersonAPI getOfferingPerson() {
+        return null;
+    }
+
+    @Override
     public String getIcon() {
-        return person.getPortraitSprite();
+        return targetedPerson.getPortraitSprite();
     }
 
     @Override
@@ -89,7 +101,12 @@ public class HighValueBountyEntity implements BountyEntity {
                     return "Bounty Ended";
             }
         }
-        return "High Value Bounty - " + person.getNameString();
+        return "High Value Bounty - " + targetedPerson.getNameString();
+    }
+
+    @Override
+    public BaseBountyIntel getBountyIntel() {
+        return null;
     }
 
     @Override
@@ -110,8 +127,8 @@ public class HighValueBountyEntity implements BountyEntity {
             } else {
                 info.addPara("Offered by: " + offeringFaction.getDisplayName(), initPad, bulletColor,
                         offeringFaction.getBaseUIColor(), offeringFaction.getDisplayName());
-                info.addPara("Target: " + person.getNameString(), 0f, bulletColor,
-                        person.getFaction().getBaseUIColor(), person.getNameString());
+                info.addPara("Target: " + targetedPerson.getNameString(), 0f, bulletColor,
+                        targetedPerson.getFaction().getBaseUIColor(), targetedPerson.getNameString());
                 info.addPara("%s reward", 0f, bulletColor,
                         highlightColor, Misc.getDGSCredits(baseReward));
 
@@ -140,11 +157,11 @@ public class HighValueBountyEntity implements BountyEntity {
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
-        info.addImage(person.getPortraitSprite(), width, 128f, opad);
+        info.addImage(targetedPerson.getPortraitSprite(), width, 128f, opad);
         info.addPara(intelText, opad);
         if (isNotNull(result)) {
             if (result.type == BountyResultType.END_PLAYER_BOUNTY)
-                info.addPara("Confirming the successful elimination of " + person.getNameString(), opad, person.getFaction().getBaseUIColor(), person.getNameString());
+                info.addPara("Confirming the successful elimination of " + targetedPerson.getNameString(), opad, targetedPerson.getFaction().getBaseUIColor(), targetedPerson.getNameString());
             else info.addPara("This mission is no longer on offer.", opad);
         }
 
@@ -158,41 +175,46 @@ public class HighValueBountyEntity implements BountyEntity {
                 loc = loc.replaceAll("orbiting", "hiding out near");
                 loc = loc.replaceAll("located in", "hiding out in");
                 String sheIs = "She is";
-                if (this.person.getGender() == FullName.Gender.MALE) {
+                if (this.targetedPerson.getGender() == FullName.Gender.MALE) {
                     sheIs = "He is";
                 }
 
                 info.addPara(sheIs + " rumored to be " + loc + ".", opad);
             }
-            info.addPara(this.getTargetDesc() + " The bounty posting also contains intel on some of the ships under " + person.getHisOrHer() + " command.",
+            info.addPara(this.getTargetDesc() + " The bounty posting also contains intel on some of the ships under " + targetedPerson.getHisOrHer() + " command.",
                     opad,
                     targetedFaction.getBaseUIColor(),
-                    targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType);
+                    targetedFaction.getRank(targetedPerson.getRankId()) + " " + targetedPerson.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType);
             info.addSectionHeading("Fleet Intel", offeringFaction.getBaseUIColor(), offeringFaction.getDarkUIColor(), Alignment.MID, opad);
-            DescriptionUtils.createShipListForIntel(info, width, opad, fleet, 7, 3, true);
+            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, 7, 3, true);
         }
+    }
+
+    @Override
+    public void setTargetRepBeforeBattle(float lastValue) {
+
     }
 
     private String getTargetDesc() {
         int fleetSize = fleet.getNumShips();
 
-        if (person == null) {
+        if (targetedPerson == null) {
             log.error("tried to getTargetDesc but person was null");
             return "SOMETHING HAS GONE TERRIBLY WRONG";
         }
-        if (person.getStats() == null) {
+        if (targetedPerson.getStats() == null) {
             log.error("tried to getTargetDesc but person.getStats() was null");
             return "SOMETHING HAS GONE TERRIBLY WRONG";
         }
 
         String heOrShe = "he";
         String hisOrHer = "his";
-        if (person.isFemale()) {
+        if (targetedPerson.isFemale()) {
             heOrShe = "she";
             hisOrHer = "her";
         }
 
-        int personLevel = person.getStats().getLevel();
+        int personLevel = targetedPerson.getStats().getLevel();
         if (personLevel <= 4) {
             levelDesc = "an unremarkable officer";
         } else if (personLevel <= 7) {
@@ -260,7 +282,7 @@ public class HighValueBountyEntity implements BountyEntity {
             }
         }
 
-        Random random = new Random(person.getId().hashCode() * 1337L);
+        Random random = new Random(targetedPerson.getId().hashCode() * 1337L);
         picker.setRandom(random);
 
         skillDesc = picker.isEmpty() ? "nothing, really" : picker.pick();
@@ -285,7 +307,7 @@ public class HighValueBountyEntity implements BountyEntity {
         }
 
         String targetDesc = String.format("%s is in command of a %s and personally commands the %s, a %s, as %s flagship.",
-                targetedFaction.getRank(person.getRankId()) + " " + person.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType, hisOrHer);
+                targetedFaction.getRank(targetedPerson.getRankId()) + " " + targetedPerson.getName().getFullName(), fleetDesc, flagship.getShipName(), shipType, hisOrHer);
 
         targetDesc += String.format(" %s is %s known for %s.", Misc.ucFirst(heOrShe), levelDesc, skillDesc);
 

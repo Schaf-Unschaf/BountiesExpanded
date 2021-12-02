@@ -110,7 +110,7 @@ public class RemoteWorldPicker {
                 continue;
             if (isNotNull(planet.getMarket()) && !planet.getMarket().isPlanetConditionMarketOnly())
                 continue;
-            if (Settings.IGNORE_PLAYER_MARKETS && planet.getMarket().isPlayerOwned())
+            if (Settings.ignorePlayerMarkets && planet.getMarket().isPlayerOwned())
                 continue;
             if (planet.getMarket().isInHyperspace())
                 continue;

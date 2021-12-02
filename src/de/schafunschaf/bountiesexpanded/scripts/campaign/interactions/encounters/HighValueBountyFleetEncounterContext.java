@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
@@ -10,15 +10,17 @@ import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.FleetEncounterContext;
 import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
-import org.apache.log4j.Logger;
+import lombok.extern.log4j.Log4j;
 
 import java.util.List;
 import java.util.Random;
 
+@Log4j
 public class HighValueBountyFleetEncounterContext extends FleetEncounterContext {
-    public static final Logger log = Global.getLogger(HighValueBountyFleetEncounterContext.class);
-
     @Override
     public List<FleetMemberAPI> getRecoverableShips(BattleAPI battle, CampaignFleetAPI
             winningFleet, CampaignFleetAPI otherFleet) {

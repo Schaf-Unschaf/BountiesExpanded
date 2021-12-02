@@ -11,7 +11,7 @@ import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import lombok.Getter;
@@ -21,20 +21,20 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Getter
 public class HighValueBountyIntel extends BaseBountyIntel {
-    private final HighValueBountyEntity bountyEntity;
+    private final HighValueBountyEntity highValueBountyEntity;
     private final int payment;
 
-    public HighValueBountyIntel(HighValueBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(bountyEntity, bountyEntity.getMissionType(), campaignFleetAPI, personAPI, sectorEntityToken);
-        this.bountyEntity = bountyEntity;
-        this.payment = bountyEntity.getBaseReward();
+    public HighValueBountyIntel(HighValueBountyEntity highValueBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
+        super(highValueBountyEntity, highValueBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken);
+        this.highValueBountyEntity = highValueBountyEntity;
+        this.payment = highValueBountyEntity.getBaseReward();
     }
 
     @Override
     public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean isFlagshipAlive = fleet.getFlagship() == bountyEntity.getFlagship();
+        boolean isFlagshipAlive = fleet.getFlagship() == highValueBountyEntity.getFlagship();
 
         if (isDone || isNotInvolved || isFlagshipAlive) {
             return;
@@ -45,11 +45,11 @@ public class HighValueBountyIntel extends BaseBountyIntel {
 
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
-                bountyEntity.getOfferingFaction().getId());
+                highValueBountyEntity.getOfferingFaction().getId());
 
         result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
-        HighValueBountyManager.getInstance().markBountyAsCompleted(bountyEntity.getBountyId());
+        HighValueBountyManager.getInstance().markBountyAsCompleted(highValueBountyEntity.getBountyId());
         cleanUp(false);
     }
 
@@ -68,13 +68,13 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     @Override
     protected void cleanUp(boolean onlyIfImportant) {
         super.cleanUp(onlyIfImportant);
-        HighValueBountyManager.getInstance().removeBountyFromActiveList(bountyEntity.getBountyId());
+        HighValueBountyManager.getInstance().removeBountyFromActiveList(highValueBountyEntity.getBountyId());
     }
 
     @Override
     protected void cleanUpFleetAndEndIfNecessary() {
         super.cleanUpFleetAndEndIfNecessary();
-        HighValueBountyManager.getInstance().removeBountyFromActiveList(bountyEntity.getBountyId());
+        HighValueBountyManager.getInstance().removeBountyFromActiveList(highValueBountyEntity.getBountyId());
     }
 
     @Override
@@ -82,14 +82,14 @@ public class HighValueBountyIntel extends BaseBountyIntel {
         if (Settings.isDebugActive())
             return super.getMapLocation(map);
 
-        Constellation c = hideout.getConstellation();
+        Constellation c = startingPoint.getConstellation();
         SectorEntityToken entity = null;
         if (c != null && map != null) {
             entity = map.getConstellationLabelEntity(c);
         }
 
         if (entity == null) {
-            entity = hideout;
+            entity = startingPoint;
         }
 
         return entity;

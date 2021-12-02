@@ -27,7 +27,7 @@ public class FleetUpgradeHelper {
         ShipVariantAPI shipVariant = fleetMember.getVariant();
         for (int i = 0; i < numSMods; i++)
             if (random.nextFloat() <= probability)
-                shipVariant.addPermaMod(SModUpgradeHelper.getRandomFreeHullMod(shipVariant, random), true);
+                shipVariant.addPermaMod(SModUpgradeHelper.getRandomFreeSMod(shipVariant, random), true);
 
         fleetMember.setVariant(shipVariant, true, true);
     }

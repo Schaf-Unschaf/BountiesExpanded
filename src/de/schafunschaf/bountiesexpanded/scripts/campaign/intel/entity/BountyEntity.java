@@ -5,14 +5,15 @@ import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionType;
-
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 
 public interface BountyEntity {
+    BaseEventManager getBountyManager();
 
     FactionAPI getOfferingFaction();
 
@@ -20,7 +21,9 @@ public interface BountyEntity {
 
     CampaignFleetAPI getFleet();
 
-    PersonAPI getPerson();
+    PersonAPI getOfferingPerson();
+
+    PersonAPI getTargetedPerson();
 
     SectorEntityToken getStartingPoint();
 
@@ -30,17 +33,19 @@ public interface BountyEntity {
 
     String getTitle(BountyResult result);
 
-    MissionType getMissionType();
+    MissionHandler getMissionHandler();
 
     Difficulty getDifficulty();
+    
+    BaseBountyIntel getBountyIntel();
 
     int getBaseReward();
 
     int getLevel();
-
-    int getMaxFleetSizeForCompletion();
-
+    
     void addBulletPoints(BaseBountyIntel plugin, TooltipMakerAPI info, ListInfoMode mode);
 
     void createSmallDescription(BaseBountyIntel plugin, TooltipMakerAPI info, float width, float height);
+
+    void setTargetRepBeforeBattle(float lastValue);
 }

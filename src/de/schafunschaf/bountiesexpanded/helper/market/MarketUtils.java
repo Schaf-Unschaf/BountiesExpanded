@@ -6,6 +6,11 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.util.Misc;
+import com.fs.starfarer.api.util.WeightedRandomPicker;
+
+import java.util.List;
+
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class MarketUtils {
     public static MarketAPI getBestMarketForQuality(FactionAPI faction) {
@@ -30,5 +35,16 @@ public class MarketUtils {
         market.getStats().getDynamic().getMod("combat_fleet_size_mult").modifyFlat("fake", 1.0F);
 
         return market;
+    }
+
+    public static MarketAPI getRandomFactionMarket(FactionAPI faction) {
+        if (isNull(faction))
+            return null;
+
+        WeightedRandomPicker<MarketAPI> picker = new WeightedRandomPicker<>();
+        List<MarketAPI> factionMarkets = Misc.getFactionMarkets(faction);
+        picker.addAll(factionMarkets);
+
+        return picker.isEmpty() ? null : picker.pick();
     }
 }
