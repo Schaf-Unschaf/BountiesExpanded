@@ -13,7 +13,6 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.ModUpdateHelper;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUtils;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
-import de.schafunschaf.bountiesexpanded.helper.ship.ShipUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
@@ -58,9 +57,6 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
             removeVayraUniqueBounties();
 
         if (Settings.sheepDebug) printDebugInfo();
-
-        ShipUtils.generateShipWithESU();
-        ShipUtils.generateShipWithESU();
     }
 
     private void removeVayraUniqueBounties() {

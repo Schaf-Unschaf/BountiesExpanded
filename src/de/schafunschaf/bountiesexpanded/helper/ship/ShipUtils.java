@@ -7,10 +7,7 @@ import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.fleet.FleetMemberType;
-import com.fs.starfarer.api.loading.VariantSource;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
-import de.schafunschaf.bountiesexpanded.scripts.combat.hullmods.BountiesExpandedExperimentalSystemUpgrades;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,21 +32,6 @@ public class ShipUtils {
 
         MemoryAPI memoryAPI = fleetMembersToRecover.iterator().next().getFleetData().getFleet().getMemoryWithoutUpdate();
         memoryAPI.set(GuaranteedShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_GUARANTEED_RECOVERY, fleetMembersToRecover);
-    }
-
-    public static void generateShipWithESU() {
-        CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
-        ShipVariantAPI variant = playerFleet.getFlagship().getVariant();
-        FleetMemberAPI fleetMember = Global.getFactory().createFleetMember(FleetMemberType.SHIP, variant);
-        if (variant.isStockVariant() || variant.getSource() != VariantSource.REFIT) {
-            variant = variant.clone();
-            variant.setOriginalVariant(null);
-            variant.setSource(VariantSource.REFIT);
-            fleetMember.setVariant(variant, false, false);
-        }
-
-        variant.addPermaMod(BountiesExpandedExperimentalSystemUpgrades.ID);
-        playerFleet.getFleetData().addFleetMember(fleetMember);
     }
 
     public static FleetMemberAPI findMemberForStats(MutableShipStatsAPI stats) {

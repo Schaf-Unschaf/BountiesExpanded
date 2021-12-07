@@ -18,7 +18,6 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBoun
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
-import de.schafunschaf.bountiesexpanded.scripts.combat.hullmods.BountiesExpandedExperimentalSystemUpgrades;
 import lombok.extern.log4j.Log4j;
 
 import java.util.Random;
@@ -123,10 +122,6 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         FleetMemberAPI flagship = bountyFleet.getFlagship();
         if (isNull(flagship))
             return;
-
-        if (MissionType.RETRIEVAL == warCriminalEntity.getMissionHandler().getMissionType())
-            if (!flagship.getVariant().getPermaMods().contains(BountiesExpandedExperimentalSystemUpgrades.ID))
-                flagship.getVariant().addPermaMod(BountiesExpandedExperimentalSystemUpgrades.ID);
 
         if (flagship.getVariant().getSMods().isEmpty()) {
             SModUpgradeHelper.upgradeShip(flagship, numSMods, random);
