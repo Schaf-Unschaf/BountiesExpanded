@@ -2,25 +2,36 @@ package de.schafunschaf.bountiesexpanded.helper;
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
+import com.fs.starfarer.api.impl.campaign.intel.PersonBountyIntel;
+import com.fs.starfarer.api.impl.campaign.intel.PersonBountyManager;
+import data.scripts.VayraModPlugin;
+import data.scripts.campaign.intel.VayraPersonBountyManager;
 import de.schafunschaf.bountiesexpanded.Settings;
+import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.BountiesExpandedCampaignPlugin;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.deserter.DeserterBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.pirate.PirateBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.TriggeredMissionManager;
+import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 import lombok.extern.log4j.Log4j;
+
+import java.util.List;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Log4j
-public class ModUpdateHelper {
+public class ModInitHelper {
     public static void prepareForUpdate() {
         Settings.prepareUpdate = true;
         HighValueBountyManager.getInstance().saveCompletedBountyData();
@@ -35,6 +46,10 @@ public class ModUpdateHelper {
         Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);
         uninstallManager(WarCriminalManager.getInstance());
         Global.getSector().getMemoryWithoutUpdate().unset(WarCriminalManager.KEY);
+        uninstallManager(PirateBountyManager.getInstance());
+        Global.getSector().getMemoryWithoutUpdate().unset(PirateBountyManager.KEY);
+        uninstallManager(DeserterBountyManager.getInstance());
+        Global.getSector().getMemoryWithoutUpdate().unset(DeserterBountyManager.KEY);
         uninstallManager(TriggeredMissionManager.getInstance());
         Global.getSector().getMemoryWithoutUpdate().unset(TriggeredMissionManager.KEY);
 
@@ -102,6 +117,18 @@ public class ModUpdateHelper {
             Global.getSector().getMemoryWithoutUpdate().unset(WarCriminalManager.KEY);
         }
 
+        if (Settings.pirateBountyActive) addPirateBountyManager();
+        else {
+            uninstallManager(PirateBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(PirateBountyManager.KEY);
+        }
+
+        if (Settings.deserterBountyActive) addDeserterBountyManager();
+        else {
+            uninstallManager(DeserterBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(DeserterBountyManager.KEY);
+        }
+
         if (Settings.triggeredEventsActive) addTriggeredMissionManager();
         else {
             uninstallManager(TriggeredMissionManager.getInstance());
@@ -158,6 +185,30 @@ public class ModUpdateHelper {
         }
     }
 
+    private static void addPirateBountyManager() {
+        if (!Global.getSector().hasScript(PirateBountyManager.class)) {
+            Global.getSector().addScript(new PirateBountyManager());
+            log.info("BountiesExpanded: PirateBountyManager added");
+
+            removeVanillaBountyManager();
+
+            if (Settings.disableVayraBounties && Global.getSettings().getModManager().isModEnabled("vayrasector"))
+                removeVayraBountyManager();
+
+        } else {
+            log.info("BountiesExpanded: Found existing PirateBountyManager");
+        }
+    }
+
+    private static void addDeserterBountyManager() {
+        if (!Global.getSector().hasScript(DeserterBountyManager.class)) {
+            Global.getSector().addScript(new DeserterBountyManager());
+            log.info("BountiesExpanded: DeserterBountyManager added");
+        } else {
+            log.info("BountiesExpanded: Found existing DeserterBountyManager");
+        }
+    }
+
     private static void addTriggeredMissionManager() {
         if (!Global.getSector().hasScript(TriggeredMissionManager.class)) {
             Global.getSector().addScript(new TriggeredMissionManager());
@@ -176,6 +227,34 @@ public class ModUpdateHelper {
         } else {
             log.info("BountiesExpanded: Found existing BountiesExpandedCampaignManager");
         }
+    }
+
+    private static void removeVanillaBountyManager() {
+        PersonBountyManager personBountyManager = PersonBountyManager.getInstance();
+        if (ComparisonTools.isNull(personBountyManager))
+            return;
+
+        List<EveryFrameScript> activeBounties = personBountyManager.getActive();
+        for (EveryFrameScript bounty : activeBounties) {
+            ((PersonBountyIntel) bounty).endImmediately();
+            Global.getSector().removeScript(bounty);
+        }
+        Global.getSector().removeScript(personBountyManager);
+    }
+
+    private static void removeVayraBountyManager() {
+        VayraModPlugin.PIRATE_BOUNTY_MODE = VayraModPlugin.PirateMode.NEVER;
+        BountyEventData.getParticipatingFactions().remove(Factions.PIRATES);
+        VayraPersonBountyManager personBountyManager = VayraPersonBountyManager.getInstance();
+        if (ComparisonTools.isNull(personBountyManager))
+            return;
+
+        List<EveryFrameScript> activeBounties = personBountyManager.getActive();
+        for (EveryFrameScript bounty : activeBounties) {
+            ((PersonBountyIntel) bounty).endImmediately();
+            Global.getSector().removeScript(bounty);
+        }
+        Global.getSector().removeScript(personBountyManager);
     }
 
     private static void printCompletedBounties() {

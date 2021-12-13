@@ -116,6 +116,7 @@ public class AssassinationBountyManager extends BaseEventManager {
         });
         fleetMemory.set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
         fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, ASSASSINATION_BOUNTY_FLEET_KEY);
         fleetMemory.set(ASSASSINATION_BOUNTY_FLEET_KEY, assassinationBountyEntity);
 
         log.info("BountiesExpanded - Spawning Assassination Bounty: "
@@ -128,7 +129,7 @@ public class AssassinationBountyManager extends BaseEventManager {
 
         upgradeShips(bountyFleet);
 
-        return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getTargetedPerson(), assassinationBountyEntity.getStartingPoint());
+        return new AssassinationBountyIntel(assassinationBountyEntity, assassinationBountyEntity.getFleet(), assassinationBountyEntity.getTargetedPerson(), assassinationBountyEntity.getStartingPoint(), assassinationBountyEntity.getEndingPoint());
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {

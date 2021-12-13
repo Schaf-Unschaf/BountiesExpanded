@@ -14,12 +14,12 @@ import static de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils.DEFA
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class TooltipAPIUtils {
-    public static void addRepMessage(TooltipMakerAPI info, float width, float pad, FactionAPI faction, ReputationActionResponsePlugin.ReputationAdjustmentResult rep) {
-        if (isNull(info) || isNull(faction) || isNull(rep))
+    public static void addRepMessage(TooltipMakerAPI info, float width, float pad, FactionAPI faction, ReputationActionResponsePlugin.ReputationAdjustmentResult repChange) {
+        if (isNull(info) || isNull(faction) || isNull(repChange))
             return;
 
         String factionName = faction.getDisplayName();
-        float delta = rep.delta;
+        float delta = repChange.delta;
         int deltaInt = Math.round(Math.abs(delta) * 100f);
         FactionAPI player = Global.getSector().getPlayerFaction();
         int repInt = RepLevel.getRepInt(player.getRelationship(faction.getId()));
@@ -65,7 +65,7 @@ public class TooltipAPIUtils {
         info.getPrev().getPosition().setXAlignOffset(-(flagWidth + flagPadding + innerPadding));
     }
 
-    public static void addFactionRepLastChangedBox(TooltipMakerAPI info, float width, float pad, FactionAPI faction, float repDelta) {
+    public static void addFactionRepLastChangedBox(TooltipMakerAPI info, float width, float pad, FactionAPI faction, float repChange) {
         if (isNull(info) || isNull(faction))
             return;
 
@@ -76,7 +76,7 @@ public class TooltipAPIUtils {
         float flagHeight = 256f / sizeDiv;
 
         String factionName = faction.getDisplayName();
-        int deltaInt = Math.round(Math.abs(repDelta) * 100f);
+        int deltaInt = Math.round(Math.abs(repChange) * 100f);
         FactionAPI player = Global.getSector().getPlayerFaction();
         Color factionColor = faction.getBaseUIColor();
         Color deltaColor = Misc.getPositiveHighlightColor();
@@ -84,10 +84,10 @@ public class TooltipAPIUtils {
 
         String deltaString = "improved by " + deltaInt;
 
-        if (repDelta < 0) {
+        if (repChange < 0) {
             deltaColor = Misc.getNegativeHighlightColor();
             deltaString = "reduced by " + deltaInt;
-        } else if (repDelta == 0) {
+        } else if (repChange == 0) {
             deltaString = "not affected";
             deltaColor = Misc.getTextColor();
         }
@@ -106,22 +106,22 @@ public class TooltipAPIUtils {
         info.getPrev().getPosition().setXAlignOffset(-(flagWidth + flagPadding + innerPadding));
     }
 
-    public static void addRepBarWithChange(TooltipMakerAPI info, float width, float pad, FactionAPI faction, float repDelta) {
-        int deltaInt = Math.round(Math.abs(repDelta) * 100f);
+    public static void addRepBarWithChange(TooltipMakerAPI info, float width, float pad, float repBarValue, float repChange) {
+        int deltaInt = Math.round(Math.abs(repChange) * 100f);
         Color deltaColor = Misc.getPositiveHighlightColor();
         String deltaString = "improved by " + deltaInt;
 
-        if (repDelta < 0) {
+        if (repChange < 0) {
             deltaColor = Misc.getNegativeHighlightColor();
             deltaString = "reduced by " + deltaInt;
-        } else if (repDelta == 0) {
+        } else if (repChange == 0) {
             deltaString = "not affected";
             deltaColor = Misc.getTextColor();
         }
 
         float textPad = 8f;
 
-        info.addRelationshipBar(faction, width, pad);
+        info.addRelationshipBar(repBarValue, width, pad);
         float barWidth = info.getPrev().getPosition().getWidth();
         info.addPara(deltaString, textPad, deltaColor, deltaString);
         info.getPrev().getPosition().setXAlignOffset(barWidth / 3 + pad);
@@ -131,7 +131,33 @@ public class TooltipAPIUtils {
     }
 
     public static void addFactionFlagsWithRep(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, FactionAPI rightFaction) {
-        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftFaction.getLogo(), rightFaction.getLogo());
+        addCustomImagesWithRepBar(info, width, pad, itemPad, leftFaction, leftFaction.getLogo(), rightFaction, rightFaction.getLogo());
+    }
+
+    public static void addFactionFlagsWithRepChange(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, float leftRepChange, FactionAPI rightFaction, float rightRepChange) {
+        addCustomImagesWithRepChange(info, width, pad, itemPad, leftFaction, leftFaction.getLogo(), leftRepChange, rightFaction, rightFaction.getLogo(), rightRepChange);
+    }
+
+    public static void addPersonWithFactionRepBar(TooltipMakerAPI info, float width, float pad, float itemPad, PersonAPI person) {
+        addCustomImagesWithSingleRepBar(info, width, pad, itemPad, person.getPortraitSprite(), person.getFaction().getLogo(), person.getFaction().getRelToPlayer().getRel());
+    }
+
+    public static void addPersonWithFactionRepBarAndChange(TooltipMakerAPI info, float width, float pad, float itemPad, PersonAPI person, float repChange) {
+        addCustomImagesWithSingleRepBarAndChange(info, width, pad, itemPad, person.getPortraitSprite(), person.getFaction().getLogo(), person.getFaction().getRelToPlayer().getRel(), repChange);
+    }
+
+    public static void addCustomImagesWithSingleRepBar(TooltipMakerAPI info, float width, float pad, float itemPad, String leftImage, String rightImage, float repBarValue) {
+        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftImage, rightImage);
+        info.addRelationshipBar(repBarValue, width, pad);
+    }
+
+    public static void addCustomImagesWithSingleRepBarAndChange(TooltipMakerAPI info, float width, float pad, float itemPad, String leftImage, String rightImage, float repBarValue, float repChange) {
+        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftImage, rightImage);
+        addRepBarWithChange(info, width, pad, repBarValue, repChange);
+    }
+
+    public static void addCustomImagesWithRepBar(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, String leftImage, FactionAPI rightFaction, String rightImage) {
+        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftImage, rightImage);
 
         info.addRelationshipBar(leftFaction, width / 2 - itemPad, 5f);
 
@@ -144,9 +170,9 @@ public class TooltipAPIUtils {
         info.getPrev().getPosition().setYAlignOffset(-info.getPrev().getPosition().getHeight());
     }
 
-    public static void addFactionFlagsWithRepChange(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, float leftRepDelta, FactionAPI rightFaction, float rightRepDelta) {
-        float[] repDelta = {leftRepDelta, rightRepDelta};
-        int[] deltaInt = {Math.round(Math.abs(leftRepDelta) * 100f), Math.round(Math.abs(rightRepDelta) * 100f)};
+    public static void addCustomImagesWithRepChange(TooltipMakerAPI info, float width, float pad, float itemPad, FactionAPI leftFaction, String leftImage, float leftRepChange, FactionAPI rightFaction, String rightImage, float rightRepChange) {
+        float[] repDelta = {leftRepChange, rightRepChange};
+        int[] deltaInt = {Math.round(Math.abs(leftRepChange) * 100f), Math.round(Math.abs(rightRepChange) * 100f)};
         Color[] deltaColor = {Misc.getPositiveHighlightColor(), Misc.getPositiveHighlightColor()};
         String[] deltaString = {"improved by " + deltaInt[0], "improved by " + deltaInt[1]};
 
@@ -162,7 +188,7 @@ public class TooltipAPIUtils {
 
         float textPad = 8f;
 
-        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftFaction.getLogo(), rightFaction.getLogo());
+        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, leftImage, rightImage);
 
         info.addRelationshipBar(leftFaction, width / 2 - itemPad, 5f);
         float leftBarHeight = info.getPrev().getPosition().getHeight();
@@ -180,17 +206,5 @@ public class TooltipAPIUtils {
 
         info.addSpacer(0f);
         info.getPrev().getPosition().setXAlignOffset(-(rightBarWidth / 6) - width / 2 - itemPad + 2f);
-    }
-
-    public static void addPersonWithFactionRepBar(TooltipMakerAPI info, float width, float pad, float itemPad, PersonAPI person) {
-        FactionAPI faction = person.getFaction();
-        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, person.getPortraitSprite(), faction.getCrest());
-        info.addRelationshipBar(faction, width, pad);
-    }
-
-    public static void addPersonWithFactionRepBarAndChange(TooltipMakerAPI info, float width, float pad, float itemPad, PersonAPI person, float repDelta) {
-        FactionAPI faction = person.getFaction();
-        info.addImages(width, DEFAULT_IMAGE_HEIGHT, pad, itemPad, person.getPortraitSprite(), faction.getCrest());
-        addRepBarWithChange(info, width, pad, faction, repDelta);
     }
 }

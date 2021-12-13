@@ -1,13 +1,12 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.pirate;
 
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.BattleAPI;
-import com.fs.starfarer.api.campaign.CampaignFleetAPI;
-import com.fs.starfarer.api.campaign.ReputationActionResponsePlugin;
-import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
+import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
@@ -22,17 +21,17 @@ import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdated
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 
 @Getter
-public class WarCriminalIntel extends BaseBountyIntel {
-    private final WarCriminalEntity warCriminalEntity;
+public class PirateBountyIntel extends BaseBountyIntel {
+    private final PirateBountyEntity pirateBountyEntity;
     private final int payment;
 
-    public WarCriminalIntel(WarCriminalEntity warCriminalEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(warCriminalEntity, warCriminalEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
-        this.warCriminalEntity = warCriminalEntity;
-        this.payment = warCriminalEntity.getBaseReward();
-        this.duration = new Random().nextInt((Settings.warCriminalMaxDuration - Settings.warCriminalMinDuration) + 1) + Settings.warCriminalMinDuration;
-        warCriminalEntity.setBountyIntel(this);
-        Misc.makeImportant(fleet, "warCriminalBounty", duration);
+    public PirateBountyIntel(PirateBountyEntity pirateBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
+        super(pirateBountyEntity, pirateBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
+        this.pirateBountyEntity = pirateBountyEntity;
+        this.payment = pirateBountyEntity.getBaseReward();
+        this.duration = new Random().nextInt((Settings.pirateBountyMaxDuration - Settings.pirateBountyMinDuration) + 1) + Settings.pirateBountyMinDuration;
+        pirateBountyEntity.setBountyIntel(this);
+        Misc.makeImportant(fleet, "pirateBounty", duration);
     }
 
     @Override
@@ -44,19 +43,40 @@ public class WarCriminalIntel extends BaseBountyIntel {
         if (isDone || isNotInvolved || isNotComplete)
             return;
 
-        float targetRepAfterBattle = getUpdatedRep(warCriminalEntity.getTargetedFaction());
+        float targetRepAfterBattle = getUpdatedRep(pirateBountyEntity.getTargetedFaction());
 
         Global.getSector().getPlayerFleet().getCargo().getCredits().add(payment);
 
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
-                warCriminalEntity.getOfferingFaction().getId());
+                pirateBountyEntity.getOfferingFaction().getId());
 
         result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep, targetRepAfterBattle);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
-        if (Settings.retrievalEventActive)
-            missionHandler.startRetrievalSecondStage(warCriminalEntity.getBountyIntel(), warCriminalEntity.getRetrievalTargetShip());
 
         cleanUp(false);
+    }
+
+    @Override
+    public FactionAPI getFactionForUIColors() {
+        return bountyEntity.getTargetedFaction();
+    }
+
+    @Override
+    public SectorEntityToken getMapLocation(SectorMapAPI map) {
+        if (Settings.isDebugActive())
+            return super.getMapLocation(map);
+
+        Constellation c = startingPoint.getConstellation();
+        SectorEntityToken entity = null;
+        if (c != null && map != null) {
+            entity = map.getConstellationLabelEntity(c);
+        }
+
+        if (entity == null) {
+            entity = startingPoint;
+        }
+
+        return entity;
     }
 }

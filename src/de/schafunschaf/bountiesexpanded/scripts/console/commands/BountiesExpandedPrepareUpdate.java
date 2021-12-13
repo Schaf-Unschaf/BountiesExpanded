@@ -1,6 +1,6 @@
 package de.schafunschaf.bountiesexpanded.scripts.console.commands;
 
-import de.schafunschaf.bountiesexpanded.helper.ModUpdateHelper;
+import de.schafunschaf.bountiesexpanded.helper.ModInitHelper;
 import org.jetbrains.annotations.NotNull;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.Console;
@@ -12,7 +12,7 @@ public class BountiesExpandedPrepareUpdate implements BaseCommand {
             return CommandResult.WRONG_CONTEXT;
         }
 
-        ModUpdateHelper.prepareForUpdate();
+        ModInitHelper.prepareForUpdate();
         Console.showMessage("Preparing Mod for update...");
         Console.showMessage("Please wait 2 days, save game, quit and update the Mod");
         return CommandResult.SUCCESS;

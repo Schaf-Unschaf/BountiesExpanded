@@ -8,6 +8,7 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.BEBaseMissionIntel;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import de.schafunschaf.bountiesexpanded.util.ShipPaymentPair;
 

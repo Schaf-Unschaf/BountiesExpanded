@@ -110,7 +110,7 @@ public class HVBRevengeManager extends BaseEventManager {
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
         upgradeShips(fleet);
 
-        HVBRevengeIntel bountyIntel = new HVBRevengeIntel(hvbRevengeEntity, fleet, hvbRevengeEntity.getTargetedPerson(), hideout);
+        HVBRevengeIntel bountyIntel = new HVBRevengeIntel(hvbRevengeEntity, fleet, hvbRevengeEntity.getTargetedPerson(), hideout, null);
 
         log.info("BountiesExpanded: Creating HighValueBountyRevengeEvent");
         addActive(bountyIntel);

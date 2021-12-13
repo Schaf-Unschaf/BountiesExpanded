@@ -8,13 +8,15 @@ import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.NoShipRecoveryFleetEncounterContext;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
 public class ShipUtils {
     public static void markMemberForRecovery(FleetMemberAPI fleetMemberToRecover) {
@@ -22,16 +24,23 @@ public class ShipUtils {
 
         List<FleetMemberAPI> singleShipCollection = new ArrayList<>();
         singleShipCollection.add(fleetMemberToRecover);
-        markMembersForRecovery(singleShipCollection);
+        markShipsForRecovery(singleShipCollection);
     }
 
-    public static void markMembersForRecovery(Collection<FleetMemberAPI> fleetMembersToRecover) {
-        if (isNull(fleetMembersToRecover)) return;
-        fleetMembersToRecover.remove(null);
-        if (fleetMembersToRecover.isEmpty()) return;
+    public static void markShipsForRecovery(Collection<FleetMemberAPI> shipsToRecover) {
+        if (isNull(shipsToRecover)) return;
+        shipsToRecover.remove(null);
+        if (shipsToRecover.isEmpty()) return;
 
-        MemoryAPI memoryAPI = fleetMembersToRecover.iterator().next().getFleetData().getFleet().getMemoryWithoutUpdate();
-        memoryAPI.set(GuaranteedShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_GUARANTEED_RECOVERY, fleetMembersToRecover);
+        MemoryAPI memoryAPI = shipsToRecover.iterator().next().getFleetData().getFleet().getMemoryWithoutUpdate();
+        memoryAPI.set(GuaranteedShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_GUARANTEED_RECOVERY, shipsToRecover);
+    }
+
+    public static void markShipsAsUnrecoverable(@NotNull FleetMemberAPI... shipsWithoutRecovery) {
+        List<FleetMemberAPI> fleetMembers = Arrays.asList(shipsWithoutRecovery);
+
+        CampaignFleetAPI fleet = fleetMembers.get(0).getFleetData().getFleet();
+        fleet.getMemoryWithoutUpdate().set(NoShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_NO_RECOVERY, shipsWithoutRecovery);
     }
 
     public static FleetMemberAPI findMemberForStats(MutableShipStatsAPI stats) {

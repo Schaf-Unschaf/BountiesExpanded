@@ -31,26 +31,19 @@ public class MissionHandler {
     @AllArgsConstructor
     public enum MissionType {
         ASSASSINATION(
-                "Assassination", "assassination", "eliminate the fleet commander, %s",
-                true, false),
+                "Assassination", "assassination", "eliminate the fleet commander, %s"),
         DESTRUCTION(
-                "Destruction", "destruction", "destroy the flagship of %s",
-                false, false),
+                "Destruction", "destruction", "destroy the flagship of %s"),
         OBLITERATION(
-                "Obliteration", "obliteration", "completely destroy the fleet of %s",
-                true, false),
+                "Obliteration", "obliteration", "completely destroy the fleet of %s"),
         //        INTIMIDATION(
-//                "Intimidation", "intimidation", "force %s's fleet into retreat",
-//                false, true),
+//                "Intimidation", "intimidation", "force %s's fleet into retreat"),
         RETRIEVAL(
-                "Retrieval", "retrieval", "retrieve and bring the ship back to %s",
-                true, false);
+                "Retrieval", "retrieval", "retrieve and bring the ship back to %s");
 
         private final String missionTypeUCFirst;
         private final String missionType;
         private final String objectiveText;
-        private final boolean flagshipRecoverable;
-        private final boolean forceRetreat;
 
         public static MissionType getRandomMissionType() {
             MissionType[] types = MissionType.values();

@@ -24,8 +24,8 @@ public class HVBRevengeIntel extends BaseBountyIntel {
     private final HVBRevengeEntity hvbRevengeEntity;
     private final int payment;
 
-    public HVBRevengeIntel(HVBRevengeEntity hvbRevengeEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(hvbRevengeEntity, hvbRevengeEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken);
+    public HVBRevengeIntel(HVBRevengeEntity hvbRevengeEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken, SectorEntityToken endingPoint) {
+        super(hvbRevengeEntity, hvbRevengeEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken, endingPoint);
         this.hvbRevengeEntity = hvbRevengeEntity;
         this.payment = hvbRevengeEntity.getBaseReward();
     }

@@ -10,14 +10,18 @@ import data.scripts.campaign.intel.VayraUniqueBountyIntel;
 import data.scripts.campaign.intel.VayraUniqueBountyManager;
 import de.schafunschaf.bountiesexpanded.Blacklists;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.helper.ModUpdateHelper;
+import de.schafunschaf.bountiesexpanded.helper.ModInitHelper;
+import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUtils;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.deserter.DeserterBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.pirate.PirateBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import lombok.extern.log4j.Log4j;
 
 import java.util.List;
@@ -43,15 +47,15 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
     @Override
     public void onGameLoad(boolean newGame) {
         if (Settings.prepareUpdate) {
-            ModUpdateHelper.prepareForUpdate();
+            ModInitHelper.prepareForUpdate();
             return;
         }
 
         setBlacklists();
 
-        ModUpdateHelper.initManagerAndPlugins();
+        ModInitHelper.initManagerAndPlugins();
 
-        reloadSMods();
+        reloadHullMods();
 
         if (Settings.highValueBountyActive && Global.getSettings().getModManager().isModEnabled("vayrasector"))
             removeVayraUniqueBounties();
@@ -79,66 +83,98 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         }
     }
 
-    private void reloadSMods() {
-        reloadSkirmishSMods();
-        reloadHVBSMods();
-        reloadAssassinationSMods();
-        reloadHVBRevengeSMods();
-        reloadWarCriminalSMods();
+    private void reloadHullMods() {
+        reloadSkirmishMods();
+        reloadHVBMods();
+        reloadAssassinationMods();
+        reloadHVBRevengeMods();
+        reloadWarCriminalMods();
+        reloadPirateBountyMods();
+        reloadDeserterBountyMods();
     }
 
-    private void reloadSkirmishSMods() {
+    private void reloadSkirmishMods() {
         SkirmishBountyManager bountyManager = SkirmishBountyManager.getInstance();
         if (isNull(bountyManager))
             return;
 
-        Set<CampaignFleetAPI> skirmishFleets = FleetUtils.findFleetWithMemKey(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY);
-        for (CampaignFleetAPI skirmishFleet : skirmishFleets) {
-            bountyManager.upgradeShips(skirmishFleet);
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            float fleetQuality = ((BountyEntity) fleet.getMemoryWithoutUpdate().get(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY)).getFleetQuality();
+            FleetGenerator.addDMods(fleet, fleetQuality);
+            bountyManager.upgradeShips(fleet);
         }
     }
 
-    private void reloadHVBSMods() {
+    private void reloadHVBMods() {
         HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
         if (isNull(bountyManager))
             return;
 
-        Set<CampaignFleetAPI> highValueBountyFleets = FleetUtils.findFleetWithMemKey(HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY);
-        for (CampaignFleetAPI hvbFleet : highValueBountyFleets) {
-            bountyManager.upgradeShips(hvbFleet);
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            bountyManager.upgradeShips(fleet);
         }
     }
 
-    private void reloadAssassinationSMods() {
+    private void reloadAssassinationMods() {
         AssassinationBountyManager bountyManager = AssassinationBountyManager.getInstance();
         if (isNull(bountyManager))
             return;
 
-        Set<CampaignFleetAPI> assassinationFleets = FleetUtils.findFleetWithMemKey(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY);
-        for (CampaignFleetAPI assassinationFleet : assassinationFleets) {
-            bountyManager.upgradeShips(assassinationFleet);
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            float fleetQuality = ((BountyEntity) fleet.getMemoryWithoutUpdate().get(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY)).getFleetQuality();
+            FleetGenerator.addDMods(fleet, fleetQuality);
+            bountyManager.upgradeShips(fleet);
         }
     }
 
-    private void reloadHVBRevengeSMods() {
+    private void reloadHVBRevengeMods() {
         HVBRevengeManager bountyManager = HVBRevengeManager.getInstance();
         if (isNull(bountyManager))
             return;
 
-        Set<CampaignFleetAPI> hvbRevengeFleets = FleetUtils.findFleetWithMemKey(HVBRevengeManager.HVB_REVENGE_FLEET_KEY);
-        for (CampaignFleetAPI hvbRevengeFleet : hvbRevengeFleets) {
-            bountyManager.upgradeShips(hvbRevengeFleet);
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(HVBRevengeManager.HVB_REVENGE_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            bountyManager.upgradeShips(fleet);
         }
     }
 
-    private void reloadWarCriminalSMods() {
+    private void reloadWarCriminalMods() {
         WarCriminalManager bountyManager = WarCriminalManager.getInstance();
         if (isNull(bountyManager))
             return;
 
-        Set<CampaignFleetAPI> warCriminalFleets = FleetUtils.findFleetWithMemKey(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY);
-        for (CampaignFleetAPI warCriminalFleet : warCriminalFleets) {
-            bountyManager.upgradeShips(warCriminalFleet);
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            float fleetQuality = ((BountyEntity) fleet.getMemoryWithoutUpdate().get(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY)).getFleetQuality();
+            FleetGenerator.addDMods(fleet, fleetQuality);
+            bountyManager.upgradeShips(fleet);
+        }
+    }
+
+    private void reloadPirateBountyMods() {
+        PirateBountyManager bountyManager = PirateBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(PirateBountyManager.PIRATE_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            float fleetQuality = ((BountyEntity) fleet.getMemoryWithoutUpdate().get(PirateBountyManager.PIRATE_BOUNTY_FLEET_KEY)).getFleetQuality();
+            FleetGenerator.addDMods(fleet, fleetQuality);
+        }
+    }
+
+    private void reloadDeserterBountyMods() {
+        DeserterBountyManager bountyManager = DeserterBountyManager.getInstance();
+        if (isNull(bountyManager))
+            return;
+
+        Set<CampaignFleetAPI> campaignFleets = FleetUtils.findFleetWithMemKey(DeserterBountyManager.DESERTER_BOUNTY_FLEET_KEY);
+        for (CampaignFleetAPI fleet : campaignFleets) {
+            float fleetQuality = ((BountyEntity) fleet.getMemoryWithoutUpdate().get(DeserterBountyManager.DESERTER_BOUNTY_FLEET_KEY)).getFleetQuality();
+            FleetGenerator.addDMods(fleet, fleetQuality);
         }
     }
 

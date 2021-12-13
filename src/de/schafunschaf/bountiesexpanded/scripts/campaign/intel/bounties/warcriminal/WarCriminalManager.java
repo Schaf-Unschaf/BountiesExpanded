@@ -18,12 +18,12 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBoun
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.extern.log4j.Log4j;
 
 import java.util.Random;
 
 import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.shipretrieval.RetrievalMissionEntity.RETRIEVAL_SHIP_KEY;
-import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.MissionType;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Log4j
@@ -88,13 +88,21 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
-        fleetMemory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
-        fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, WAR_CRIMINAL_BOUNTY_FLEET_KEY);
         fleetMemory.set(WAR_CRIMINAL_BOUNTY_FLEET_KEY, warCriminalEntity);
-        if (warCriminalEntity.getMissionHandler().getMissionType() == MissionType.RETRIEVAL) {
-            warCriminalEntity.setRetrievalTargetShip(fleet.getFlagship());
-            fleetMemory.set(RETRIEVAL_SHIP_KEY, fleet.getFlagship().getId());
-            ShipUtils.markMemberForRecovery(fleet.getFlagship());
+
+        FleetMemberAPI flagship = fleet.getFlagship();
+        switch (warCriminalEntity.getMissionHandler().getMissionType()) {
+            case RETRIEVAL:
+                warCriminalEntity.setRetrievalTargetShip(flagship);
+                fleetMemory.set(RETRIEVAL_SHIP_KEY, flagship.getId());
+                ShipUtils.markMemberForRecovery(flagship);
+                break;
+            case DESTRUCTION:
+                ShipUtils.markShipsAsUnrecoverable(flagship);
+            case OBLITERATION:
+                fleetMemory.set(MemFlags.MEMORY_KEY_NO_SHIP_RECOVERY, true);
+                break;
         }
 
         log.info("BountiesExpanded - Spawning War Criminal Bounty: By "
@@ -107,7 +115,7 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
 
         upgradeShips(fleet);
 
-        return new WarCriminalIntel(warCriminalEntity, fleet, person, startingPoint);
+        return new WarCriminalIntel(warCriminalEntity, fleet, person, startingPoint, warCriminalEntity.getEndingPoint());
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
@@ -122,6 +130,9 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         FleetMemberAPI flagship = bountyFleet.getFlagship();
         if (isNull(flagship))
             return;
+
+        if (warCriminalEntity.getMissionHandler().getMissionType().equals(MissionHandler.MissionType.RETRIEVAL))
+            SModUpgradeHelper.addRandomSMods(flagship, 3, random);
 
         if (flagship.getVariant().getSMods().isEmpty()) {
             SModUpgradeHelper.upgradeShip(flagship, numSMods, random);

@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.shipretrieval;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FactionAPI;
@@ -15,7 +15,6 @@ import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.MissionEntity;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.BEMissionResult;
 import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +33,7 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
     protected final MarketAPI market;
     protected final PersonAPI contact;
     protected final SectorEntityToken startingPoint;
-    protected final BEMissionResult result;
+    public final BEMissionResult result;
     protected final Float duration;
     protected float elapsedDays = 0f;
 
@@ -116,22 +115,22 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
     }
 
     @Override
-    protected Color getBulletColorForMode(ListInfoMode mode) {
+    public Color getBulletColorForMode(ListInfoMode mode) {
         return super.getBulletColorForMode(mode);
     }
 
     @Override
-    protected void addDays(TooltipMakerAPI info, String after, float days, Color c, float pad) {
+    public void addDays(TooltipMakerAPI info, String after, float days, Color c, float pad) {
         super.addDays(info, after, days, c, pad);
     }
 
     @Override
-    protected void bullet(TooltipMakerAPI info) {
+    public void bullet(TooltipMakerAPI info) {
         super.bullet(info);
     }
 
     @Override
-    protected void unindent(TooltipMakerAPI info) {
+    public void unindent(TooltipMakerAPI info) {
         super.unindent(info);
     }
 

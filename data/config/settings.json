@@ -4,7 +4,9 @@
       "bountiesExpanded_placeholder": "graphics/icons/intel/placeholder.png",
       "bountiesExpanded_assassination": "graphics/icons/intel/assassination_bounty.png",
       "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png",
-      "bountiesExpanded_retrieval": "graphics/icons/intel/retrieval_mission.png"
+      "bountiesExpanded_retrieval": "graphics/icons/intel/retrieval_mission.png",
+      "bountiesExpanded_deserter_crest": "graphics/icons/intel/deserter_bounty_crest.png",
+      "bountiesExpanded_deserter_flag": "graphics/icons/intel/deserter_bounty_flag.png"
     }
   }
 }

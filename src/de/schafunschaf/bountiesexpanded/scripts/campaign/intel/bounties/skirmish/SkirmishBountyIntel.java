@@ -33,8 +33,8 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
     private float playerInvolvement = 0f;
     private Map<HullSize, int[]> destroyedShips;
 
-    public SkirmishBountyIntel(SkirmishBountyEntity skirmishBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(skirmishBountyEntity, skirmishBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken);
+    public SkirmishBountyIntel(SkirmishBountyEntity skirmishBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
+        super(skirmishBountyEntity, skirmishBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
         this.duration = new Random().nextInt((Settings.skirmishMaxDuration - Settings.skirmishMinDuration) + 1) + Settings.skirmishMinDuration;
         this.maxFleetSizeForCompletion = skirmishBountyEntity.getMaxFleetSizeForCompletion();
         this.skirmishBountyEntity = skirmishBountyEntity;

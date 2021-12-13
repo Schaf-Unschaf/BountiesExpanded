@@ -32,7 +32,8 @@ import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
-import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.*;
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.MissionType;
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.createNewMissionGoal;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
@@ -40,6 +41,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 @Getter
 @Setter
 public class HVBRevengeEntity implements BountyEntity {
+    private final String fleetKey = HVBRevengeManager.HVB_REVENGE_FLEET_KEY;
     private String bountyId = "HVBRevenge";
     private String intelText = "BAAAAAAH!\nI'M STEALING YOUR ICE CREAM!";
     private final String shipType;
@@ -107,6 +109,11 @@ public class HVBRevengeEntity implements BountyEntity {
     @Override
     public BaseBountyIntel getBountyIntel() {
         return null;
+    }
+
+    @Override
+    public float getFleetQuality() {
+        return 0;
     }
 
     @Override

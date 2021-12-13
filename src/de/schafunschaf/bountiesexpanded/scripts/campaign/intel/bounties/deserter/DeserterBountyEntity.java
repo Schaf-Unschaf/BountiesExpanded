@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal;
+package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.deserter;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
@@ -11,7 +11,6 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
-import de.schafunschaf.bountiesexpanded.helper.mission.MissionTextUtils;
 import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.helper.ui.TooltipAPIUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
@@ -31,8 +30,9 @@ import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPl
 
 @Getter
 @Setter
-public class WarCriminalEntity implements BountyEntity {
-    private final String warCriminalIcon = "bountiesExpanded_placeholder";
+public class DeserterBountyEntity implements BountyEntity {
+    private final String deserterBountyIcon = "bountiesExpanded_deserter_crest";
+    private final String deserterBountyFlag = "bountiesExpanded_deserter_flag";
     private final int baseReward;
     private final int level;
     private final float fleetQuality;
@@ -44,29 +44,31 @@ public class WarCriminalEntity implements BountyEntity {
     private final SectorEntityToken startingPoint;
     private final SectorEntityToken endingPoint;
     private final MissionHandler missionHandler;
-    private PersonAPI offeringPerson;
-    private FleetMemberAPI retrievalTargetShip;
     private float targetRepBeforeBattle;
-    private WarCriminalIntel bountyIntel;
+    private DeserterBountyIntel bountyIntel;
 
-    public WarCriminalEntity(int baseReward, int level, float fleetQuality, Difficulty difficulty, FactionAPI targetedFaction, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionHandler missionHandler) {
+    public DeserterBountyEntity(int baseReward, int level, float fleetQuality, Difficulty difficulty, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionHandler missionHandler) {
         this.baseReward = baseReward;
         this.level = level;
         this.fleetQuality = fleetQuality;
         this.difficulty = difficulty;
-        this.targetedFaction = targetedFaction;
+        this.targetedFaction = offeringFaction;
         this.offeringFaction = offeringFaction;
         this.fleet = fleet;
         this.targetedPerson = targetedPerson;
         this.startingPoint = startingPoint;
         this.endingPoint = endingPoint;
         this.missionHandler = missionHandler;
-        this.offeringPerson = offeringFaction.createRandomPerson();
     }
 
     @Override
     public BaseEventManager getBountyManager() {
-        return WarCriminalManager.getInstance();
+        return DeserterBountyManager.getInstance();
+    }
+
+    @Override
+    public PersonAPI getOfferingPerson() {
+        return null;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class WarCriminalEntity implements BountyEntity {
 
         if (isNull(result)) {
             info.addPara("Reward: %s", initPad, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
-            info.addPara("Target: %s", bulletPadding, bulletColor, targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
+            info.addPara("Target: %s", bulletPadding, bulletColor, baseBountyIntel.getFactionForUIColors().getBaseUIColor(), targetedPerson.getNameString());
             info.addPara("Time left: %s", bulletPadding, bulletColor, highlightColor, days + singularOrPlural(days, " day"));
         } else {
             switch (result.type) {
@@ -112,64 +114,62 @@ public class WarCriminalEntity implements BountyEntity {
     @Override
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
         boolean isRetrievalMission = MissionHandler.MissionType.RETRIEVAL.equals(missionHandler.getMissionType());
-        PersonAPI personForBriefingText = isRetrievalMission ? offeringPerson : targetedPerson;
-        String objectiveText = String.format(missionHandler.getMissionType().getObjectiveText(), personForBriefingText.getNameString());
-        String briefingText = String.format("A large sum has been put on the head of %s, wanted for %s countless war crimes against %s.\n\n" +
-                        "To collect this bounty, we need to %s.",
-                targetedPerson.getNameString(), getTargetedPerson().getHisOrHer(), offeringFaction.getDisplayNameWithArticle(), objectiveText);
-        Color highlightColor = Misc.getHighlightColor();
-        Color offeringFactionColor = offeringFaction.getBaseUIColor();
-        Color targetedFactionColor = targetedFaction.getBaseUIColor();
+        String hisOrHer = getTargetedPerson().getHisOrHer();
+        FleetMemberAPI targetedShip = fleet.getFleetData().getMemberWithCaptain(targetedPerson);
+        String briefingText = String.format("A large sum has been put on the head of %s, wanted dead for %s recent theft of military equipment and betrayal of %s.\n\n" +
+                        "To claim this bounty, we need to end %s life by destroying the %s.",
+                targetedPerson.getNameString(), hisOrHer, offeringFaction.getDisplayNameWithArticle(), hisOrHer, targetedShip.getShipName());
+        Color factionColor = baseBountyIntel.getFactionForUIColors().getBaseUIColor();
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
 
         if (isNull(result)) {
-            TooltipAPIUtils.addFactionFlagsWithRep(info, width, opad, opad, offeringFaction, targetedFaction);
-            info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
-            info.addPara(briefingText, opad, new Color[]{targetedFactionColor, offeringFactionColor, personForBriefingText.getFaction().getBaseUIColor()}, targetedPerson.getNameString(), offeringFaction.getDisplayNameWithArticle(), personForBriefingText.getNameString());
+            TooltipAPIUtils.addCustomImagesWithSingleRepBar(info, width, opad, 10f,
+                    targetedPerson.getPortraitSprite(),
+                    Global.getSettings().getSpriteName("intel", deserterBountyFlag), offeringFaction.getRelToPlayer().getRel());
+            info.addSectionHeading("Briefing", factionColor, baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
+            info.addPara(briefingText, opad, factionColor, targetedPerson.getNameString(), offeringFaction.getDisplayNameWithArticle(), targetedShip.getShipName());
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
-            DescriptionUtils.generateHideoutDescription(info, baseBountyIntel, highlightColor);
+            if (fleet.getContainingLocation() == endingPoint.getContainingLocation())
+                DescriptionUtils.generateFakeHideoutDescription(info, baseBountyIntel, opad);
+            else
+                DescriptionUtils.generateFakeTravelDescription(info, baseBountyIntel, opad);
+
             DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
 
-            if (isRetrievalMission) {
-                info.addSectionHeading("Target Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
-                MissionTextUtils.generateRetrievalTargetSection(info, width, opad, retrievalTargetShip, targetedFaction);
-            }
-
-            info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, isRetrievalMission ? 0f : opad);
-            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 3, false);
+            info.addSectionHeading("Fleet Intel", factionColor, baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, isRetrievalMission ? 0f : opad);
+            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, 14, 2, true);
             DescriptionUtils.addDifficultyText(info, opad, difficulty);
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
+                    String debriefingText = "Mission completed. You brought %s to justice.";
                     float targetRepChange = result.targetRepAfterBattle - targetRepBeforeBattle;
 
-                    TooltipAPIUtils.addFactionFlagsWithRepChange(info, width, opad, opad, offeringFaction, result.rep.delta, targetedFaction, targetRepChange);
-                    info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
+                    TooltipAPIUtils.addCustomImagesWithSingleRepBarAndChange(info, width, opad, 10f,
+                            offeringFaction.getLogo(),
+                            Global.getSettings().getSpriteName("intel", deserterBountyFlag), offeringFaction.getRelToPlayer().getRel(), result.rep.delta);
+                    info.addSectionHeading("Briefing", factionColor, baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
                     info.addPara(briefingText, Misc.getGrayColor(), opad);
 
-                    info.addPara("You have successfully completed the mission.\n\n" +
-                                    "Bring the %s back to %s in the %s and hand it over to %s for an additional reward.",
-                            opad,
-                            new Color[]{highlightColor, offeringFactionColor, offeringFactionColor, offeringFactionColor},
-                            retrievalTargetShip.getShipName(),
-                            endingPoint.getName(),
-                            endingPoint.getStarSystem().getName(),
-                            offeringPerson.getNameString());
-                    MissionTextUtils.generateRetrievalConsequencesText(info, opad, retrievalTargetShip, offeringFaction, offeringPerson, missionHandler.getChanceForConsequences());
+                    info.addPara(debriefingText, opad, factionColor, targetedPerson.getRank() + " " + targetedPerson.getNameString());
+                    baseBountyIntel.bullet(info);
+                    info.addPara("%s Credits received", opad, Misc.getHighlightColor(), Misc.getDGSCredits(result.payment));
+                    baseBountyIntel.unindent(info);
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
                 case END_OTHER:
                 case END_TIME:
-                    TooltipAPIUtils.addFactionFlagsWithRep(info, width, opad, opad, offeringFaction, targetedFaction);
-                    info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
+                    TooltipAPIUtils.addCustomImagesWithSingleRepBar(info, width, opad, 10f,
+                            targetedPerson.getPortraitSprite(),
+                            Global.getSettings().getSpriteName("intel", deserterBountyFlag), offeringFaction.getRelToPlayer().getRel());
+                    info.addSectionHeading("Briefing", factionColor, baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
                     info.addPara(briefingText, Misc.getGrayColor(), opad);
 
-                    info.addPara("This mission is no longer on offer.\n\n" +
-                            "The wanted ship is either destroyed or someone else recovered it.", opad);
+                    info.addPara("This mission is no longer on offer.", opad);
                     break;
             }
         }
@@ -177,7 +177,7 @@ public class WarCriminalEntity implements BountyEntity {
 
     @Override
     public String getIcon() {
-        return Global.getSettings().getSpriteName("intel", warCriminalIcon);
+        return Global.getSettings().getSpriteName("intel", deserterBountyIcon);
     }
 
     @Override
@@ -185,14 +185,14 @@ public class WarCriminalEntity implements BountyEntity {
         if (isNotNull(result)) {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
-                    return "War Criminal Hunt - Completed";
+                    return "Deserter Bounty - Completed";
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
                 case END_OTHER:
                 case END_TIME:
-                    return "War Criminal Hunt - Failed";
+                    return "Deserter Bounty - Failed";
             }
         }
-        return String.format("War Criminal Hunt - %s", missionHandler.getMissionType().getMissionTypeUCFirst());
+        return String.format("Deserter Bounty - %s", missionHandler.getMissionType().getMissionTypeUCFirst());
     }
 }

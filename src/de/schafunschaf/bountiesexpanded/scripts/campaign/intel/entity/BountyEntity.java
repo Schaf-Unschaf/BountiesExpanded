@@ -42,6 +42,8 @@ public interface BountyEntity {
     int getBaseReward();
 
     int getLevel();
+
+    float getFleetQuality();
     
     void addBulletPoints(BaseBountyIntel plugin, TooltipMakerAPI info, ListInfoMode mode);
 

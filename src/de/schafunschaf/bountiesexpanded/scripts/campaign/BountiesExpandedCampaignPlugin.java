@@ -4,19 +4,20 @@ import com.fs.starfarer.api.PluginPick;
 import com.fs.starfarer.api.campaign.BaseCampaignPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.impl.campaign.shared.ReputationChangeTracker;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyEntity;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyEntity;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalEntity;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.NoShipRecoveryFleetEncounterContext;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.HighValueBountyInteractionDialogPlugin;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.NoRecoveryInteractionDialogPlugin;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.RetrievalInteractionDialogPlugin;
+
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
     public static final String PLUGIN_ID = "BountiesExpandedCampaignPlugin";
@@ -33,9 +34,16 @@ public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
 
     @Override
     public PluginPick<InteractionDialogPlugin> pickInteractionDialogPlugin(SectorEntityToken interactionTarget) {
-        if (interactionTarget.getMemoryWithoutUpdate().contains(HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY)) {
-            InteractionDialogPlugin interactionDialogPlugin = new HighValueBountyInteractionDialogPlugin();
-            return new PluginPick<>(interactionDialogPlugin, PickPriority.MOD_SPECIFIC);
+        MemoryAPI memory = interactionTarget.getMemoryWithoutUpdate();
+        String fleetIdentifierKey = (String) memory.get(EntityProvider.FLEET_IDENTIFIER_KEY);
+
+        if (isNotNull(fleetIdentifierKey)) {
+            setTargetRepBeforeBattle((BountyEntity) interactionTarget.getMemoryWithoutUpdate().get(fleetIdentifierKey));
+
+            if (HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY.equals(fleetIdentifierKey)) {
+                InteractionDialogPlugin interactionDialogPlugin = new HighValueBountyInteractionDialogPlugin();
+                return new PluginPick<>(interactionDialogPlugin, PickPriority.MOD_SPECIFIC);
+            }
         }
 
         // Plugin for guaranteed Ship-Recovery
@@ -44,27 +52,19 @@ public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
             return new PluginPick<>(interactionDialogPlugin, PickPriority.MOD_SPECIFIC);
         }
 
-        if (interactionTarget.getMemoryWithoutUpdate().contains(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY)) {
-            SkirmishBountyEntity skirmishBountyEntity = (SkirmishBountyEntity) interactionTarget.getMemoryWithoutUpdate().get(SkirmishBountyManager.SKIRMISH_BOUNTY_FLEET_KEY);
-            setTargetRepBeforeBattle(skirmishBountyEntity);
-            return null;
-        }
-
-        if (interactionTarget.getMemoryWithoutUpdate().contains(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY)) {
-            AssassinationBountyEntity assassinationBountyEntity = (AssassinationBountyEntity) interactionTarget.getMemoryWithoutUpdate().get(AssassinationBountyManager.ASSASSINATION_BOUNTY_FLEET_KEY);
-            setTargetRepBeforeBattle(assassinationBountyEntity);
-            return null;
-        }
-
-        if (interactionTarget.getMemoryWithoutUpdate().contains(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY)) {
-            WarCriminalEntity warCriminalEntity = (WarCriminalEntity) interactionTarget.getMemoryWithoutUpdate().get(WarCriminalManager.WAR_CRIMINAL_BOUNTY_FLEET_KEY);
-            setTargetRepBeforeBattle(warCriminalEntity);
+        // Plugin for no Ship-Recovery (Destruction and Obliteration missions)
+        if (interactionTarget.getMemoryWithoutUpdate().contains(NoShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_NO_RECOVERY)) {
+            InteractionDialogPlugin interactionDialogPlugin = new NoRecoveryInteractionDialogPlugin();
+            return new PluginPick<>(interactionDialogPlugin, PickPriority.MOD_SPECIFIC);
         }
 
         return null;
     }
 
     private void setTargetRepBeforeBattle(BountyEntity bountyEntity) {
+        if (isNull(bountyEntity))
+            return;
+
         ReputationChangeTracker repChangeTracker = SharedData.getData().getPlayerActivityTracker().getRepChangeTracker();
         float lastValue = repChangeTracker.getDataFor(bountyEntity.getTargetedFaction().getId()).getLastValue();
         bountyEntity.setTargetRepBeforeBattle(lastValue);

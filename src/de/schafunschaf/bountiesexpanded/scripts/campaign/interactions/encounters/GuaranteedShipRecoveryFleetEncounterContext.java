@@ -44,7 +44,7 @@ public class GuaranteedShipRecoveryFleetEncounterContext extends FleetEncounterC
 
         for (FleetMemberAPI ship : shipsToRecover)
             if (!recoverableShips.contains(ship)) {
-                if (!Settings.shipsCanBeRecoveredWithSP) {
+                if (!Settings.onlyRecoverWithSP) {
                     getStoryRecoverableShips().remove(ship);
                     prepareAndAddShipForRecovery(ship);
                 } else if (!getStoryRecoverableShips().contains(ship))
@@ -62,7 +62,9 @@ public class GuaranteedShipRecoveryFleetEncounterContext extends FleetEncounterC
         float weaponProb = Global.getSettings().getFloat("salvageWeaponProb");
         float wingProb = Global.getSettings().getFloat("salvageWingProb");
 
-        prepareShipForRecovery(ship, true, true, true, weaponProb, wingProb, getSalvageRandom());
+        ship.setOwner(0);
+
+        prepareShipForRecovery(ship, true, true, false, weaponProb, wingProb, getSalvageRandom());
 
         recoverableShips.add(ship);
     }

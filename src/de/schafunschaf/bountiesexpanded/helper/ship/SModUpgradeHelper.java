@@ -106,12 +106,15 @@ public class SModUpgradeHelper {
         fleetMember.setVariant(shipVariant, true, true);
     }
 
-    public static void addBuiltInMods(FleetMemberAPI fleetMember, Random random) {
+    public static void addRandomSMods(FleetMemberAPI fleetMember, int numSMods, Random random) {
         if (ComparisonTools.isNull(random))
             random = new Random();
         ShipVariantAPI shipVariant = fleetMember.getVariant();
+        int preUpgradeSModsAmount = shipVariant.getSMods().size();
 
-        shipVariant.addPermaMod(getRandomFreeHullMod(shipVariant, random));
+        do
+            shipVariant.addPermaMod(getRandomFreeHullMod(shipVariant, random), true);
+        while ((shipVariant.getSMods().size() - preUpgradeSModsAmount) < numSMods);
 
         fleetMember.setVariant(shipVariant, true, true);
     }
@@ -160,12 +163,27 @@ public class SModUpgradeHelper {
                 HullMods.STABILIZEDSHIELDEMITTER,
                 HullMods.TURRETGYROS,
                 HullMods.UNSTABLE_INJECTOR));
+
+        removeInvalidMods(shipVariant, hullMods);
+
         for (int i = 0; i < hullMods.size(); i++) {
             String selectedHullMod = hullMods.get(random.nextInt(hullMods.size()));
             if (!hasModBuiltIn(shipVariant, selectedHullMod))
                 return selectedHullMod;
         }
         return null;
+    }
+
+    private static void removeInvalidMods(ShipVariantAPI shipVariant, List<String> hullMods) {
+        if (shipVariant.getHullSpec().isPhase()) {
+            hullMods.remove(HullMods.HARDENED_SHIELDS);
+            hullMods.remove(HullMods.ACCELERATED_SHIELDS);
+            hullMods.remove(HullMods.EXTENDED_SHIELDS);
+            hullMods.remove(HullMods.FRONT_SHIELD_CONVERSION);
+            hullMods.remove(HullMods.OMNI_SHIELD_CONVERSION);
+            hullMods.remove(HullMods.STABILIZEDSHIELDEMITTER);
+        }
+
     }
 
     public static String getRandomFreeHullMod(ShipVariantAPI shipVariant, Random random) {
@@ -208,6 +226,9 @@ public class SModUpgradeHelper {
                 HullMods.TURRETGYROS,
                 HullMods.UNSTABLE_INJECTOR
         ));
+
+        removeInvalidMods(shipVariant, hullMods);
+
         for (int i = 0; i < hullMods.size(); i++) {
             String selectedHullMod = hullMods.get(random.nextInt(hullMods.size()));
             if (!hasModBuiltIn(shipVariant, selectedHullMod) && !hasWeaponRangeMod(shipVariant, selectedHullMod))

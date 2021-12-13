@@ -43,6 +43,7 @@ public class HighValueBountyEntity implements BountyEntity {
     private final String bountyId;
     private final int baseReward;
     private final int level = 69;
+    private final float fleetQuality;
     private final String intelText;
     private final FactionAPI offeringFaction;
     private final FactionAPI targetedFaction;
@@ -58,8 +59,9 @@ public class HighValueBountyEntity implements BountyEntity {
     private String skillDesc;
     private String fleetDesc;
 
-    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, String intelText, String bountyId) {
+    public HighValueBountyEntity(int baseReward, float repReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, String intelText, String bountyId, float fleetQuality) {
         this.baseReward = baseReward;
+        this.fleetQuality = fleetQuality;
         this.repReward = repReward;
         this.intelText = intelText;
         this.offeringFaction = offeringFaction;

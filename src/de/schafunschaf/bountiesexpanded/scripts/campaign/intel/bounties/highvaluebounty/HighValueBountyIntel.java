@@ -24,8 +24,8 @@ public class HighValueBountyIntel extends BaseBountyIntel {
     private final HighValueBountyEntity highValueBountyEntity;
     private final int payment;
 
-    public HighValueBountyIntel(HighValueBountyEntity highValueBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(highValueBountyEntity, highValueBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken);
+    public HighValueBountyIntel(HighValueBountyEntity highValueBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken, SectorEntityToken endingPoint) {
+        super(highValueBountyEntity, highValueBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken, endingPoint);
         this.highValueBountyEntity = highValueBountyEntity;
         this.payment = highValueBountyEntity.getBaseReward();
     }

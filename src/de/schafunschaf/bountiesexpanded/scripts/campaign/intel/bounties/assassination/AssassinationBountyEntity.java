@@ -42,6 +42,7 @@ public class AssassinationBountyEntity implements BountyEntity {
     private final int baseReward;
     private final int bonusReward;
     private final int level;
+    private final float fleetQuality;
     private final MissionHandler missionHandler;
     private final Difficulty difficulty;
 
@@ -55,7 +56,7 @@ public class AssassinationBountyEntity implements BountyEntity {
     private float targetRepBeforeBattle = 0;
     private AssassinationBountyIntel intel;
 
-    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionHandler missionHandler, Difficulty difficulty, int level) {
+    public AssassinationBountyEntity(int baseReward, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, SectorEntityToken endingPoint, MissionHandler missionHandler, Difficulty difficulty, int level, float fleetQuality) {
         this.baseReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.assassinationBaseRewardMultiplier, 3);
         this.bonusReward = (int) FormattingTools.roundWholeNumber(baseReward * Settings.assassinationBonusRewardMultiplier, 3);
         this.targetedFaction = targetedFaction;
@@ -66,6 +67,7 @@ public class AssassinationBountyEntity implements BountyEntity {
         this.missionHandler = missionHandler;
         this.difficulty = difficulty;
         this.level = level;
+        this.fleetQuality = fleetQuality;
 
         this.obfuscatedFleetSize = Math.max(fleet.getNumShips() - 4 + new Random().nextInt(9), 1);
     }
@@ -235,7 +237,7 @@ public class AssassinationBountyEntity implements BountyEntity {
             TooltipAPIUtils.addPersonWithFactionRepBar(info, width, opad, opad, targetedPerson);
         else {
             float targetRepChange = result.targetRepAfterBattle - targetRepBeforeBattle;
-            TooltipAPIUtils.addRepBarWithChange(info, width, opad, targetedFaction, targetRepChange);
+            TooltipAPIUtils.addPersonWithFactionRepBarAndChange(info, width, opad, opad, targetedPerson, targetRepChange);
         }
 
         info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
@@ -248,6 +250,8 @@ public class AssassinationBountyEntity implements BountyEntity {
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
+            DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
+
             info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
 
             int cols = 1;
@@ -256,7 +260,6 @@ public class AssassinationBountyEntity implements BountyEntity {
             info.addPara("The message had an intel file containing the targets ship attached.", opad);
             if (!Settings.isDebugActive())
                 info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipCopy, opad);
-            DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
             info.addPara("Intercepted communications suggest that " + targetedPerson.getHisOrHer() + " escort contains roughly %s additional " + singularOrPlural(obfuscatedFleetSize, "ship") + ".",
                     opad, highlightColor, String.valueOf(obfuscatedFleetSize));
             DescriptionUtils.addDifficultyText(info, opad, difficulty);

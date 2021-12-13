@@ -14,6 +14,7 @@ import de.schafunschaf.bountiesexpanded.helper.mission.MissionTextUtils;
 import de.schafunschaf.bountiesexpanded.helper.ui.TooltipAPIUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.MissionEntity;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.BEBaseMissionIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.BEMissionResult;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import de.schafunschaf.bountiesexpanded.util.ShipPaymentPair;
@@ -124,7 +125,6 @@ public class RetrievalMissionEntity implements MissionEntity {
                 }
                 break;
         }
-
 
         missionIntel.unindent(info);
     }

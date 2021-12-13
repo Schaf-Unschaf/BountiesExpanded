@@ -83,6 +83,7 @@ public class SkirmishBountyManager extends BaseEventManager {
         fleet.setTransponderOn(true);
         fleetMemory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
         fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, SKIRMISH_BOUNTY_FLEET_KEY);
         fleetMemory.set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
 
         log.info("BountiesExpanded - Spawning Skirmish Bounty: By "
@@ -97,7 +98,7 @@ public class SkirmishBountyManager extends BaseEventManager {
 
         upgradeShips(fleet);
 
-        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, startingPoint);
+        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, startingPoint, null);
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {

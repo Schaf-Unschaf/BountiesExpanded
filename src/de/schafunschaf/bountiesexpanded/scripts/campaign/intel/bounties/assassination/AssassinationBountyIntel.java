@@ -32,8 +32,8 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
     private final float travelDistance;
     private int bonusPayment;
 
-    public AssassinationBountyIntel(AssassinationBountyEntity assassinationBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(assassinationBountyEntity, assassinationBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, sectorEntityToken);
+    public AssassinationBountyIntel(AssassinationBountyEntity assassinationBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
+        super(assassinationBountyEntity, assassinationBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
         Misc.makeImportant(fleet, "assassinationBounty", 100f);
         this.assassinationBountyEntity = assassinationBountyEntity;
         this.payment = assassinationBountyEntity.getBaseReward();

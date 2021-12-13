@@ -33,4 +33,8 @@ public class FormattingTools {
         double pow = Math.pow(10, numPlaces);
         return (Math.round(number / pow) * pow);
     }
+
+    public static String capitalizeFirst(String string) {
+        return string.substring(0,1).toUpperCase() + string.substring(1);
+    }
 }

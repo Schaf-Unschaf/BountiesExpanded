@@ -167,6 +167,7 @@ public class HighValueBountyManager extends BaseEventManager {
         FleetGenerator.spawnFleet(fleet, hideout);
 
         MemoryAPI memory = fleet.getMemoryWithoutUpdate();
+        memory.set(EntityProvider.FLEET_IDENTIFIER_KEY, HIGH_VALUE_BOUNTY_FLEET_KEY);
         memory.set(HIGH_VALUE_BOUNTY_FLEET_KEY, highValueBountyEntity);
         memory.set("$bountiesExpanded_highValueBountyGreeting", bountyData.greetingText);
         memory.set(MemFlags.CAN_ONLY_BE_ENGAGED_WHEN_VISIBLE_TO_PLAYER, true);
@@ -179,7 +180,7 @@ public class HighValueBountyManager extends BaseEventManager {
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 100000f, randomActionText, null);
         upgradeShips(fleet);
 
-        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getTargetedPerson(), hideout);
+        HighValueBountyIntel bountyIntel = new HighValueBountyIntel(highValueBountyEntity, fleet, highValueBountyEntity.getTargetedPerson(), hideout, null);
 
         log.info("BountiesExpanded: Creating HighValueBountyEvent");
         markBountyAsActive(bountyId);

@@ -29,17 +29,19 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     protected final BountyEntity bountyEntity;
     protected final PersonAPI person;
     protected final SectorEntityToken startingPoint;
+    protected final SectorEntityToken endingPoint;
     protected final MissionHandler missionHandler;
     protected int maxFleetSizeForCompletion;
     protected float duration;
     protected float elapsedDays = 0f;
     protected BountyResult result;
 
-    public BaseBountyIntel(BountyEntity bountyEntity, MissionHandler missionHandler, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
+    public BaseBountyIntel(BountyEntity bountyEntity, MissionHandler missionHandler, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
         this.bountyEntity = bountyEntity;
         this.missionHandler = missionHandler;
         this.fleet = campaignFleetAPI;
-        this.startingPoint = sectorEntityToken;
+        this.startingPoint = startingPoint;
+        this.endingPoint = endingPoint;
         this.person = personAPI;
         this.duration = 100f;
         this.difficulty = this.bountyEntity.getDifficulty();
@@ -162,6 +164,10 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     protected void notifyEnding() {
         super.notifyEnding();
         cleanUpFleetAndEndIfNecessary();
+    }
+
+    public float getRemainingDuration() {
+        return duration - elapsedDays;
     }
 
     protected void cleanUp(boolean onlyIfImportant) {
