@@ -25,9 +25,9 @@ public interface BountyEntity {
 
     PersonAPI getTargetedPerson();
 
-    SectorEntityToken getStartingPoint();
+    SectorEntityToken getSpawnLocation();
 
-    SectorEntityToken getEndingPoint();
+    SectorEntityToken getTravelDestination();
 
     String getIcon();
 

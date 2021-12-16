@@ -13,6 +13,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import lombok.Getter;
 
@@ -33,15 +34,15 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
     private float playerInvolvement = 0f;
     private Map<HullSize, int[]> destroyedShips;
 
-    public SkirmishBountyIntel(SkirmishBountyEntity skirmishBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(skirmishBountyEntity, skirmishBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
-        this.duration = new Random().nextInt((Settings.skirmishMaxDuration - Settings.skirmishMinDuration) + 1) + Settings.skirmishMinDuration;
+    public SkirmishBountyIntel(SkirmishBountyEntity skirmishBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.SKIRMISH, skirmishBountyEntity, skirmishBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
+        this.duration = new Random().nextInt(Settings.skirmishMaxDuration - Settings.skirmishMinDuration) + Settings.skirmishMinDuration;
         this.maxFleetSizeForCompletion = skirmishBountyEntity.getMaxFleetSizeForCompletion();
         this.skirmishBountyEntity = skirmishBountyEntity;
         this.baseShipBounty = skirmishBountyEntity.getBaseShipBounty();
         this.payment = skirmishBountyEntity.getBaseReward();
         skirmishBountyEntity.setBountyIntel(this);
-        Misc.makeImportant(fleet, "skirmishBounty", duration);
+        Misc.makeImportant(fleet, "pbe");
     }
 
     @Override

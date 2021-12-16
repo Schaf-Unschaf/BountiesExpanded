@@ -8,10 +8,14 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
+import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.helper.text.TextUtils;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import de.schafunschaf.bountiesexpanded.util.CollectionUtils;
 import lombok.extern.log4j.Log4j;
 
 import java.util.Random;
@@ -20,8 +24,6 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Log4j
 public class PirateBountyManager extends BaseEventManager {
-    public static final String FLEET_NAME = "Pirate Fleet";
-    public static final String FLEET_ACTION_TEXT = "doing shady stuff";
     public static final String KEY = "$bountiesExpanded_pirateBountyManager";
     public static final String PIRATE_BOUNTY_FLEET_KEY = "$bountiesExpanded_pirateBountyFleet";
 
@@ -37,11 +39,17 @@ public class PirateBountyManager extends BaseEventManager {
 
     @Override
     protected int getMinConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.pirateBountyMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.pirateBountyMaxBounties;
     }
 
@@ -65,14 +73,24 @@ public class PirateBountyManager extends BaseEventManager {
             return null;
 
         CampaignFleetAPI fleet = pirateBountyEntity.getFleet();
-        SectorEntityToken startingPoint = pirateBountyEntity.getStartingPoint();
+        SectorEntityToken spawnLocation = pirateBountyEntity.getSpawnLocation();
         PersonAPI person = pirateBountyEntity.getTargetedPerson();
         Difficulty difficulty = pirateBountyEntity.getDifficulty();
 
-        fleet.setName(FLEET_NAME);
-        FleetGenerator.spawnFleet(fleet, startingPoint);
+        String pirateFleetName;
+
+        if (Math.random() < 0.666f)
+            pirateFleetName = String.format("%s %s's Fleet", person.getRankId(), person.getName().getLast());
+        else
+            pirateFleetName = String.format("%s's %s",
+                    person.getName().getFirst(),
+                    Misc.ucFirst(TextUtils.getAlliterativeFleetName(person.getName().getFirst(), NameStringCollection.pirateFleetNames)));
+
+        fleet.setNoFactionInName(true);
+        fleet.setName(pirateFleetName);
+        FleetGenerator.spawnFleet(fleet, spawnLocation);
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
-        fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
+        fleet.getCurrentAssignment().setActionText((String) CollectionUtils.getRandomEntry(NameStringCollection.fleetActionTexts));
         fleet.setTransponderOn(true);
         fleetMemory.set(MemFlags.MEMORY_KEY_PIRATE, true);
         fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, PIRATE_BOUNTY_FLEET_KEY);
@@ -81,11 +99,11 @@ public class PirateBountyManager extends BaseEventManager {
         log.info("BountiesExpanded - Spawning Pirate Bounty: By "
                 + pirateBountyEntity.getOfferingFaction().getDisplayName() + " | Against "
                 + pirateBountyEntity.getTargetedFaction().getDisplayName() + " | At "
-                + startingPoint.getName());
+                + spawnLocation.getName());
         log.info("Player-FP at creation: " + Global.getSector().getPlayerFleet().getFleetPoints());
         log.info("Enemy-FP at creation: " + pirateBountyEntity.getFleet().getFleetPoints());
         log.info("Difficulty: " + difficulty.getShortDescription());
 
-        return new PirateBountyIntel(pirateBountyEntity, fleet, person, startingPoint, null);
+        return new PirateBountyIntel(pirateBountyEntity, fleet, person, spawnLocation, null);
     }
 }

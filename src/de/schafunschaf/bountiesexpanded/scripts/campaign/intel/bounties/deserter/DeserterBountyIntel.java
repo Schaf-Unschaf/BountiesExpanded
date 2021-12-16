@@ -12,6 +12,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 
@@ -25,13 +26,13 @@ public class DeserterBountyIntel extends BaseBountyIntel {
     private final DeserterBountyEntity deserterBountyEntity;
     private final int payment;
 
-    public DeserterBountyIntel(DeserterBountyEntity deserterBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(deserterBountyEntity, deserterBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
+    public DeserterBountyIntel(DeserterBountyEntity deserterBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.DESERTER, deserterBountyEntity, deserterBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
         this.deserterBountyEntity = deserterBountyEntity;
         this.payment = deserterBountyEntity.getBaseReward();
-        this.duration = new Random().nextInt((Settings.deserterBountyMaxDuration - Settings.deserterBountyMinDuration) + 1) + Settings.deserterBountyMinDuration;
+        this.duration = new Random().nextInt(Settings.deserterBountyMaxDuration - Settings.deserterBountyMinDuration) + Settings.deserterBountyMinDuration;
         deserterBountyEntity.setBountyIntel(this);
-        Misc.makeImportant(fleet, "deserterBounty", duration);
+        Misc.makeImportant(fleet, "pbe");
     }
 
     @Override
@@ -65,16 +66,16 @@ public class DeserterBountyIntel extends BaseBountyIntel {
     @Override
     public SectorEntityToken getMapLocation(SectorMapAPI map) {
         if (Settings.isDebugActive())
-            return super.getMapLocation(map);
+            return fleet.getContainingLocation().createToken(fleet.getLocation().x, fleet.getLocation().y);
 
-        Constellation c = startingPoint.getConstellation();
+        Constellation c = travelDestination.getConstellation();
         SectorEntityToken entity = null;
         if (c != null && map != null) {
             entity = map.getConstellationLabelEntity(c);
         }
 
         if (entity == null) {
-            entity = startingPoint;
+            entity = travelDestination;
         }
 
         return entity;

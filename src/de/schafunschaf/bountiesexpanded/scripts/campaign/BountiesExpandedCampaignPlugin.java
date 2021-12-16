@@ -7,12 +7,10 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.impl.campaign.shared.ReputationChangeTracker;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.NoShipRecoveryFleetEncounterContext;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.HighValueBountyInteractionDialogPlugin;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.NoRecoveryInteractionDialogPlugin;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.plugins.RetrievalInteractionDialogPlugin;
 
@@ -39,11 +37,6 @@ public class BountiesExpandedCampaignPlugin extends BaseCampaignPlugin {
 
         if (isNotNull(fleetIdentifierKey)) {
             setTargetRepBeforeBattle((BountyEntity) interactionTarget.getMemoryWithoutUpdate().get(fleetIdentifierKey));
-
-            if (HighValueBountyManager.HIGH_VALUE_BOUNTY_FLEET_KEY.equals(fleetIdentifierKey)) {
-                InteractionDialogPlugin interactionDialogPlugin = new HighValueBountyInteractionDialogPlugin();
-                return new PluginPick<>(interactionDialogPlugin, PickPriority.MOD_SPECIFIC);
-            }
         }
 
         // Plugin for guaranteed Ship-Recovery

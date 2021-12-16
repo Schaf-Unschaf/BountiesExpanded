@@ -13,6 +13,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 
@@ -26,13 +27,13 @@ public class WarCriminalIntel extends BaseBountyIntel {
     private final WarCriminalEntity warCriminalEntity;
     private final int payment;
 
-    public WarCriminalIntel(WarCriminalEntity warCriminalEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(warCriminalEntity, warCriminalEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
+    public WarCriminalIntel(WarCriminalEntity warCriminalEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.WAR_CRIMINAL, warCriminalEntity, warCriminalEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
         this.warCriminalEntity = warCriminalEntity;
         this.payment = warCriminalEntity.getBaseReward();
-        this.duration = new Random().nextInt((Settings.warCriminalMaxDuration - Settings.warCriminalMinDuration) + 1) + Settings.warCriminalMinDuration;
+        this.duration = new Random().nextInt(Settings.warCriminalMaxDuration - Settings.warCriminalMinDuration) + Settings.warCriminalMinDuration;
         warCriminalEntity.setBountyIntel(this);
-        Misc.makeImportant(fleet, "warCriminalBounty", duration);
+        Misc.makeImportant(fleet, "pbe");
     }
 
     @Override

@@ -32,7 +32,7 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
     protected final MissionEntity missionEntity;
     protected final MarketAPI market;
     protected final PersonAPI contact;
-    protected final SectorEntityToken startingPoint;
+    protected final SectorEntityToken spawnLocation;
     public final BEMissionResult result;
     protected final Float duration;
     protected float elapsedDays = 0f;
@@ -41,7 +41,7 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
         this.missionEntity = missionEntity;
         this.market = missionEntity.getMissionMarket();
         this.contact = missionEntity.getMissionContact();
-        this.startingPoint = market.getPrimaryEntity();
+        this.spawnLocation = market.getPrimaryEntity();
         this.duration = (float) Settings.retrievalEventDuration;
         this.result = new BEMissionResult();
         Global.getSector().getIntelManager().queueIntel(this);
@@ -72,7 +72,7 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
         elapsedDays += days;
 
         if (elapsedDays >= duration && !isDone()) {
-            boolean canEnd = isNull(startingPoint);
+            boolean canEnd = isNull(spawnLocation);
             if (canEnd) {
                 result.setMissionState(MissionState.FAILED);
                 endAfterDelay();
@@ -101,7 +101,7 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
 
     @Override
     public SectorEntityToken getMapLocation(SectorMapAPI map) {
-        return startingPoint;
+        return spawnLocation;
     }
 
     @Override

@@ -8,7 +8,6 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.TriggeredMissionManager;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,19 +30,18 @@ public class MissionHandler {
     @AllArgsConstructor
     public enum MissionType {
         ASSASSINATION(
-                "Assassination", "assassination", "eliminate the fleet commander, %s"),
+                "Assassination", "assassination"),
         DESTRUCTION(
-                "Destruction", "destruction", "destroy the flagship of %s"),
+                "Destruction", "destruction"),
         OBLITERATION(
-                "Obliteration", "obliteration", "completely destroy the fleet of %s"),
+                "Obliteration", "obliteration"),
         //        INTIMIDATION(
 //                "Intimidation", "intimidation", "force %s's fleet into retreat"),
         RETRIEVAL(
-                "Retrieval", "retrieval", "retrieve and bring the ship back to %s");
+                "Retrieval", "retrieval");
 
         private final String missionTypeUCFirst;
         private final String missionType;
-        private final String objectiveText;
 
         public static MissionType getRandomMissionType() {
             MissionType[] types = MissionType.values();
@@ -132,15 +130,6 @@ public class MissionHandler {
             String errorMessage = String.format("BountiesExpanded - Tried to start Retrieval Mission while MissionType was [%s]", missionType.missionType);
             log.warn(errorMessage);
         }
-    }
-
-    // TODO
-    public void calculateRetrievalBaseReward(BountyEntity bountyEntity, Collection<FleetMemberAPI> shipList) {
-        int baseReward = bountyEntity.getBaseReward();
-        int sumOfShipValues = 0;
-
-        for (FleetMemberAPI fleetMemberAPI : shipList)
-            sumOfShipValues += fleetMemberAPI.getHullSpec().getBaseValue();
     }
 
     public void listShipsToRecover(Collection<FleetMemberAPI> shipList, TooltipMakerAPI info, float padding, Color color) {

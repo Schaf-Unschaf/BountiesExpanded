@@ -1,9 +1,4 @@
 command,class,tags,syntax,help
-BountiesExpanded_ShowHVBInfo,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedShowHVBInfo,campaign,bountiesExpanded_ShowHVBInfo,"Shows info about available, active and completed HVBs."
-BountiesExpanded_SpawnHVB,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnHVB,campaign,bountiesExpanded_SpawnHVB <bountyId>,"Forces a HVB to spawn, ignoring any conditions."
-BountiesExpanded_SpawnRevenge,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnRevenge,campaign,bountiesExpanded_SpawnRevenge,"Forces the HVB Revenge to spawn."
-BountiesExpanded_CompleteHVB,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedCompleteHVB,campaign,bountiesExpanded_CompleteHVB <bountyId>,"Marks the bounty as completed."
-BountiesExpanded_RemoveCompletedHVB,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedRemoveCompletedHVB,campaign,bountiesExpanded_RemoveCompletedHVB <bountyId>,"Removes the bounty from the completed list."
 BountiesExpanded_SpawnAssassinationBounty,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnAssassinationBounty,campaign,bountiesExpandedSpawnAssassinationBounty,"Forces an AssassinationBounty to spawn."
 BountiesExpanded_SpawnSkirmishBounty,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedSpawnSkirmishBounty,campaign,bountiesExpandedSpawnSkirmishBounty,"Forces a SkirmishBounty to spawn."
 BountiesExpanded_PrepareUpdate,de.schafunschaf.bountiesexpanded.scripts.console.commands.BountiesExpandedPrepareUpdate,campaign,bountiesExpanded_PrepareUpdate,"Prepares the mod for an update."

@@ -7,25 +7,16 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.ShipRecoverySpecial;
-import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyData;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
 public class BountiesExpandedCampaignManager extends BaseCampaignEventListener implements EveryFrameScript {
     public BountiesExpandedCampaignManager() {
         super(true);
-    }
-
-    @Override
-    public void reportEncounterLootGenerated(FleetEncounterContextPlugin plugin, CargoAPI loot) {
-        if (Settings.highValueBountyActive) generateHighValueBountyLoot(plugin, loot);
     }
 
     @Override
@@ -71,32 +62,5 @@ public class BountiesExpandedCampaignManager extends BaseCampaignEventListener i
                     }
 
             }
-    }
-
-    private void generateHighValueBountyLoot(FleetEncounterContextPlugin plugin, CargoAPI loot) {
-        HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
-        if (isNull(bountyManager))
-            return;
-        HighValueBountyData bountyData = null;
-        Set<String> flagshipVariantIds = bountyManager.getAllVariantIds();
-        List<FleetEncounterContextPlugin.FleetMemberData> enemyCasualties = plugin.getWinnerData().getEnemyCasualties();
-
-        if (isNullOrEmpty(enemyCasualties) || isNullOrEmpty(flagshipVariantIds)) {
-            return;
-        }
-
-        for (FleetEncounterContextPlugin.FleetMemberData shipDestroyed : enemyCasualties) {
-            String hullVariantId = shipDestroyed.getMember().getVariant().getHullVariantId();
-            if (flagshipVariantIds.contains(hullVariantId)) {
-                String bountyId = bountyManager.getBountyIdFromFlagshipVariantId(hullVariantId);
-                bountyData = bountyManager.getBounty(bountyId);
-            }
-        }
-
-        if (isNotNull(bountyData)) {
-            if (!isNullOrEmpty(bountyData.specialItemRewards))
-                for (String specialItemReward : bountyData.specialItemRewards)
-                    loot.addSpecial(new SpecialItemData(specialItemReward, null), 1);
-        }
     }
 }

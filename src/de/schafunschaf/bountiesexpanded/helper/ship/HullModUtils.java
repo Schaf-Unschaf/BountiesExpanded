@@ -1,8 +1,11 @@
 package de.schafunschaf.bountiesexpanded.helper.ship;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.DModManager;
+import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflater;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
@@ -11,24 +14,7 @@ import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 
 import java.util.*;
 
-public class SModUpgradeHelper {
-    public static void upgradeShip(FleetMemberAPI fleetMember, int numSMods, Random random) {
-        if (!fleetMember.getVariant().getSMods().isEmpty())
-            return;
-
-        if (numSMods <= 0)
-            return;
-
-        if (ComparisonTools.isNull(random))
-            random = new Random();
-
-        ShipVariantAPI shipVariant = fleetMember.getVariant();
-        for (int i = 0; i < numSMods; i++)
-            upgradeHullMod(shipVariant, random);
-
-        fleetMember.setVariant(shipVariant, true, true);
-    }
-
+public class HullModUtils {
     public static void upgradeHullMod(ShipVariantAPI shipVariant, Random random) {
         if (ComparisonTools.isNull(random))
             random = new Random();
@@ -79,31 +65,6 @@ public class SModUpgradeHelper {
                 id = getRandomFreeSMod(shipVariant, random);
 
         shipVariant.addPermaMod(id, true);
-    }
-
-    public static void addMinorUpgrades(FleetMemberAPI fleetMember, Random random) {
-        if (ComparisonTools.isNull(random))
-            random = new Random();
-        ShipVariantAPI shipVariant = fleetMember.getVariant();
-
-        boolean hasSafetyOverrides = false;
-
-        for (String hullModId : shipVariant.getHullMods()) {
-            if (hullModId.equals(HullMods.SAFETYOVERRIDES)) {
-                hasSafetyOverrides = true;
-                break;
-            }
-        }
-
-        if (!hasModBuiltIn(shipVariant, HullMods.REINFORCEDHULL))
-            shipVariant.addPermaMod(HullMods.REINFORCEDHULL, true);
-        else
-            shipVariant.addPermaMod(getRandomFreeSMod(shipVariant, random), true);
-
-        if (hasSafetyOverrides && !shipVariant.hasHullMod(HullMods.HARDENED_SUBSYSTEMS))
-            shipVariant.addMod(HullMods.HARDENED_SUBSYSTEMS);
-
-        fleetMember.setVariant(shipVariant, true, true);
     }
 
     public static void addRandomSMods(FleetMemberAPI fleetMember, int numSMods, Random random) {
@@ -237,4 +198,16 @@ public class SModUpgradeHelper {
         return null;
     }
 
+    public static void addDMods(CampaignFleetAPI fleet, float quality) {
+        List<FleetMemberAPI> fleetMemberList = fleet.getFleetData().getMembersListCopy();
+        float averageDmodsForQuality = DefaultFleetInflater.getAverageDmodsForQuality(quality);
+
+        for (FleetMemberAPI fleetMember : fleetMemberList) {
+            Random random = new Random(fleetMember.getId().hashCode());
+            ShipVariantAPI variant = fleetMember.getVariant();
+            int numDModsToAdd = DefaultFleetInflater.getNumDModsToAdd(variant, averageDmodsForQuality, random);
+            DModManager.addDMods(variant, false, numDModsToAdd, random);
+            fleetMember.setVariant(variant, false, true);
+        }
+    }
 }

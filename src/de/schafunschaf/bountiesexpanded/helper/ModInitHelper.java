@@ -16,8 +16,6 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBoun
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.assassination.AssassinationBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.deserter.DeserterBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.HighValueBountyManager;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.highvaluebounty.revenge.HVBRevengeManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.pirate.PirateBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.skirmish.SkirmishBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcriminal.WarCriminalManager;
@@ -27,23 +25,17 @@ import lombok.extern.log4j.Log4j;
 
 import java.util.List;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Log4j
 public class ModInitHelper {
     public static void prepareForUpdate() {
         Settings.prepareUpdate = true;
-        HighValueBountyManager.getInstance().saveCompletedBountyData();
 
         uninstallManager(SkirmishBountyManager.getInstance());
         Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.KEY);
         uninstallManager(AssassinationBountyManager.getInstance());
         Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
-        uninstallManager(HighValueBountyManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
-        uninstallManager(HVBRevengeManager.getInstance());
-        Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);
         uninstallManager(WarCriminalManager.getInstance());
         Global.getSector().getMemoryWithoutUpdate().unset(WarCriminalManager.KEY);
         uninstallManager(PirateBountyManager.getInstance());
@@ -95,22 +87,6 @@ public class ModInitHelper {
             Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
         }
 
-        if (Settings.highValueBountyActive) addHighValueBountyManager();
-        else {
-            HighValueBountyManager highValueBountyManager = HighValueBountyManager.getInstance();
-            if (isNotNull(highValueBountyManager))
-                highValueBountyManager.saveCompletedBountyData();
-
-            uninstallManager(highValueBountyManager);
-            Global.getSector().getMemoryWithoutUpdate().unset(HighValueBountyManager.KEY);
-        }
-
-        if (Settings.highValueBountyRevengeActive) addHVBRevengeManager();
-        else {
-            uninstallManager(HVBRevengeManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(HVBRevengeManager.KEY);
-        }
-
         if (Settings.warCriminalActive) addWarCriminalManager();
         else {
             uninstallManager(WarCriminalManager.getInstance());
@@ -135,8 +111,18 @@ public class ModInitHelper {
             Global.getSector().getMemoryWithoutUpdate().unset(TriggeredMissionManager.KEY);
         }
 
+        disableVanillaAndModdedBounties();
+
         RareFlagshipManager.loadRareFlagshipData();
         addCampaignPlugins();
+    }
+
+    private static void disableVanillaAndModdedBounties() {
+        if (Settings.disableVanillaBounties)
+            removeVanillaBountyManager();
+
+        if (Settings.disableVayraBounties && Global.getSettings().getModManager().isModEnabled("vayrasector"))
+            removeVayraBountyManager();
     }
 
     private static void addSkirmishManager() {
@@ -157,25 +143,6 @@ public class ModInitHelper {
         }
     }
 
-    private static void addHighValueBountyManager() {
-        if (!Global.getSector().hasScript(HighValueBountyManager.class)) {
-            Global.getSector().addScript(new HighValueBountyManager());
-            log.info("BountiesExpanded: HighValueBountyManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing HighValueBountyManager");
-            printCompletedBounties();
-        }
-    }
-
-    private static void addHVBRevengeManager() {
-        if (!Global.getSector().hasScript(HVBRevengeManager.class)) {
-            Global.getSector().addScript(new HVBRevengeManager());
-            log.info("BountiesExpanded: HVBRevengeManager added");
-        } else {
-            log.info("BountiesExpanded: Found existing HVBRevengeManager");
-        }
-    }
-
     private static void addWarCriminalManager() {
         if (!Global.getSector().hasScript(WarCriminalManager.class)) {
             Global.getSector().addScript(new WarCriminalManager());
@@ -189,12 +156,6 @@ public class ModInitHelper {
         if (!Global.getSector().hasScript(PirateBountyManager.class)) {
             Global.getSector().addScript(new PirateBountyManager());
             log.info("BountiesExpanded: PirateBountyManager added");
-
-            removeVanillaBountyManager();
-
-            if (Settings.disableVayraBounties && Global.getSettings().getModManager().isModEnabled("vayrasector"))
-                removeVayraBountyManager();
-
         } else {
             log.info("BountiesExpanded: Found existing PirateBountyManager");
         }
@@ -255,13 +216,5 @@ public class ModInitHelper {
             Global.getSector().removeScript(bounty);
         }
         Global.getSector().removeScript(personBountyManager);
-    }
-
-    private static void printCompletedBounties() {
-        HighValueBountyManager bountyManager = HighValueBountyManager.getInstance();
-        log.info("BountiesExpanded: List of completed HVBs:");
-        for (String completedBounty : bountyManager.getCompletedBounties()) {
-            log.info(completedBounty);
-        }
     }
 }

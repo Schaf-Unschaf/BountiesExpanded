@@ -42,11 +42,17 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     @Override
     protected int getMinConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.skirmishMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.skirmishMaxBounties;
     }
 
@@ -72,12 +78,12 @@ public class SkirmishBountyManager extends BaseEventManager {
             return null;
 
         CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
-        SectorEntityToken startingPoint = skirmishBountyEntity.getStartingPoint();
+        SectorEntityToken spawnLocation = skirmishBountyEntity.getSpawnLocation();
         PersonAPI person = skirmishBountyEntity.getTargetedPerson();
         Difficulty difficulty = skirmishBountyEntity.getDifficulty();
 
         fleet.setName(FLEET_NAME);
-        FleetGenerator.spawnFleet(fleet, startingPoint);
+        FleetGenerator.spawnFleet(fleet, spawnLocation);
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
@@ -89,7 +95,7 @@ public class SkirmishBountyManager extends BaseEventManager {
         log.info("BountiesExpanded - Spawning Skirmish Bounty: By "
                 + skirmishBountyEntity.getOfferingFaction().getDisplayName() + " | Against "
                 + skirmishBountyEntity.getTargetedFaction().getDisplayName() + " | At "
-                + startingPoint.getName());
+                + spawnLocation.getName());
         log.info("Player-FP at creation: " + Global.getSector().getPlayerFleet().getFleetPoints());
         log.info("Enemy-FP at creation: " + skirmishBountyEntity.getFleet().getFleetPoints());
         log.info("Difficulty: " + difficulty.getShortDescription());
@@ -98,7 +104,7 @@ public class SkirmishBountyManager extends BaseEventManager {
 
         upgradeShips(fleet);
 
-        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, startingPoint, null);
+        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, spawnLocation, null);
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
@@ -112,16 +118,16 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     public void registerBounty(SkirmishBountyEntity bountyEntity) {
         bountiesActiveForFaction.add(bountyEntity.getTargetedFaction().getId());
-        bountiesActiveAtEntity.add(bountyEntity.getStartingPointID());
+        bountiesActiveAtEntity.add(bountyEntity.getSpawnLocationID());
     }
 
     public void unregisterBounty(SkirmishBountyEntity bountyEntity) {
         bountiesActiveForFaction.remove(bountyEntity.getTargetedFaction().getId());
-        bountiesActiveAtEntity.remove(bountyEntity.getStartingPointID());
+        bountiesActiveAtEntity.remove(bountyEntity.getSpawnLocationID());
     }
 
     public boolean hasActiveBounty(SkirmishBountyEntity bountyEntity) {
         return bountiesActiveForFaction.contains(bountyEntity.getTargetedFaction().getId())
-                || bountiesActiveAtEntity.contains(bountyEntity.getStartingPointID());
+                || bountiesActiveAtEntity.contains(bountyEntity.getSpawnLocationID());
     }
 }

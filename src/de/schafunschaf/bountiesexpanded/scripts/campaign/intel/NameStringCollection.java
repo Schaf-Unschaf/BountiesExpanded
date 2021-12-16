@@ -1,35 +1,17 @@
 package de.schafunschaf.bountiesexpanded.scripts.campaign.intel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 public class NameStringCollection {
-    private static final List<String> suspiciousNames = new ArrayList<>();
-    private static final List<String> fleetActionTexts = new ArrayList<>();
-
-    public static List<String> getSuspiciousNames() {
-        return suspiciousNames;
-    }
-
-    public static void setSuspiciousNames(Collection<String> suspiciousNames) {
-        NameStringCollection.suspiciousNames.addAll(suspiciousNames);
-    }
-
-    public static String getSuspiciousName() {
-        return suspiciousNames.get(new Random().nextInt(suspiciousNames.size()));
-    }
-
-    public static List<String> getfleetActionTexts() {
-        return fleetActionTexts;
-    }
-
-    public static String getFleetActionText() {
-        return fleetActionTexts.get(new Random().nextInt(fleetActionTexts.size()));
-    }
-
-    public static void setFleetActionTexts(Collection<String> fleetActionTexts) {
-        NameStringCollection.fleetActionTexts.addAll(fleetActionTexts);
-    }
+    public static final List<String> suspiciousNames = new ArrayList<>();
+    public static final List<String> fleetActionTexts = new ArrayList<>();
+    public static final List<String> pirateJobs = new ArrayList<>();
+    public static final List<String> piratePersonalities = new ArrayList<>();
+    public static final List<String> pirateTitles = new ArrayList<>();
+    public static final List<String> killWords = new ArrayList<>();
+    public static final List<String> crimeReasons = new ArrayList<>();
+    public static final List<String> crimeTypes = new ArrayList<>();
+    public static final List<String> crimeVictims = new ArrayList<>();
+    public static final List<String> pirateFleetNames = new ArrayList<>();
 }

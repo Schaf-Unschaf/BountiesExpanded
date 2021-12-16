@@ -38,11 +38,17 @@ public class DeserterBountyManager extends BaseEventManager {
 
     @Override
     protected int getMinConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.deserterBountyMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.deserterBountyMaxBounties;
     }
 
@@ -60,40 +66,43 @@ public class DeserterBountyManager extends BaseEventManager {
     }
 
     public DeserterBountyIntel createDeserterBountyEvent() {
-        final DeserterBountyEntity deserterBountyEntity = EntityProvider.deserterBountyEntity();
+        final DeserterBountyEntity bountyEntity = EntityProvider.deserterBountyEntity();
 
-        if (isNull(deserterBountyEntity))
+        if (isNull(bountyEntity))
             return null;
 
-        final CampaignFleetAPI fleet = deserterBountyEntity.getFleet();
-        SectorEntityToken startingPoint = deserterBountyEntity.getStartingPoint();
-        final SectorEntityToken endingPoint = deserterBountyEntity.getEndingPoint();
-        PersonAPI person = deserterBountyEntity.getTargetedPerson();
-        Difficulty difficulty = deserterBountyEntity.getDifficulty();
+        final CampaignFleetAPI fleet = bountyEntity.getFleet();
+        SectorEntityToken spawnLocation = bountyEntity.getSpawnLocation();
+        final SectorEntityToken travelDestination = bountyEntity.getTravelDestination();
+        PersonAPI person = bountyEntity.getTargetedPerson();
+        Difficulty difficulty = bountyEntity.getDifficulty();
         final String fleetTravelingActionText = String.format("leaving %s territory", fleet.getFaction().getDisplayName());
 
         fleet.setName(FLEET_NAME);
-        FleetGenerator.spawnFleet(fleet, startingPoint);
+        FleetGenerator.spawnFleet(fleet, spawnLocation);
+
+        final DeserterBountyIntel bountyIntel = new DeserterBountyIntel(bountyEntity, fleet, person, spawnLocation, travelDestination);
+
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
         fleetMemory.set(MemFlags.MEMORY_KEY_NO_REP_IMPACT, true);
         fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, DESERTER_BOUNTY_FLEET_KEY);
-        fleetMemory.set(DESERTER_BOUNTY_FLEET_KEY, deserterBountyEntity);
+        fleetMemory.set(DESERTER_BOUNTY_FLEET_KEY, bountyEntity);
 
         fleet.clearAssignments();
-        fleet.addAssignment(FleetAssignment.GO_TO_LOCATION, endingPoint, 100f, fleetTravelingActionText, new Script() {
+        fleet.addAssignment(FleetAssignment.GO_TO_LOCATION, travelDestination, bountyIntel.getDuration(), fleetTravelingActionText, new Script() {
             public void run() {
-                fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, endingPoint, deserterBountyEntity.getBountyIntel().getRemainingDuration());
+                fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, travelDestination.getStarSystem().getStar(), bountyIntel.getRemainingDuration());
                 fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_PIRATE, true);
             }
         });
 
-        log.info(String.format("BountiesExpanded - Spawning Deserter Bounty: From %s | At %s | Travelling to%s, %s",
-                deserterBountyEntity.getOfferingFaction().getDisplayName(), startingPoint.getName(), endingPoint.getName(), endingPoint.getStarSystem().getName()));
+        log.info(String.format("BountiesExpanded - Spawning Deserter Bounty: From %s | At %s | Travelling to %s, %s",
+                bountyEntity.getOfferingFaction().getDisplayName(), spawnLocation.getName(), travelDestination.getName(), travelDestination.getStarSystem().getName()));
         log.info(String.format("Player-FP at creation: %d", Global.getSector().getPlayerFleet().getFleetPoints()));
-        log.info(String.format("Enemy-FP at creation: %d", deserterBountyEntity.getFleet().getFleetPoints()));
+        log.info(String.format("Enemy-FP at creation: %d", bountyEntity.getFleet().getFleetPoints()));
         log.info(String.format("Difficulty: %s", difficulty.getShortDescription()));
 
-        return new DeserterBountyIntel(deserterBountyEntity, fleet, person, startingPoint, endingPoint);
+        return bountyIntel;
     }
 }

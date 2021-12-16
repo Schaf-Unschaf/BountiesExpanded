@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
@@ -11,13 +12,17 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
+import de.schafunschaf.bountiesexpanded.helper.market.MarketUtils;
 import de.schafunschaf.bountiesexpanded.helper.text.DescriptionUtils;
 import de.schafunschaf.bountiesexpanded.helper.ui.TooltipAPIUtils;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.NameStringCollection;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.BountyEntity;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
+import de.schafunschaf.bountiesexpanded.util.CollectionUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,31 +36,50 @@ import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPl
 @Getter
 @Setter
 public class PirateBountyEntity implements BountyEntity {
-    private final String pirateBountyIcon = "bountiesExpanded_placeholder";
+    private final String pirateBountyIcon;
     private final int baseReward;
     private final int level;
     private final float fleetQuality;
     private final Difficulty difficulty;
-    private final FactionAPI targetedFaction = Global.getSector().getFaction(Factions.PIRATES);
+    private final FactionAPI targetedFaction;
     private final FactionAPI offeringFaction;
     private final CampaignFleetAPI fleet;
     private final PersonAPI targetedPerson;
-    private final SectorEntityToken startingPoint;
-    private final SectorEntityToken endingPoint = null;
+    private final SectorEntityToken spawnLocation;
+    private final SectorEntityToken travelDestination = null;
     private final MissionHandler missionHandler;
     private float targetRepBeforeBattle;
     private PirateBountyIntel bountyIntel;
 
-    public PirateBountyEntity(int baseReward, int level, float fleetQuality, Difficulty difficulty, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, MissionHandler missionHandler) {
+    private final String pirateJob = (String) CollectionUtils.getRandomEntry(NameStringCollection.pirateJobs);
+    private final String piratePersonality = (String) CollectionUtils.getRandomEntry(NameStringCollection.piratePersonalities);
+    private final String killWord = (String) CollectionUtils.getRandomEntry(NameStringCollection.killWords);
+    private final String pirateTitle;
+
+    public PirateBountyEntity(int baseReward, int level, float fleetQuality, Difficulty difficulty, FactionAPI offeringFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken spawnLocation, MissionHandler missionHandler) {
         this.baseReward = baseReward;
         this.level = level;
         this.fleetQuality = fleetQuality;
         this.difficulty = difficulty;
         this.offeringFaction = offeringFaction;
+        this.targetedFaction = Global.getSector().getFaction(Factions.PIRATES);
         this.fleet = fleet;
         this.targetedPerson = targetedPerson;
-        this.startingPoint = startingPoint;
+        this.spawnLocation = spawnLocation;
         this.missionHandler = missionHandler;
+        this.pirateBountyIcon = fleet.getMemoryWithoutUpdate().contains(RareFlagshipManager.RARE_FLAGSHIP_KEY) ? "bountiesExpanded_pirate_silly" : "bountiesExpanded_pirate";
+        String title = (String) CollectionUtils.getRandomEntry(NameStringCollection.pirateTitles);
+        String market;
+        MarketAPI factionMarket = MarketUtils.getRandomFactionMarket(offeringFaction);
+
+        if (isNull(factionMarket))
+            market = "NullPointerException";
+        else
+            market = factionMarket.getName();
+
+        this.pirateTitle = Math.random() <= 0.5f
+                ? String.format("%s of %s", title, market)
+                : String.format("%s %s", market, title);
     }
 
     @Override
@@ -83,8 +107,8 @@ public class PirateBountyEntity implements BountyEntity {
         baseBountyIntel.bullet(info);
 
         if (isNull(result)) {
-            info.addPara("Reward: %s", initPad, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
-            info.addPara("Target: %s", bulletPadding, bulletColor, targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
+            info.addPara("Offered by: %s", initPad, bulletColor, offeringFaction.getBaseUIColor(), offeringFaction.getDisplayName());
+            info.addPara("Reward: %s", bulletPadding, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
             info.addPara("Time left: %s", bulletPadding, bulletColor, highlightColor, days + singularOrPlural(days, " day"));
         } else {
             switch (result.type) {
@@ -110,31 +134,38 @@ public class PirateBountyEntity implements BountyEntity {
 
     @Override
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
-        boolean isRetrievalMission = MissionHandler.MissionType.RETRIEVAL.equals(missionHandler.getMissionType());
-        String objectiveText = missionHandler.getMissionType().getObjectiveText();
-        String briefingText = String.format("A large sum has been put on the head of %s, wanted for %s countless crimes in %s space.\n\n" +
-                        "To collect this bounty, we need to %s.",
-                targetedPerson.getNameString(), getTargetedPerson().getHisOrHer(), offeringFaction.getDisplayName(), objectiveText);
+        String targetName = targetedPerson.getNameString();
+        String himOrHerself = targetedPerson.getHimOrHer() + "self";
+        String offeringFactionName = offeringFaction.getDisplayNameWithArticle();
+        String briefingText = String.format("%s, also known as the %s, has proven %s as a big enough annoyance for %s which can't be ignored any longer.\n\n" +
+                        "A bounty was now offered for the %s of that %s %s.",
+                targetName, pirateTitle, himOrHerself, offeringFactionName,
+                killWord, piratePersonality, pirateJob);
         Color highlightColor = Misc.getHighlightColor();
         Color offeringFactionColor = offeringFaction.getBaseUIColor();
         Color targetedFactionColor = targetedFaction.getBaseUIColor();
+        Color[] highlightColors = new Color[]{targetedFactionColor, targetedFactionColor, offeringFactionColor};
+        String[] highlightStrings = new String[]{targetName, pirateTitle, offeringFactionName};
+
         BountyResult result = baseBountyIntel.getResult();
         float opad = 10f;
+        int maxShipsOnIntel = 14;
+        boolean showShipsRemaining = fleet.getNumShips() > maxShipsOnIntel;
 
         if (isNull(result)) {
             TooltipAPIUtils.addCustomImagesWithSingleRepBar(info, width, opad, 10f,
                     targetedPerson.getPortraitSprite(),
                     targetedFaction.getLogo(), targetedFaction.getRelToPlayer().getRel());
             info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
-            info.addPara(briefingText, opad, new Color[]{targetedFactionColor, offeringFactionColor}, targetedPerson.getNameString(), offeringFaction.getDisplayNameWithArticle());
+            info.addPara(briefingText, opad, highlightColors, highlightStrings);
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
-            DescriptionUtils.generateHideoutDescription(info, baseBountyIntel, highlightColor);
+            DescriptionUtils.generateFakeHideoutDescription(info, baseBountyIntel, opad);
             DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
 
-            info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, isRetrievalMission ? 0f : opad);
-            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, 14, 2, true);
+            info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
+            DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, maxShipsOnIntel, 2, showShipsRemaining);
             DescriptionUtils.addDifficultyText(info, opad, difficulty);
         } else {
             switch (result.type) {
@@ -162,7 +193,7 @@ public class PirateBountyEntity implements BountyEntity {
 
     @Override
     public String getIcon() {
-        return targetedFaction.getCrest();
+        return Global.getSettings().getSpriteName("intel", pirateBountyIcon);
     }
 
     @Override
@@ -178,6 +209,6 @@ public class PirateBountyEntity implements BountyEntity {
                     return "Pirate Bounty - Failed";
             }
         }
-        return String.format("Pirate Bounty - %s", missionHandler.getMissionType().getMissionTypeUCFirst());
+        return String.format("Pirate Bounty - %s", targetedPerson.getNameString());
     }
 }

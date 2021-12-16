@@ -13,6 +13,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
 import lombok.Getter;
 
@@ -32,14 +33,14 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
     private final float travelDistance;
     private int bonusPayment;
 
-    public AssassinationBountyIntel(AssassinationBountyEntity assassinationBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(assassinationBountyEntity, assassinationBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
-        Misc.makeImportant(fleet, "assassinationBounty", 100f);
+    public AssassinationBountyIntel(AssassinationBountyEntity assassinationBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.ASSASSINATION, assassinationBountyEntity, assassinationBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
+        Misc.makeImportant(fleet, "pbe");
         this.assassinationBountyEntity = assassinationBountyEntity;
         this.payment = assassinationBountyEntity.getBaseReward();
         this.bonusPayment = assassinationBountyEntity.getBonusReward();
-        this.destination = assassinationBountyEntity.getEndingPoint();
-        this.travelDistance = Misc.getDistanceLY(assassinationBountyEntity.getStartingPoint().getStarSystem().getHyperspaceAnchor(), assassinationBountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor());
+        this.destination = assassinationBountyEntity.getTravelDestination();
+        this.travelDistance = Misc.getDistanceLY(assassinationBountyEntity.getSpawnLocation().getStarSystem().getHyperspaceAnchor(), assassinationBountyEntity.getTravelDestination().getStarSystem().getHyperspaceAnchor());
         assassinationBountyEntity.setIntel(this);
     }
 
@@ -48,7 +49,7 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
         boolean isFlagshipAlive = isNotNull(fleet.getFlagship()) && fleet.getFlagship().getCaptain() == person;
-        boolean occurredInDestinationSystem = assassinationBountyEntity.getEndingPoint().getContainingLocation().equals(fleet.getContainingLocation());
+        boolean occurredInDestinationSystem = assassinationBountyEntity.getTravelDestination().getContainingLocation().equals(fleet.getContainingLocation());
         boolean occurredInHyperspace = fleet.isInHyperspace();
         float remainingDistance = Misc.getDistanceLY(fleet.getLocationInHyperspace(), destination.getLocationInHyperspace());
         float targetRepAfterBattle = getUpdatedRep(assassinationBountyEntity.getTargetedFaction());
@@ -93,9 +94,9 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         ArrowData arrow;
 
         if (Settings.isDebugActive() && fleet.isInHyperspace())
-            arrow = new ArrowData(fleet, assassinationBountyEntity.getEndingPoint());
+            arrow = new ArrowData(fleet, assassinationBountyEntity.getTravelDestination());
         else
-            arrow = new ArrowData(assassinationBountyEntity.getStartingPoint(), assassinationBountyEntity.getEndingPoint());
+            arrow = new ArrowData(assassinationBountyEntity.getSpawnLocation(), assassinationBountyEntity.getTravelDestination());
 
         arrow.color = getFactionForUIColors().getBaseUIColor();
         result.add(arrow);
@@ -108,12 +109,12 @@ public class AssassinationBountyIntel extends BaseBountyIntel {
         if (fleet.isInHyperspace()) {
             if (Settings.isDebugActive())
                 return Global.getSector().getHyperspace().createToken(fleet.getLocationInHyperspace().x, fleet.getLocationInHyperspace().y);
-            return assassinationBountyEntity.getStartingPoint().getStarSystem().getHyperspaceAnchor();
-        } else if (fleet.getContainingLocation() == assassinationBountyEntity.getEndingPoint().getContainingLocation()) {
-            return assassinationBountyEntity.getEndingPoint().getStarSystem().getHyperspaceAnchor();
+            return assassinationBountyEntity.getSpawnLocation().getStarSystem().getHyperspaceAnchor();
+        } else if (fleet.getContainingLocation() == assassinationBountyEntity.getTravelDestination().getContainingLocation()) {
+            return assassinationBountyEntity.getTravelDestination().getStarSystem().getHyperspaceAnchor();
         }
         if (Settings.isDebugActive())
-            return assassinationBountyEntity.getStartingPoint();
+            return assassinationBountyEntity.getSpawnLocation();
         else
             return null;
     }

@@ -4,16 +4,14 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
-import com.fs.starfarer.api.impl.campaign.DModManager;
-import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflater;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetParamsV3;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.ShipRoles;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
+import de.schafunschaf.bountiesexpanded.helper.ship.HullModUtils;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -107,24 +105,11 @@ public class FleetGenerator {
         fleet.setName(fleetName);
         FleetFactoryV3.addCommanderSkills(fleetCaptain, fleet, null);
 
-        addDMods(fleet, quality);
+        HullModUtils.addDMods(fleet, quality);
 
         fleetData.sort();
 
         return fleet;
-    }
-
-    public static void addDMods(CampaignFleetAPI fleet, float quality) {
-        Random random = new Random(fleet.getCommander().getId().hashCode());
-        List<FleetMemberAPI> fleetMemberList = fleet.getFleetData().getMembersListCopy();
-        float averageDmodsForQuality = DefaultFleetInflater.getAverageDmodsForQuality(quality);
-
-        for (FleetMemberAPI fleetMember : fleetMemberList) {
-            ShipVariantAPI variant = fleetMember.getVariant();
-            int numDModsToAdd = DefaultFleetInflater.getNumDModsToAdd(variant, averageDmodsForQuality, random);
-            DModManager.addDMods(variant, false, numDModsToAdd, random);
-            fleetMember.setVariant(variant, false, true);
-        }
     }
 
     public static void spawnFleet(CampaignFleetAPI fleet, SectorEntityToken hideout) {

@@ -27,7 +27,7 @@ public class BountiesExpandedSpawnAssassinationBounty implements BaseCommand {
         if (isNotNull(assassinationBountyEvent)) {
             manager.addActive(assassinationBountyEvent);
             Console.showMessage("it worked!");
-            Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getStartingPoint().getName());
+            Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getSpawnLocation().getName());
             return CommandResult.SUCCESS;
         }
 

@@ -52,9 +52,9 @@ public class SkirmishBountyEntity implements BountyEntity {
     private final FactionAPI targetedFaction;
     private final CampaignFleetAPI fleet;
     private final PersonAPI targetedPerson;
-    private final SectorEntityToken startingPoint;
-    private final String startingPointID;
-    private final SectorEntityToken endingPoint = null;
+    private final SectorEntityToken spawnLocation;
+    private final String spawnLocationID;
+    private final SectorEntityToken travelDestination = null;
     private final float fleetQuality;
     private final String[] creditsPerSize;
     private final Map<HullSize, Integer> numFleetMembers;
@@ -62,15 +62,15 @@ public class SkirmishBountyEntity implements BountyEntity {
     private float targetRepBeforeBattle = 0;
     private SkirmishBountyIntel bountyIntel;
 
-    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken startingPoint, float fractionToKill, Difficulty difficulty, int level, float fleetQuality) {
+    public SkirmishBountyEntity(int baseReward, FactionAPI offeringFaction, FactionAPI targetedFaction, CampaignFleetAPI fleet, PersonAPI targetedPerson, SectorEntityToken spawnLocation, float fractionToKill, Difficulty difficulty, int level, float fleetQuality) {
         this.baseReward = baseReward;
         this.fractionToKill = fractionToKill;
         this.offeringFaction = offeringFaction;
         this.targetedFaction = targetedFaction;
         this.fleet = fleet;
         this.targetedPerson = targetedPerson;
-        this.startingPoint = startingPoint;
-        this.startingPointID = startingPoint.getId();
+        this.spawnLocation = spawnLocation;
+        this.spawnLocationID = spawnLocation.getId();
         this.difficulty = difficulty;
         this.level = level;
         this.fleetQuality = fleetQuality;
@@ -136,6 +136,7 @@ public class SkirmishBountyEntity implements BountyEntity {
         Color highlightColor = Misc.getHighlightColor();
         Color bulletColor = baseBountyIntel.getBulletColorForMode(mode);
         float initPad = (mode == ListInfoMode.IN_DESC) ? 10f : 3f;
+        float bulletPadding = mode == ListInfoMode.IN_DESC ? 3f : 0f;
         float duration = baseBountyIntel.getDuration();
         float elapsedDays = baseBountyIntel.getElapsedDays();
         int days = Math.max((int) (duration - elapsedDays), 1);
@@ -148,16 +149,18 @@ public class SkirmishBountyEntity implements BountyEntity {
         if (isNull(result)) {
             if (mode == ListInfoMode.IN_DESC) {
                 info.addPara("%s reward on completion", initPad, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
-                info.addPara("%s maximum reward", 0f, bulletColor, highlightColor, Misc.getDGSCredits(maxPayout));
-                baseBountyIntel.addDays(info, "remaining", days, bulletColor, 0f);
+                info.addPara("%s maximum reward", bulletPadding, bulletColor, highlightColor, Misc.getDGSCredits(maxPayout));
+                info.addPara("Time left: %s", bulletPadding, bulletColor, highlightColor, days + singularOrPlural(days, " day"));
             } else {
                 info.addPara("Offered by: %s", initPad, bulletColor,
                         offeringFaction.getBaseUIColor(), offeringFaction.getDisplayName());
-                info.addPara("Target: %s", 0f, bulletColor,
+                info.addPara("Target: %s", bulletPadding, bulletColor,
                         targetedFaction.getBaseUIColor(), targetedFaction.getDisplayName());
                 if (!baseBountyIntel.isEnding()) {
-                    info.addPara("%s reward, %s remaining", 0f, bulletColor,
-                            highlightColor, Misc.getDGSCredits(maxPayout), days + singularOrPlural(days, " day"));
+                    info.addPara("Reward: %s", bulletPadding, bulletColor,
+                            highlightColor, Misc.getDGSCredits(maxPayout));
+                    info.addPara("Time left: %s", bulletPadding, bulletColor,
+                            highlightColor, days + singularOrPlural(days, " day"));
                 }
             }
         } else {
@@ -168,13 +171,13 @@ public class SkirmishBountyEntity implements BountyEntity {
                     if (mode != ListInfoMode.IN_DESC) {
                         info.addPara("%s received", initPad, bulletColor, highlightColor, payout);
                         CoreReputationPlugin.addAdjustmentMessage(result.rep.delta, offeringFaction, null,
-                                null, null, info, bulletColor, isUpdate, initPad);
+                                null, null, info, bulletColor, isUpdate, bulletPadding);
                     }
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:
                     CoreReputationPlugin.addAdjustmentMessage(result.rep.delta, offeringFaction, null,
-                            null, null, info, bulletColor, isUpdate, 0f);
+                            null, null, info, bulletColor, isUpdate, initPad);
                     break;
                 case END_TIME:
                 case END_OTHER:

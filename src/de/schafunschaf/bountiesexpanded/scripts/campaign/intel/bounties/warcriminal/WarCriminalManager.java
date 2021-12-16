@@ -12,7 +12,7 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
-import de.schafunschaf.bountiesexpanded.helper.ship.SModUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.helper.ship.HullModUtils;
 import de.schafunschaf.bountiesexpanded.helper.ship.ShipUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
@@ -32,7 +32,6 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
     public static final String FLEET_ACTION_TEXT = "Avoiding taxes";
     public static final String KEY = "$bountiesExpanded_warCriminalManagerBountyManager";
     public static final String WAR_CRIMINAL_BOUNTY_FLEET_KEY = "$bountiesExpanded_warCriminalBountyFleet";
-    public static final String WAR_CRIMINAL_BOUNTY_RARE_SHIP_KEY = "$bountiesExpanded_warCriminalBountyFleet_rareFlagship";
 
     public WarCriminalManager() {
         super();
@@ -51,11 +50,17 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
 
     @Override
     protected int getMinConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.warCriminalMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
+        if (Settings.isDebugActive())
+            return 5;
+
         return Settings.warCriminalMaxBounties;
     }
 
@@ -79,12 +84,12 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
             return null;
 
         CampaignFleetAPI fleet = warCriminalEntity.getFleet();
-        SectorEntityToken startingPoint = warCriminalEntity.getStartingPoint();
+        SectorEntityToken spawnLocation = warCriminalEntity.getSpawnLocation();
         PersonAPI person = warCriminalEntity.getTargetedPerson();
         Difficulty difficulty = warCriminalEntity.getDifficulty();
 
         fleet.setName(FLEET_NAME);
-        FleetGenerator.spawnFleet(fleet, startingPoint);
+        FleetGenerator.spawnFleet(fleet, spawnLocation);
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
@@ -108,14 +113,14 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         log.info("BountiesExpanded - Spawning War Criminal Bounty: By "
                 + warCriminalEntity.getOfferingFaction().getDisplayName() + " | Against "
                 + warCriminalEntity.getTargetedFaction().getDisplayName() + " | At "
-                + startingPoint.getName());
+                + spawnLocation.getName());
         log.info("Player-FP at creation: " + Global.getSector().getPlayerFleet().getFleetPoints());
         log.info("Enemy-FP at creation: " + warCriminalEntity.getFleet().getFleetPoints());
         log.info("Difficulty: " + difficulty.getShortDescription());
 
         upgradeShips(fleet);
 
-        return new WarCriminalIntel(warCriminalEntity, fleet, person, startingPoint, warCriminalEntity.getEndingPoint());
+        return new WarCriminalIntel(warCriminalEntity, fleet, person, spawnLocation, warCriminalEntity.getDropOffLocation());
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
@@ -132,12 +137,12 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
             return;
 
         if (warCriminalEntity.getMissionHandler().getMissionType().equals(MissionHandler.MissionType.RETRIEVAL))
-            SModUpgradeHelper.addRandomSMods(flagship, 3, random);
+            HullModUtils.addRandomSMods(flagship, numSMods, random);
 
-        if (flagship.getVariant().getSMods().isEmpty()) {
-            SModUpgradeHelper.upgradeShip(flagship, numSMods, random);
-            SModUpgradeHelper.addMinorUpgrades(flagship, random);
-        }
+        if (flagship.getVariant().getSMods().isEmpty())
+            ShipUtils.upgradeShip(flagship, numSMods, random);
+
+        ShipUtils.addMinorUpgrades(flagship, random);
 
         flagship.updateStats();
 

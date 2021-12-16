@@ -3,6 +3,8 @@ package de.schafunschaf.bountiesexpanded;
 import com.fs.starfarer.api.impl.campaign.DebugFlags;
 
 public class Settings {
+    public static boolean HIGH_VALUE_BOUNTY_ACTIVE = false;
+
     public static boolean sheepDebug = false;
     public static boolean prepareUpdate = false;
 
@@ -11,7 +13,7 @@ public class Settings {
     public static int baseRewardPerFP = 250;
 
     public static boolean skirmishActive = true;
-    public static double skirmishSpawnChance = 0.5;
+    public static double skirmishSpawnChance = 0.3;
     public static int skirmishMinBounties = 0;
     public static int skirmishMaxBounties = 2;
     public static int skirmishMinDuration = 30;
@@ -25,13 +27,6 @@ public class Settings {
     public static double assassinationMinTravelDistance = 5;
     public static double assassinationBaseRewardMultiplier = 1;
     public static double assassinationBonusRewardMultiplier = 4;
-
-    public static boolean highValueBountyActive = true;
-    public static int highValueBountyMaxBounties = 3;
-    public static double highValueBountySpawnChance = 0.3;
-    public static double highValueBountyMinTimeBetweenSpawns = 14;
-    public static double highValueBountyMaxTimeBetweenSpawns = 28;
-    public static boolean highValueBountyRevengeActive = false;
 
     public static boolean warCriminalActive = true;
     public static double warCriminalSpawnChance = 0.2;
@@ -48,6 +43,7 @@ public class Settings {
     public static boolean onlyRecoverWithSP = false;
 
     public static boolean pirateBountyActive = true;
+    public static boolean disableVanillaBounties = true;
     public static boolean disableVayraBounties = true;
     public static double pirateBountySpawnChance = 0.7;
     public static int pirateBountyMinBounties = 1;

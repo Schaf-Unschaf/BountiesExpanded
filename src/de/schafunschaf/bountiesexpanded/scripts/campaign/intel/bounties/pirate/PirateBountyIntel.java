@@ -12,6 +12,7 @@ import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 
@@ -25,13 +26,13 @@ public class PirateBountyIntel extends BaseBountyIntel {
     private final PirateBountyEntity pirateBountyEntity;
     private final int payment;
 
-    public PirateBountyIntel(PirateBountyEntity pirateBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
-        super(pirateBountyEntity, pirateBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, startingPoint, endingPoint);
+    public PirateBountyIntel(PirateBountyEntity pirateBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.PIRATE, pirateBountyEntity, pirateBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
         this.pirateBountyEntity = pirateBountyEntity;
         this.payment = pirateBountyEntity.getBaseReward();
-        this.duration = new Random().nextInt((Settings.pirateBountyMaxDuration - Settings.pirateBountyMinDuration) + 1) + Settings.pirateBountyMinDuration;
+        this.duration = new Random().nextInt(Settings.pirateBountyMaxDuration - Settings.pirateBountyMinDuration) + Settings.pirateBountyMinDuration;
         pirateBountyEntity.setBountyIntel(this);
-        Misc.makeImportant(fleet, "pirateBounty", duration);
+        Misc.makeImportant(fleet, "pbe");
     }
 
     @Override
@@ -67,14 +68,14 @@ public class PirateBountyIntel extends BaseBountyIntel {
         if (Settings.isDebugActive())
             return super.getMapLocation(map);
 
-        Constellation c = startingPoint.getConstellation();
+        Constellation c = spawnLocation.getConstellation();
         SectorEntityToken entity = null;
         if (c != null && map != null) {
             entity = map.getConstellationLabelEntity(c);
         }
 
         if (entity == null) {
-            entity = startingPoint;
+            entity = spawnLocation;
         }
 
         return entity;

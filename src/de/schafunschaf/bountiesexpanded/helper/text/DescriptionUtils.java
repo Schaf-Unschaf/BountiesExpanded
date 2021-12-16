@@ -184,15 +184,18 @@ public class DescriptionUtils {
         if (isNull(person))
             return;
 
-        boolean hasRareFlagship = fleet.getMemoryWithoutUpdate().contains(RareFlagshipManager.RARE_FLAGSHIP_KEY);
+        boolean isRareShip = fleet.getMemoryWithoutUpdate().contains(RareFlagshipManager.RARE_FLAGSHIP_KEY);
         int fleetSize = fleet.getNumShips();
         FleetMemberAPI flagship = fleet.getFlagship();
         PersonAPI commander = fleet.getCommander();
-        String shipNameWithClass = generateShipNameWithClass(flagship, hasRareFlagship);
+        String shipName = flagship.getShipName();
+        String shipClass = flagship.getHullSpec().getHullNameWithDashClass();
+        String aOrAn = FormattingTools.aOrAn(shipClass);
+        String rareString = isRareShip ? "a rare" : aOrAn;
+        String shipDesignation = flagship.getHullSpec().getDesignation().toLowerCase();
         String hisOrHer = person.getHisOrHer();
         String fleetDesc;
         String outputText;
-        String[] highlights;
 
         if (fleetSize <= 4) fleetDesc = "few ships";
         else if (fleetSize <= 10) fleetDesc = "small fleet";
@@ -202,13 +205,18 @@ public class DescriptionUtils {
         else if (fleetSize <= 56) fleetDesc = "gigantic fleet";
         else fleetDesc = "freaking armada";
 
-        highlights = new String[]{commander.getFaction().getRank(commander.getRankId()) + " " + person.getName().getFullName(), fleetDesc, shipNameWithClass};
-        outputText = String.format("%s is in command of a %s and personally commands the %s, as " + hisOrHer + " flagship.", (Object[]) highlights);
+        Color[] highlightColors = new Color[]{commander.getFaction().getBaseUIColor(), Misc.getHighlightColor(), Misc.getHighlightColor(), Misc.getHighlightColor(), Misc.getHighlightColor()};
+        String[] highlights = new String[]{commander.getFaction().getRank(commander.getRankId()) + " " + person.getName().getFullName(), fleetDesc, shipName, shipClass, shipDesignation};
 
-        info.addPara(outputText, padding, commander.getFaction().getBaseUIColor(), highlights);
+        outputText = String.format("%s is in command of a %s and personally commands the %s, " + rareString + " %s %s, as " + hisOrHer + " flagship.", (Object[]) highlights);
+
+        info.addPara(outputText, padding, highlightColors, highlights);
     }
 
     public static String generateShipNameWithClass(FleetMemberAPI ship, boolean isRareShip) {
+        if (isNull(ship))
+            return "NO SHIP FOR NAME AND CLASS";
+
         String rareString = isRareShip ? "rare " : "";
         String shipName = ship.getShipName();
         String shipClass = ship.getHullSpec().getHullNameWithDashClass();
@@ -219,9 +227,22 @@ public class DescriptionUtils {
         return String.format("%s, %s %s", shipName, aOrAn, shipType);
     }
 
+    public static String generateShipClassWithDesignation(FleetMemberAPI ship, boolean isRareShip) {
+        if (isNull(ship))
+            return "NO SHIP FOR NAME AND CLASS";
+
+        String rareString = isRareShip ? "rare " : "";
+        String shipClass = ship.getHullSpec().getHullNameWithDashClass();
+        String aOrAn = isRareShip ? "a" : FormattingTools.aOrAn(shipClass);
+        String shipDesignation = ship.getHullSpec().getDesignation().toLowerCase();
+        String shipType = String.format("%s%s %s", rareString, shipClass, shipDesignation);
+
+        return String.format("%s %s", aOrAn, shipType); // a (rare) Wolf-Class frigate
+    }
+
     public static void generateHideoutDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, Color highlightColor) {
         String isOrWas = isNull(baseBountyIntel.getFleet().getAI().getCurrentAssignmentType()) ? "was last seen " : "is ";
-        SectorEntityToken hideout = baseBountyIntel.getStartingPoint();
+        SectorEntityToken hideout = baseBountyIntel.getSpawnLocation();
         info.addPara(
                 "The fleet " + isOrWas + "near " + hideout.getName() + " in the "
                         + hideout.getStarSystem().getName() + ".",
@@ -230,11 +251,24 @@ public class DescriptionUtils {
 
     public static void generateFakeHideoutDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding) {
         String heOrShe = FormattingTools.capitalizeFirst(baseBountyIntel.getPerson().getHeOrShe());
-        SectorEntityToken startingPoint = baseBountyIntel.getStartingPoint();
-        SectorEntityToken fakeLocation = startingPoint.getContainingLocation().createToken(0.0F, 0.0F);
+        SectorEntityToken spawnLocation = baseBountyIntel.getSpawnLocation();
+        SectorEntityToken fakeLocation = spawnLocation.getContainingLocation().createToken(0.0F, 0.0F);
 
-        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(startingPoint, 0.0F, 1000.0F, 100.0F));
+        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(spawnLocation, 0.0F, 1000.0F, 100.0F));
         String loc = BreadcrumbSpecial.getLocatedString(fakeLocation);
+        loc = loc.replaceAll("orbiting", "hiding out near");
+        loc = loc.replaceAll("located in", "hiding out in");
+
+        info.addPara(heOrShe + " is rumored to be " + loc + ".", padding);
+    }
+
+    public static void generateFakePatrolDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding) {
+        String heOrShe = FormattingTools.capitalizeFirst(baseBountyIntel.getPerson().getHeOrShe());
+        SectorEntityToken location = baseBountyIntel.getTravelDestination();
+        SectorEntityToken fakeLocation = location.getContainingLocation().createToken(baseBountyIntel.getFleet().getCurrentAssignment().getTarget().getLocation());
+
+        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(location, 0.0F, 1000.0F, 100.0F));
+        String loc = BreadcrumbSpecial.getLocatedString(baseBountyIntel.getFleet().getCurrentAssignment().getTarget());
         loc = loc.replaceAll("orbiting", "hiding out near");
         loc = loc.replaceAll("located in", "hiding out in");
 
@@ -243,11 +277,11 @@ public class DescriptionUtils {
 
     public static void generateFakeTravelDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding) {
         String heOrShe = FormattingTools.capitalizeFirst(baseBountyIntel.getPerson().getHeOrShe());
-        SectorEntityToken endingPoint = baseBountyIntel.getEndingPoint();
-        SectorEntityToken fakeLocation = endingPoint.getContainingLocation().createToken(0.0F, 0.0F);
+        SectorEntityToken travelDestination = baseBountyIntel.getTravelDestination();
+        SectorEntityToken fakeLocation = travelDestination.getContainingLocation().createToken(0.0F, 0.0F);
 
-        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(endingPoint, 0.0F, 1000.0F, 100.0F));
-        String obfuscatedLocation = BreadcrumbSpecial.getLocationDescription(endingPoint, false);
+        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(travelDestination, 0.0F, 1000.0F, 100.0F));
+        String obfuscatedLocation = BreadcrumbSpecial.getLocationDescription(travelDestination, false);
         String travelDescription = String.format("%s is currently traveling to %s.", heOrShe, obfuscatedLocation);
 
         info.addPara(travelDescription, padding);

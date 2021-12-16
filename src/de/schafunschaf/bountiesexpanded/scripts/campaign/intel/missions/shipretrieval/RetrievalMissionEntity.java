@@ -54,7 +54,7 @@ public class RetrievalMissionEntity implements MissionEntity {
         this.missionContact = bountyEntity.getOfferingPerson();
         this.baseReward = bountyEntity.getBaseReward();
         this.chanceForConsequences = bountyEntity.getMissionHandler().getChanceForConsequences();
-        this.missionMarket = bountyEntity.getEndingPoint().getMarket();
+        this.missionMarket = bountyEntity.getTravelDestination().getMarket();
         this.shipWithPayment = shipWithPayment;
     }
 
@@ -85,6 +85,7 @@ public class RetrievalMissionEntity implements MissionEntity {
         Color highlightColor = Misc.getHighlightColor();
         Color bulletColor = this.missionIntel.getBulletColorForMode(mode);
         float initPad = (mode == ListInfoMode.IN_DESC) ? 10f : 3f;
+        float bulletPadding = mode == ListInfoMode.IN_DESC ? 3f : 0f;
         float duration = this.missionIntel.getDuration();
         float elapsedDays = this.missionIntel.getElapsedDays();
         int days = Math.max((int) (duration - elapsedDays), 1);
@@ -100,12 +101,12 @@ public class RetrievalMissionEntity implements MissionEntity {
             case ACCEPTED:
                 info.addPara("Dock at %s, %s", initPad, bulletColor, missionMarket.getTextColorForFactionOrPlanet(),
                         missionMarket.getName(), missionMarket.getStarSystem().getName());
-                info.addPara("Contact %s", 0f, bulletColor, missionMarket.getTextColorForFactionOrPlanet(),
+                info.addPara("Contact %s", bulletPadding, bulletColor, missionMarket.getTextColorForFactionOrPlanet(),
                         missionContact.getNameString());
                 if (mode == ListInfoMode.IN_DESC)
-                    info.addPara("%s reward for ship in current condition (%s D-Mods)", 0f, bulletColor, highlightColor, payoutForShip, numDMods);
+                    info.addPara("%s reward for ship in current condition (%s D-Mods)", bulletPadding, bulletColor, highlightColor, payoutForShip, numDMods);
 
-                missionIntel.addDays(info, "remaining", days, bulletColor, 0f);
+                missionIntel.addDays(info, "remaining", days, bulletColor, bulletPadding);
                 break;
             case COMPLETED:
                 String payout = Misc.getDGSCredits(missionResult.getPayment());
@@ -113,7 +114,7 @@ public class RetrievalMissionEntity implements MissionEntity {
                 if (mode != ListInfoMode.IN_DESC) {
                     info.addPara("%s received", initPad, bulletColor, highlightColor, payout);
                     CoreReputationPlugin.addAdjustmentMessage(missionResult.getOfferingFactionRepChange().delta, offeringFaction, null,
-                            null, null, info, bulletColor, isUpdate, 0f);
+                            null, null, info, bulletColor, isUpdate, bulletPadding);
                 }
                 break;
             case CANCELLED:
@@ -197,7 +198,7 @@ public class RetrievalMissionEntity implements MissionEntity {
         int numDMods = DModManager.getNumDMods(shipWithPayment.getShip().getVariant());
 
         for (int i = 0; i < numDMods; i++)
-            shipValue *= 0.4f;
+            shipValue *= 0.7f;
 
         return shipValue;
     }

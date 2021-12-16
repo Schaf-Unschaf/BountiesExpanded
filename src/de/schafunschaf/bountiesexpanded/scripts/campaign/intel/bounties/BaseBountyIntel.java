@@ -1,6 +1,7 @@
 package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.Script;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
@@ -28,23 +29,25 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
     protected final CampaignFleetAPI fleet;
     protected final BountyEntity bountyEntity;
     protected final PersonAPI person;
-    protected final SectorEntityToken startingPoint;
-    protected final SectorEntityToken endingPoint;
+    protected final SectorEntityToken spawnLocation;
+    protected final SectorEntityToken travelDestination;
     protected final MissionHandler missionHandler;
     protected int maxFleetSizeForCompletion;
     protected float duration;
     protected float elapsedDays = 0f;
     protected BountyResult result;
+    protected BountyType bountyType;
 
-    public BaseBountyIntel(BountyEntity bountyEntity, MissionHandler missionHandler, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken startingPoint, SectorEntityToken endingPoint) {
+    public BaseBountyIntel(BountyType bountyType, BountyEntity bountyEntity, MissionHandler missionHandler, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        this.bountyType = bountyType;
         this.bountyEntity = bountyEntity;
         this.missionHandler = missionHandler;
         this.fleet = campaignFleetAPI;
-        this.startingPoint = startingPoint;
-        this.endingPoint = endingPoint;
+        this.spawnLocation = spawnLocation;
+        this.travelDestination = travelDestination;
         this.person = personAPI;
         this.duration = 100f;
-        this.difficulty = this.bountyEntity.getDifficulty();
+        this.difficulty = bountyEntity.getDifficulty();
 
         fleet.addEventListener(this);
         Global.getSector().getIntelManager().queueIntel(this);
@@ -84,7 +87,7 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
 
     @Override
     public SectorEntityToken getMapLocation(SectorMapAPI map) {
-        return startingPoint;
+        return spawnLocation;
     }
 
     @Override
@@ -180,8 +183,14 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
             Misc.makeUnimportant(fleet, "pbe");
             fleet.clearAssignments();
 
-            if (!Settings.prepareUpdate && startingPoint != null) {
-                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, startingPoint, 1000000f, null);
+            if (!Settings.prepareUpdate && isNotNull(spawnLocation)) {
+                SectorEntityToken despawnLocation = Misc.findNearestPlanetTo(fleet, false, false);
+                fleet.getAI().addAssignment(FleetAssignment.GO_TO_LOCATION_AND_DESPAWN, despawnLocation, 30f, new Script() {
+                    @Override
+                    public void run() {
+                        fleet.despawn();
+                    }
+                });
             } else {
                 fleet.despawn();
             }
@@ -190,5 +199,15 @@ public abstract class BaseBountyIntel extends BaseIntelPlugin implements FleetEv
         if (!isEnding() && !isEnded()) {
             endAfterDelay();
         }
+    }
+
+    @Override
+    public IntelSortTier getSortTier() {
+        return IntelSortTier.TIER_4;
+    }
+
+    @Override
+    protected String getName() {
+        return bountyType.name();
     }
 }
