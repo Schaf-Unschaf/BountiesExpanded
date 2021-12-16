@@ -6,25 +6,27 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
-import com.fs.starfarer.api.impl.campaign.shared.ReputationChangeTracker;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.BaseBountyIntel;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
 import de.schafunschaf.bountiesexpanded.util.FormattingTools;
+import lombok.Getter;
 
 import java.util.*;
 
 import static com.fs.starfarer.api.combat.ShipAPI.HullSize;
+import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdatedRep;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Getter
 public class SkirmishBountyIntel extends BaseBountyIntel {
-    private final int maxFleetSizeForCompletion;
-    private final SkirmishBountyEntity bountyEntity;
+    private final SkirmishBountyEntity skirmishBountyEntity;
     private final int baseShipBounty;
     private int payment;
     private int bonusPayment = 0;
@@ -32,14 +34,15 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
     private float playerInvolvement = 0f;
     private Map<HullSize, int[]> destroyedShips;
 
-    public SkirmishBountyIntel(SkirmishBountyEntity bountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken sectorEntityToken) {
-        super(bountyEntity, campaignFleetAPI, personAPI, sectorEntityToken);
-        this.duration = new Random().nextInt((Settings.SKIRMISH_MAX_DURATION - Settings.SKIRMISH_MIN_DURATION) + 1) + Settings.SKIRMISH_MIN_DURATION;
-        Misc.makeImportant(fleet, "pbe", duration + 20f);
-        this.maxFleetSizeForCompletion = bountyEntity.getMaxFleetSizeForCompletion();
-        this.bountyEntity = bountyEntity;
-        this.baseShipBounty = bountyEntity.getBaseShipBounty();
-        this.payment = bountyEntity.getBaseReward();
+    public SkirmishBountyIntel(SkirmishBountyEntity skirmishBountyEntity, CampaignFleetAPI campaignFleetAPI, PersonAPI personAPI, SectorEntityToken spawnLocation, SectorEntityToken travelDestination) {
+        super(BountyType.SKIRMISH, skirmishBountyEntity, skirmishBountyEntity.getMissionHandler(), campaignFleetAPI, personAPI, spawnLocation, travelDestination);
+        this.duration = new Random().nextInt(Settings.skirmishMaxDuration - Settings.skirmishMinDuration) + Settings.skirmishMinDuration;
+        this.maxFleetSizeForCompletion = skirmishBountyEntity.getMaxFleetSizeForCompletion();
+        this.skirmishBountyEntity = skirmishBountyEntity;
+        this.baseShipBounty = skirmishBountyEntity.getBaseShipBounty();
+        this.payment = skirmishBountyEntity.getBaseReward();
+        skirmishBountyEntity.setBountyIntel(this);
+        Misc.makeImportant(fleet, "pbe");
     }
 
     @Override
@@ -60,7 +63,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
 
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean hasLostEnoughShips = fleet.getNumShips() <= maxFleetSizeForCompletion;
+        boolean isNotCompleted = fleet.getNumShips() > maxFleetSizeForCompletion;
 
         if (battle.isPlayerInvolved()) {
             numBattles++;
@@ -70,10 +73,10 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
                 increaseLossByOne(loss, destroyedShips);
         }
 
-        if (isDone || isNotInvolved || !hasLostEnoughShips)
+        if (isDone || isNotInvolved || isNotCompleted)
             return;
 
-        playerInvolvement = Math.round((playerInvolvement / numBattles) * 100) / 100;
+        playerInvolvement = Math.round((playerInvolvement / numBattles) * 100);
         if (playerInvolvement <= 0) {
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null, 0, 0f, null);
             cleanUp(true);
@@ -81,12 +84,11 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         }
 
         int paymentModifier = 100;
-        FactionAPI offeringFaction = bountyEntity.getOfferingFaction();
-        FactionAPI targetedFaction = bountyEntity.getTargetedFaction();
+        float playerInvolvementFraction = playerInvolvement / 100;
+        FactionAPI offeringFaction = skirmishBountyEntity.getOfferingFaction();
+        FactionAPI targetedFaction = skirmishBountyEntity.getTargetedFaction();
         float repToPlayer = offeringFaction.getRelToPlayer().getRel();
-        ReputationChangeTracker repChangeTracker = SharedData.getData().getPlayerActivityTracker().getRepChangeTracker();
-        repChangeTracker.advance(0);
-        float targetRepAfterBattle = repChangeTracker.getDataFor(targetedFaction.getId()).getLastValue();
+        float targetRepAfterBattle = getUpdatedRep(targetedFaction);
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
         CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
@@ -94,11 +96,11 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         if (repToPlayer < 0f) {
             customRepImpact.delta = ((maxRepGain - neutralRepGain) * -repToPlayer + neutralRepGain) / 100;
             paymentModifier = -Math.round(100 + repToPlayer * maxRewardDeduction);
-            payment *= (float) -paymentModifier * playerInvolvement / 100;
+            payment *= (float) -paymentModifier * playerInvolvementFraction / 100;
         } else if (repToPlayer > 0f) {
             customRepImpact.delta = (neutralRepGain - repToPlayer * neutralRepGain) / 100;
             paymentModifier = Math.round(100 + repToPlayer * maxRewardIncrease);
-            payment *= (float) paymentModifier * playerInvolvement / 100;
+            payment *= (float) paymentModifier * playerInvolvementFraction / 100;
         } else {
             customRepImpact.delta = neutralRepGain / 100;
         }
@@ -132,7 +134,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         for (Map.Entry<HullSize, int[]> entry : destroyedShips.entrySet()) {
             int bonusPerSize = 0;
             int payoutPerSize = 0;
-            int numFleetMembers = bountyEntity.getNumFleetMembers().get(entry.getKey());
+            int numFleetMembers = skirmishBountyEntity.getNumFleetMembers().get(entry.getKey());
             float mult = Misc.getSizeNum(entry.getKey());
             int[] destroyedShipsData = entry.getValue();
             bonusPerSize += baseShipBounty * mult * destroyedShipsData[0];
@@ -152,7 +154,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         if (elapsedDays >= duration && !isDone()) {
             boolean canEnd = isNull(fleet) || !fleet.isInCurrentLocation();
             if (canEnd) {
-                result = new BountyResult(BountyResultType.END_TIME, 0, 0);
+                result = new BountyResult(BountyResultType.END_TIME, 0, 0, 0);
                 cleanUp(true);
                 return;
             }
@@ -162,29 +164,27 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
             return;
 
         if (fleet.getFleetSizeCount() <= maxFleetSizeForCompletion) {
-            result = new BountyResult(BountyResultType.END_OTHER, 0, 0);
+            result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0);
             cleanUp(!fleet.isInCurrentLocation());
         }
     }
 
     @Override
     protected void cleanUp(boolean onlyIfImportant) {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
-        SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
+        SkirmishBountyManager.getInstance().unregisterBounty(skirmishBountyEntity);
         super.cleanUp(onlyIfImportant);
     }
 
     @Override
     public void endImmediately() {
-        Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.BOUNTY_ACTIVE_AT_KEY + bountyEntity.getHideout().getMarket().getName());
-        SkirmishBountyManager.getInstance().removeFactionFromActiveList(bountyEntity.getTargetedFaction().getId());
+        SkirmishBountyManager.getInstance().unregisterBounty(skirmishBountyEntity);
         super.endImmediately();
     }
 
     @Override
     public Set<String> getIntelTags(SectorMapAPI map) {
         Set<String> intelTags = super.getIntelTags(map);
-        intelTags.add(bountyEntity.getOfferingFaction().getId());
+        intelTags.add(skirmishBountyEntity.getOfferingFaction().getId());
         return intelTags;
     }
 }

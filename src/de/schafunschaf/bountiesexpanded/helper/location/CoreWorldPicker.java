@@ -26,7 +26,7 @@ public class CoreWorldPicker {
             allMarkets = marketList;
 
         for (MarketAPI market : allMarkets) {
-            if (Settings.IGNORE_PLAYER_MARKETS && market.isPlayerOwned())
+            if (Settings.ignorePlayerMarkets && market.isPlayerOwned())
                 continue;
             if (!market.isHidden() && !market.isInHyperspace())
                 filteredMarketList.add(market);
@@ -49,7 +49,7 @@ public class CoreWorldPicker {
                 }
 
                 for (MarketAPI market : factionMarketList) {
-                    if (Settings.IGNORE_PLAYER_MARKETS && market.isPlayerOwned())
+                    if (Settings.ignorePlayerMarkets && market.isPlayerOwned())
                         continue;
                     if (!market.isHidden() && !market.isInHyperspace())
                         filteredSafeMarketList.add(market);
@@ -74,9 +74,9 @@ public class CoreWorldPicker {
             factionMarketList = marketList;
 
         for (MarketAPI market : factionMarketList) {
-            if (Settings.IGNORE_PLAYER_MARKETS && market.isPlayerOwned())
+            if (Settings.ignorePlayerMarkets && market.isPlayerOwned())
                 continue;
-            if (!market.isHidden()&& !market.isInHyperspace())
+            if (!market.isHidden() && !market.isInHyperspace())
                 filteredFactionMarketList.add(market);
         }
         return pickHideout(filteredFactionMarketList);

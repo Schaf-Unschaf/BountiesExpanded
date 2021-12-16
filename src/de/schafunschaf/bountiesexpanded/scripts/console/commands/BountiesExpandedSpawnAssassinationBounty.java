@@ -10,10 +10,7 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 public class BountiesExpandedSpawnAssassinationBounty implements BaseCommand {
-    public BountiesExpandedSpawnAssassinationBounty() {
-    }
-
-    public CommandResult runCommand(@NotNull String args, @NotNull CommandContext context) {
+     public CommandResult runCommand(@NotNull String args, @NotNull CommandContext context) {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");
             return CommandResult.WRONG_CONTEXT;
@@ -30,7 +27,7 @@ public class BountiesExpandedSpawnAssassinationBounty implements BaseCommand {
         if (isNotNull(assassinationBountyEvent)) {
             manager.addActive(assassinationBountyEvent);
             Console.showMessage("it worked!");
-            Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getHideout().getName());
+            Console.showMessage("Spawned AssassinationBounty at " + assassinationBountyEvent.getSpawnLocation().getName());
             return CommandResult.SUCCESS;
         }
 

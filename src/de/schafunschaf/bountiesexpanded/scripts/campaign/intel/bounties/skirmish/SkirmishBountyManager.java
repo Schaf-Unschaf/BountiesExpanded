@@ -11,9 +11,9 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.difficulty.Difficulty;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
-import org.apache.log4j.Logger;
+import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
+import lombok.extern.log4j.Log4j;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -21,14 +21,14 @@ import java.util.Set;
 
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
+@Log4j
 public class SkirmishBountyManager extends BaseEventManager {
-    private final Set<String> activeFactionBountyList = new HashSet<>();
     public static final String FLEET_NAME = "Skirmisher Fleet";
     public static final String FLEET_ACTION_TEXT = "practicing military maneuvers";
     public static final String KEY = "$bountiesExpanded_skirmishBountyManager";
-    public static final String BOUNTY_ACTIVE_AT_KEY = "$bountiesExpanded_skirmishBountyActive_";
     public static final String SKIRMISH_BOUNTY_FLEET_KEY = "$bountiesExpanded_skirmishBountyFleet";
-    public static final Logger log = Global.getLogger(SkirmishBountyManager.class);
+    private final Set<String> bountiesActiveForFaction = new HashSet<>();
+    private final Set<String> bountiesActiveAtEntity = new HashSet<>();
 
     public SkirmishBountyManager() {
         super();
@@ -42,20 +42,26 @@ public class SkirmishBountyManager extends BaseEventManager {
 
     @Override
     protected int getMinConcurrent() {
-        return Settings.SKIRMISH_MIN_BOUNTIES;
+        if (Settings.isDebugActive())
+            return 5;
+
+        return Settings.skirmishMinBounties;
     }
 
     @Override
     protected int getMaxConcurrent() {
-        return Settings.SKIRMISH_MAX_BOUNTIES;
+        if (Settings.isDebugActive())
+            return 5;
+
+        return Settings.skirmishMaxBounties;
     }
 
     @Override
     protected EveryFrameScript createEvent() {
-        if (Settings.SKIRMISH_ACTIVE) {
+        if (Settings.skirmishActive) {
             if (Settings.isDebugActive())
                 return createSkirmishBountyEvent();
-            if (new Random().nextFloat() <= Settings.SKIRMISH_SPAWN_CHANCE) {
+            if (new Random().nextFloat() <= Settings.skirmishSpawnChance) {
                 return createSkirmishBountyEvent();
             }
         }
@@ -64,60 +70,41 @@ public class SkirmishBountyManager extends BaseEventManager {
     }
 
     public SkirmishBountyIntel createSkirmishBountyEvent() {
-        SkirmishBountyEntity skirmishBountyEntity = null;
-        boolean isValidBounty = false;
-        int maxSpawningAttempts = 5;
+        SkirmishBountyEntity skirmishBountyEntity = EntityProvider.skirmishBountyEntity();
 
-        while (!isValidBounty && maxSpawningAttempts > 0) {
-            SkirmishBountyEntity skirmishBountyEntityAttempt = EntityProvider.skirmishBountyEntity();
-            if (isNull(skirmishBountyEntityAttempt)) {
-                maxSpawningAttempts--;
-                continue;
-            }
-            if (activeFactionBountyList.contains(skirmishBountyEntityAttempt.getTargetedFaction().getId())) {
-                maxSpawningAttempts--;
-                continue;
-            }
-            if (Global.getSector().getMemoryWithoutUpdate().contains(BOUNTY_ACTIVE_AT_KEY + skirmishBountyEntityAttempt.getHideout().getMarket().getName())) {
-                maxSpawningAttempts--;
-                continue;
-            }
-            isValidBounty = true;
-            skirmishBountyEntity = skirmishBountyEntityAttempt;
-        }
-
-        if (!isValidBounty)
+        if (isNull(skirmishBountyEntity))
+            return null;
+        if (hasActiveBounty(skirmishBountyEntity))
             return null;
 
         CampaignFleetAPI fleet = skirmishBountyEntity.getFleet();
-        SectorEntityToken hideout = skirmishBountyEntity.getHideout();
-        PersonAPI person = skirmishBountyEntity.getPerson();
+        SectorEntityToken spawnLocation = skirmishBountyEntity.getSpawnLocation();
+        PersonAPI person = skirmishBountyEntity.getTargetedPerson();
         Difficulty difficulty = skirmishBountyEntity.getDifficulty();
 
         fleet.setName(FLEET_NAME);
-        FleetGenerator.spawnFleet(fleet, hideout);
+        FleetGenerator.spawnFleet(fleet, spawnLocation);
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
         fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
         fleet.setTransponderOn(true);
         fleetMemory.set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
         fleetMemory.set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
+        fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, SKIRMISH_BOUNTY_FLEET_KEY);
         fleetMemory.set(SKIRMISH_BOUNTY_FLEET_KEY, skirmishBountyEntity);
-
-        Global.getSector().getMemoryWithoutUpdate().set(BOUNTY_ACTIVE_AT_KEY + hideout.getMarket().getName(), null);
 
         log.info("BountiesExpanded - Spawning Skirmish Bounty: By "
                 + skirmishBountyEntity.getOfferingFaction().getDisplayName() + " | Against "
                 + skirmishBountyEntity.getTargetedFaction().getDisplayName() + " | At "
-                + hideout.getName());
+                + spawnLocation.getName());
         log.info("Player-FP at creation: " + Global.getSector().getPlayerFleet().getFleetPoints());
         log.info("Enemy-FP at creation: " + skirmishBountyEntity.getFleet().getFleetPoints());
         log.info("Difficulty: " + difficulty.getShortDescription());
 
-        addFactionToActiveBountyList(skirmishBountyEntity.getTargetedFaction().getId());
+        registerBounty(skirmishBountyEntity);
 
         upgradeShips(fleet);
 
-        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, hideout);
+        return new SkirmishBountyIntel(skirmishBountyEntity, fleet, person, spawnLocation, null);
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {
@@ -129,11 +116,18 @@ public class SkirmishBountyManager extends BaseEventManager {
         FleetUpgradeHelper.upgradeRandomShips(bountyFleet, modValue, modValue * 0.1f, false, random);
     }
 
-    public void addFactionToActiveBountyList(String factionId) {
-        activeFactionBountyList.add(factionId);
+    public void registerBounty(SkirmishBountyEntity bountyEntity) {
+        bountiesActiveForFaction.add(bountyEntity.getTargetedFaction().getId());
+        bountiesActiveAtEntity.add(bountyEntity.getSpawnLocationID());
     }
 
-    public void removeFactionFromActiveList(String factionId) {
-        activeFactionBountyList.remove(factionId);
+    public void unregisterBounty(SkirmishBountyEntity bountyEntity) {
+        bountiesActiveForFaction.remove(bountyEntity.getTargetedFaction().getId());
+        bountiesActiveAtEntity.remove(bountyEntity.getSpawnLocationID());
+    }
+
+    public boolean hasActiveBounty(SkirmishBountyEntity bountyEntity) {
+        return bountiesActiveForFaction.contains(bountyEntity.getTargetedFaction().getId())
+                || bountiesActiveAtEntity.contains(bountyEntity.getSpawnLocationID());
     }
 }

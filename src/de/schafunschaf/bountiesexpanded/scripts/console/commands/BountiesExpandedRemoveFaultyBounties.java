@@ -16,9 +16,6 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
 
 public class BountiesExpandedRemoveFaultyBounties implements BaseCommand {
-    public BountiesExpandedRemoveFaultyBounties() {
-    }
-
     public CommandResult runCommand(@NotNull String args, @NotNull CommandContext context) {
         if (context != CommandContext.CAMPAIGN_MAP) {
             Console.showMessage("Error: This command is campaign-only.");

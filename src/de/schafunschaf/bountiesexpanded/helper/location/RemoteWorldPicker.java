@@ -18,13 +18,13 @@ import java.util.Map;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
 public class RemoteWorldPicker {
-    public static SectorEntityToken pickRandomHideout() {
-        StarSystemAPI system = pickSystem(null);
+    public static SectorEntityToken pickRandomHideout(boolean useVanillaMethod) {
+        StarSystemAPI system = pickSystem(null, useVanillaMethod);
         return pickPlanet(system);
     }
 
-    public static SectorEntityToken pickRandomHideout(Map<String, Integer> requiredTags) {
-        StarSystemAPI system = pickSystem(requiredTags);
+    public static SectorEntityToken pickRandomHideout(Map<String, Integer> requiredTags, boolean useVanillaMethod) {
+        StarSystemAPI system = pickSystem(requiredTags, useVanillaMethod);
         return pickPlanet(system);
     }
 
@@ -44,7 +44,7 @@ public class RemoteWorldPicker {
         }
     }
 
-    protected static StarSystemAPI pickSystem(Map<String, Integer> requiredTags) {
+    private static StarSystemAPI pickSystem(Map<String, Integer> requiredTags, boolean useVanillaMethod) {
         WeightedRandomPicker<StarSystemAPI> systemPicker = new WeightedRandomPicker<>();
         int mult = isNull(requiredTags) ? 1 : 0;
         for (StarSystemAPI system : Global.getSector().getStarSystems()) {
@@ -76,25 +76,28 @@ public class RemoteWorldPicker {
             if (distToPlayer < noSpawnRange)
                 continue;
 
-            float weight = system.getPlanets().size();
-            for (PlanetAPI planet : system.getPlanets()) {
-                if (planet.isStar())
-                    continue;
-                if (isNotNull(planet.getMarket())) {
-                    float hazardValue = planet.getMarket().getHazardValue();
-                    if (hazardValue <= 0f)
-                        weight += 5f;
-                    else if (hazardValue <= 0.25f)
-                        weight += 3f;
-                    else if (hazardValue <= 0.5f)
-                        weight += 1f;
+            if (useVanillaMethod) {
+                float weight = system.getPlanets().size();
+                for (PlanetAPI planet : system.getPlanets()) {
+                    if (planet.isStar())
+                        continue;
+                    if (isNotNull(planet.getMarket())) {
+                        float hazardValue = planet.getMarket().getHazardValue();
+                        if (hazardValue <= 0f)
+                            weight += 5f;
+                        else if (hazardValue <= 0.25f)
+                            weight += 3f;
+                        else if (hazardValue <= 0.5f)
+                            weight += 1f;
+                    }
                 }
-            }
 
-            float dist = system.getLocation().length();
-            float distMult = Math.max(0, 50000f - dist);
+                float dist = system.getLocation().length();
+                float distMult = Math.max(0, 50000f - dist);
 
-            systemPicker.add(system, weight * distMult * mult);
+                systemPicker.add(system, weight * distMult * mult);
+            } else
+                systemPicker.add(system);
         }
 
         return systemPicker.pick();
@@ -110,7 +113,7 @@ public class RemoteWorldPicker {
                 continue;
             if (isNotNull(planet.getMarket()) && !planet.getMarket().isPlanetConditionMarketOnly())
                 continue;
-            if (Settings.IGNORE_PLAYER_MARKETS && planet.getMarket().isPlayerOwned())
+            if (Settings.ignorePlayerMarkets && planet.getMarket().isPlayerOwned())
                 continue;
             if (planet.getMarket().isInHyperspace())
                 continue;

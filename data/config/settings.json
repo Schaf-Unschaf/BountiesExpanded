@@ -2,7 +2,16 @@
   "graphics": {
     "intel": {
       "bountiesExpanded_assassination": "graphics/icons/intel/assassination_bounty.png",
-      "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png"
+      "bountiesExpanded_skirmish": "graphics/icons/intel/skirmish_bounty.png",
+      "bountiesExpanded_retrieval": "graphics/icons/intel/retrieval_mission.png",
+      "bountiesExpanded_pirate": "graphics/icons/intel/pirate_bounty.png",
+      "bountiesExpanded_pirate_silly": "graphics/icons/intel/pirate_bounty_silly.png",
+      "bountiesExpanded_deserter_crest": "graphics/icons/intel/deserter_bounty_crest.png",
+      "bountiesExpanded_deserter_crest_silly": "graphics/icons/intel/deserter_bounty_silly.png",
+      "bountiesExpanded_deserter_flag": "graphics/icons/intel/deserter_bounty_flag.png",
+      "bountiesExpanded_deserter_flag_silly": "graphics/icons/intel/deserter_bounty_flag_silly.png",
+      "bountiesExpanded_warcriminal": "graphics/icons/intel/warcriminal_bounty.png",
+      "bountiesExpanded_warcriminal_silly": "graphics/icons/intel/warcriminal_bounty_silly.png"
     }
   }
 }

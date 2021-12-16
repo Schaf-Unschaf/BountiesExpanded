@@ -11,6 +11,7 @@ import com.fs.starfarer.api.impl.campaign.fleets.FleetParamsV3;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.ShipRoles;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
+import de.schafunschaf.bountiesexpanded.helper.ship.HullModUtils;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -23,20 +24,30 @@ public class FleetGenerator {
     public static final Logger log = Global.getLogger(FleetGenerator.class);
 
     public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
-                                                       float qualityOverride,
+                                                       float quality,
                                                        MarketAPI fleetHomeMarket,
                                                        SectorEntityToken hideout,
                                                        PersonAPI fleetCaptain) {
-        return createBountyFleetV2(fleetPoints, qualityOverride, fleetHomeMarket, hideout, fleetCaptain, false);
+        return createBountyFleetV2(fleetPoints, quality, fleetHomeMarket, hideout, fleetCaptain, fleetCaptain.getFaction(), false);
     }
 
     public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
-                                                       float qualityOverride,
+                                                       float quality,
                                                        MarketAPI fleetHomeMarket,
                                                        SectorEntityToken hideout,
-                                                       PersonAPI fleetCaptain, boolean priorityMode) {
+                                                       PersonAPI fleetCaptain,
+                                                       FactionAPI faction) {
+        return createBountyFleetV2(fleetPoints, quality, fleetHomeMarket, hideout, fleetCaptain, faction, false);
+    }
+
+    public static CampaignFleetAPI createBountyFleetV2(float fleetPoints,
+                                                       float quality,
+                                                       MarketAPI fleetHomeMarket,
+                                                       SectorEntityToken hideout,
+                                                       PersonAPI fleetCaptain,
+                                                       FactionAPI faction,
+                                                       boolean priorityMode) {
         Random random = new Random();
-        FactionAPI faction = fleetCaptain.getFaction();
         String factionID = faction.getId();
         String fleetName = fleetCaptain.getName().getLast() + "'s Fleet";
         float initialFP = fleetPoints * 0.7f;
@@ -45,7 +56,7 @@ public class FleetGenerator {
         FleetParamsV3 fleetParams = new FleetParamsV3(fleetHomeMarket,
                 hideout.getLocationInHyperspace(),
                 factionID, // factionID
-                qualityOverride, // quality
+                quality, // quality
                 FleetTypes.PERSON_BOUNTY_FLEET, // fleetType
                 initialFP, // combatPts
                 0f, // freighterPts
@@ -81,17 +92,21 @@ public class FleetGenerator {
         FleetFactoryV3.addFleetPoints(fleet, random, remainingFP / 7 * doctrine.getPhaseShips(), fleetParams, FleetFactoryV3.SizeFilterMode.NONE, ShipRoles.PHASE_MEDIUM, ShipRoles.PHASE_LARGE, ShipRoles.PHASE_CAPITAL);
 
         if (isNull(fleet.getFlagship())) {
-            FleetMemberAPI flagship = getShipWithHighestFP(fleetData.getMembersListCopy());
+            FleetMemberAPI flagship = FleetUtils.getShipWithHighestFP(fleetData.getMembersListCopy());
             if (isNull(flagship))
                 return null;
 
             flagship.setFlagship(true);
         }
+
         fleet.getFlagship().setCaptain(fleetCaptain);
         fleet.setCommander(fleetCaptain);
         fleet.setFaction(factionID, true);
         fleet.setName(fleetName);
         FleetFactoryV3.addCommanderSkills(fleetCaptain, fleet, null);
+
+        HullModUtils.addDMods(fleet, quality);
+
         fleetData.sort();
 
         return fleet;
@@ -101,18 +116,8 @@ public class FleetGenerator {
         log.info("BountiesExpanded: Spawning Fleet '" + fleet.getName() + "' at '" + hideout.getFullName() + "'");
         LocationAPI location = hideout.getContainingLocation();
         location.addEntity(fleet);
-        fleet.setLocation(hideout.getLocation().x - 500, hideout.getLocation().y + 500);
+        fleet.setLocation(hideout.getLocation().x, hideout.getLocation().y);
         fleet.getAI().addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, hideout, 1000000f, null);
-    }
-
-    public static FleetMemberAPI getShipWithHighestFP(List<FleetMemberAPI> fleet) {
-        FleetMemberAPI highestFP = null;
-        for (FleetMemberAPI member : fleet) {
-            if (isNull(highestFP)) highestFP = member;
-            else if (member.getFleetPointCost() > highestFP.getFleetPointCost())
-                highestFP = member;
-        }
-        return highestFP;
     }
 
     public static List<FleetMemberAPI> createCompleteCopyForIntel(CampaignFleetAPI fleet) {

@@ -11,7 +11,7 @@ public class BountyResult {
     public int bonus = 0;
     public Float share = 0f;
     public ReputationAdjustmentResult rep = null;
-    public float targetRepAfterBattle = 0;
+    public float targetRepAfterBattle;
     public float rewardAdjustment = 0;
     public Map<HullSize, int[]> destroyedShips = null;
 
@@ -28,16 +28,18 @@ public class BountyResult {
     }
 
     // Assassination Result
-    public BountyResult(BountyResultType type, int payment, int bonus) {
+    public BountyResult(BountyResultType type, int payment, int bonus, float targetRepAfterBattle) {
         this.type = type;
         this.payment = payment;
         this.bonus = bonus;
+        this.targetRepAfterBattle = targetRepAfterBattle;
     }
 
-    // HVB Result
-    public BountyResult(BountyResultType type, int payment, ReputationAdjustmentResult rep) {
+    // War Criminal Result
+    public BountyResult(BountyResultType type, int payment, ReputationAdjustmentResult rep, float targetRepAfterBattle) {
         this.type = type;
         this.payment = payment;
         this.rep = rep;
+        this.targetRepAfterBattle = targetRepAfterBattle;
     }
 }

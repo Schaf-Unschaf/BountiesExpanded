@@ -14,14 +14,14 @@ public class TagCollection {
             Tags.THEME_REMNANT_DESTROYED,
             Tags.THEME_CORE_UNPOPULATED
     };
-
+    public static final Set<String> VANILLA_BOUNTY_SYSTEM_TAGS = new HashSet<>(Arrays.asList(vanillaBountySystemTagArray));
     private static final String[] remnantSystemTagArray = {
             Tags.THEME_REMNANT,
             Tags.THEME_REMNANT_MAIN,
             Tags.THEME_REMNANT_SECONDARY,
             Tags.THEME_REMNANT_RESURGENT
     };
-
+    public static final Set<String> REMNANT_SYSTEM_TAGS = new HashSet<>(Arrays.asList(remnantSystemTagArray));
     private static final String[] derelictSystemTagArray = {
             Tags.THEME_DERELICT,
             Tags.THEME_DERELICT_CRYOSLEEPER,
@@ -29,10 +29,7 @@ public class TagCollection {
             Tags.THEME_DERELICT_SURVEY_SHIP,
             Tags.THEME_DERELICT_PROBES
     };
-
     public static final Set<String> DERELICT_SYSTEM_TAGS = new HashSet<>(Arrays.asList(derelictSystemTagArray));
-    public static final Set<String> REMNANT_SYSTEM_TAGS = new HashSet<>(Arrays.asList(remnantSystemTagArray));
-    public static final Set<String> VANILLA_BOUNTY_SYSTEM_TAGS = new HashSet<>(Arrays.asList(vanillaBountySystemTagArray));
 
     public static Map<String, Integer> getDefaultTagMap(Set<String> tagCollection) {
         if (ComparisonTools.isNullOrEmpty(tagCollection))
