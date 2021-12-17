@@ -262,12 +262,10 @@ public class DescriptionUtils {
         info.addPara(heOrShe + " is rumored to be " + loc + ".", padding);
     }
 
-    public static void generatePatrolDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, SectorEntityToken location, float padding, boolean isRealLocation) {
+    public static void generatePatrolDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding, boolean isRealLocation) {
         String heOrShe = FormattingTools.capitalizeFirst(baseBountyIntel.getPerson().getHeOrShe());
         CampaignFleetAPI fleet = baseBountyIntel.getFleet();
-        SectorEntityToken fakeLocation = location.getContainingLocation().createToken(fleet.getCurrentAssignment().getTarget().getLocation());
 
-        fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(location, 0.0F, 1000.0F, 100.0F));
         String terrainString = BreadcrumbSpecial.getTerrainString(fleet);
         String loc;
         if (isNotNull(terrainString)) {

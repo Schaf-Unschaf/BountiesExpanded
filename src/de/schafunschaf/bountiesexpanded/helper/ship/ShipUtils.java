@@ -36,10 +36,18 @@ public class ShipUtils {
     }
 
     public static void markShipsAsUnrecoverable(@NotNull FleetMemberAPI... shipsWithoutRecovery) {
-        List<FleetMemberAPI> fleetMembers = Arrays.asList(shipsWithoutRecovery);
+        Set<FleetMemberAPI> fleetMembers = new HashSet<>(Arrays.asList(shipsWithoutRecovery));
 
-        CampaignFleetAPI fleet = fleetMembers.get(0).getFleetData().getFleet();
-        fleet.getMemoryWithoutUpdate().set(NoShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_NO_RECOVERY, shipsWithoutRecovery);
+        CampaignFleetAPI fleet = null;
+        for (FleetMemberAPI fleetMember : fleetMembers) {
+            fleet = fleetMember.getFleetData().getFleet();
+            break;
+        }
+
+        if (isNull(fleet))
+            return;
+
+        fleet.getMemoryWithoutUpdate().set(NoShipRecoveryFleetEncounterContext.BOUNTIES_EXPANDED_NO_RECOVERY, fleetMembers);
     }
 
     public static FleetMemberAPI findMemberForStats(MutableShipStatsAPI stats) {

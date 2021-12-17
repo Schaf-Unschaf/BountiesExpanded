@@ -21,15 +21,18 @@ public class NoShipRecoveryFleetEncounterContext extends FleetEncounterContext {
     public List<FleetMemberAPI> getRecoverableShips(BattleAPI battle, CampaignFleetAPI
             winningFleet, CampaignFleetAPI otherFleet) {
         List<FleetMemberAPI> recoverableShips = super.getRecoverableShips(battle, winningFleet, otherFleet);
-
         MemoryAPI memory = otherFleet.getMemoryWithoutUpdate();
-        Set<FleetMemberAPI> fleetMemberToRemove = (Set<FleetMemberAPI>) memory.get(BOUNTIES_EXPANDED_NO_RECOVERY);
-        if (isNullOrEmpty(fleetMemberToRemove))
-            return null;
+        Object memoryObject = memory.get(BOUNTIES_EXPANDED_NO_RECOVERY);
 
-        for (FleetMemberAPI fleetMember : fleetMemberToRemove) {
-            recoverableShips.remove(fleetMember);
-            getStoryRecoverableShips().remove(fleetMember);
+        if (memoryObject instanceof Set<?>) {
+            Set<FleetMemberAPI> fleetMemberToRemove = (Set<FleetMemberAPI>) memoryObject;
+            if (isNullOrEmpty(fleetMemberToRemove))
+                return null;
+
+            for (FleetMemberAPI fleetMember : fleetMemberToRemove) {
+                recoverableShips.remove(fleetMember);
+                getStoryRecoverableShips().remove(fleetMember);
+            }
         }
 
         return recoverableShips;

@@ -76,6 +76,12 @@ public class ModInitHelper {
     }
 
     public static void initManagerAndPlugins() {
+        if (Settings.pirateBountyActive) addPirateBountyManager();
+        else {
+            uninstallManager(PirateBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(PirateBountyManager.KEY);
+        }
+
         if (Settings.skirmishActive) addSkirmishManager();
         else {
             uninstallManager(SkirmishBountyManager.getInstance());
@@ -92,12 +98,6 @@ public class ModInitHelper {
         else {
             uninstallManager(WarCriminalManager.getInstance());
             Global.getSector().getMemoryWithoutUpdate().unset(WarCriminalManager.KEY);
-        }
-
-        if (Settings.pirateBountyActive) addPirateBountyManager();
-        else {
-            uninstallManager(PirateBountyManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(PirateBountyManager.KEY);
         }
 
         if (Settings.deserterBountyActive) addDeserterBountyManager();
