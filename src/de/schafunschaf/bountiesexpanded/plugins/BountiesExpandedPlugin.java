@@ -53,6 +53,19 @@ public class BountiesExpandedPlugin extends BaseModPlugin {
         reloadHullMods();
 
         if (Settings.sheepDebug) printDebugInfo();
+
+        if (newGame)
+            spawnInitialBounties();
+    }
+
+    private void spawnInitialBounties() {
+        if (Settings.pirateBountyActive) {
+            PirateBountyManager pirateBountyManager = PirateBountyManager.getInstance();
+            if (isNull(pirateBountyManager))
+                return;
+
+            pirateBountyManager.spawnInitialBounties();
+        }
     }
 
     private void reloadHullMods() {

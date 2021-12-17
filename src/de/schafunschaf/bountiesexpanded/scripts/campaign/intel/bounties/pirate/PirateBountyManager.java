@@ -66,6 +66,13 @@ public class PirateBountyManager extends BaseEventManager {
         return null;
     }
 
+    public void spawnInitialBounties() {
+        do {
+            EveryFrameScript pirateBountyEvent = createPirateBountyEvent();
+            addActive(pirateBountyEvent);
+        } while (getActiveCount() < 3);
+    }
+
     public PirateBountyIntel createPirateBountyEvent() {
         PirateBountyEntity pirateBountyEntity = EntityProvider.pirateBountyEntity();
 

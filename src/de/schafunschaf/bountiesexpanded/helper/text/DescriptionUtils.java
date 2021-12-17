@@ -15,6 +15,7 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUtils;
+import de.schafunschaf.bountiesexpanded.helper.location.LocationUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.RareFlagshipManager;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
@@ -24,8 +25,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
-import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNullOrEmpty;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.*;
 
 public class DescriptionUtils {
     public static final float DEFAULT_IMAGE_HEIGHT = 100f;
@@ -262,17 +262,25 @@ public class DescriptionUtils {
         info.addPara(heOrShe + " is rumored to be " + loc + ".", padding);
     }
 
-    public static void generateFakePatrolDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding) {
+    public static void generatePatrolDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, SectorEntityToken location, float padding, boolean isRealLocation) {
         String heOrShe = FormattingTools.capitalizeFirst(baseBountyIntel.getPerson().getHeOrShe());
-        SectorEntityToken location = baseBountyIntel.getTravelDestination();
-        SectorEntityToken fakeLocation = location.getContainingLocation().createToken(baseBountyIntel.getFleet().getCurrentAssignment().getTarget().getLocation());
+        CampaignFleetAPI fleet = baseBountyIntel.getFleet();
+        SectorEntityToken fakeLocation = location.getContainingLocation().createToken(fleet.getCurrentAssignment().getTarget().getLocation());
 
         fakeLocation.setOrbit(Global.getFactory().createCircularOrbit(location, 0.0F, 1000.0F, 100.0F));
-        String loc = BreadcrumbSpecial.getLocatedString(baseBountyIntel.getFleet().getCurrentAssignment().getTarget());
-        loc = loc.replaceAll("orbiting", "hiding out near");
-        loc = loc.replaceAll("located in", "hiding out in");
+        String terrainString = BreadcrumbSpecial.getTerrainString(fleet);
+        String loc;
+        if (isNotNull(terrainString)) {
+            String systemDescription = BreadcrumbSpecial.getLocationDescription(fleet, isRealLocation);
+            loc = String.format("%s is rumored to be currently flying through %s in %s.", heOrShe, terrainString, systemDescription);
+            info.addPara(loc, padding);
+        } else {
+            loc = BreadcrumbSpecial.getLocatedString(LocationUtils.getNearestLocation(fleet));
+            loc = loc.replaceAll("orbiting", "patrolling near");
+            loc = loc.replaceAll("located in", "hiding out in");
 
-        info.addPara(heOrShe + " is rumored to be " + loc + ".", padding);
+            info.addPara(heOrShe + " is rumored to be " + loc + ".", padding);
+        }
     }
 
     public static void generateFakeTravelDescription(TooltipMakerAPI info, BaseBountyIntel baseBountyIntel, float padding) {

@@ -29,5 +29,5 @@ hs_err_pid*
 # release-packaging
 
 /RELEASE/
-/discord.txt
-/release.txt
+/discord.md
+/release.md

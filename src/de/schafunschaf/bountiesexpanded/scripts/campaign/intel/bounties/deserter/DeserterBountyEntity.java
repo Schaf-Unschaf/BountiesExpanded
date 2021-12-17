@@ -139,7 +139,7 @@ public class DeserterBountyEntity implements BountyEntity {
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
             if (fleet.getContainingLocation() == travelDestination.getContainingLocation())
-                DescriptionUtils.generateFakePatrolDescription(info, baseBountyIntel, opad);
+                DescriptionUtils.generatePatrolDescription(info, baseBountyIntel, travelDestination, opad, false);
             else
                 DescriptionUtils.generateFakeTravelDescription(info, baseBountyIntel, opad);
 

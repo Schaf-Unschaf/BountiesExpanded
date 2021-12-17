@@ -8,6 +8,7 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyIntel;
@@ -59,5 +60,13 @@ public class WarCriminalIntel extends BaseBountyIntel {
             missionHandler.startRetrievalSecondStage(warCriminalEntity.getBountyIntel(), warCriminalEntity.getRetrievalTargetShip());
 
         cleanUp(false);
+    }
+
+    @Override
+    public SectorEntityToken getMapLocation(SectorMapAPI map) {
+        if (Settings.isDebugActive())
+            return fleet.getContainingLocation().createToken(fleet.getLocation().x, fleet.getLocation().y);
+
+        return spawnLocation.getStarSystem().getHyperspaceAnchor();
     }
 }

@@ -163,7 +163,7 @@ public class WarCriminalEntity implements BountyEntity {
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
-            DescriptionUtils.generateHideoutDescription(info, baseBountyIntel, highlightColor);
+            DescriptionUtils.generatePatrolDescription(info, baseBountyIntel, spawnLocation, opad, true);
             DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
 
             if (isRetrievalMission) {
