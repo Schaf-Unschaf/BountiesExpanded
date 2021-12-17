@@ -76,7 +76,7 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         if (isDone || isNotInvolved || isNotCompleted)
             return;
 
-        playerInvolvement = Math.round((playerInvolvement / numBattles) * 100);
+        playerInvolvement = Math.round((playerInvolvement / numBattles) * 100) / 100f;
         if (playerInvolvement <= 0) {
             result = new BountyResult(BountyResultType.END_OTHER, 0, 0, 0f, null, 0, 0f, null);
             cleanUp(true);
@@ -84,7 +84,6 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         }
 
         int paymentModifier = 100;
-        float playerInvolvementFraction = playerInvolvement / 100;
         FactionAPI offeringFaction = skirmishBountyEntity.getOfferingFaction();
         FactionAPI targetedFaction = skirmishBountyEntity.getTargetedFaction();
         float repToPlayer = offeringFaction.getRelToPlayer().getRel();
@@ -96,11 +95,11 @@ public class SkirmishBountyIntel extends BaseBountyIntel {
         if (repToPlayer < 0f) {
             customRepImpact.delta = ((maxRepGain - neutralRepGain) * -repToPlayer + neutralRepGain) / 100;
             paymentModifier = -Math.round(100 + repToPlayer * maxRewardDeduction);
-            payment *= (float) -paymentModifier * playerInvolvementFraction / 100;
+            payment *= (float) -paymentModifier * playerInvolvement / 100;
         } else if (repToPlayer > 0f) {
             customRepImpact.delta = (neutralRepGain - repToPlayer * neutralRepGain) / 100;
             paymentModifier = Math.round(100 + repToPlayer * maxRewardIncrease);
-            payment *= (float) paymentModifier * playerInvolvementFraction / 100;
+            payment *= (float) paymentModifier * playerInvolvement / 100;
         } else {
             customRepImpact.delta = neutralRepGain / 100;
         }
