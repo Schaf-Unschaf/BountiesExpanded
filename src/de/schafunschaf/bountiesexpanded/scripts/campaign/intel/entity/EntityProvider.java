@@ -164,7 +164,8 @@ public class EntityProvider {
         Difficulty difficulty = Difficulty.randomDifficulty();
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier(), 50f);
-        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier()) * 4;
+        int payoutMult = missionHandler.getMissionType().equals(MissionType.OBLITERATION) ? 5 : 4;
+        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier()) * payoutMult;
         int rareFlagshipChance = difficulty.getFlatModifier();
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction(Blacklists.getDefaultBlacklist());
@@ -179,7 +180,7 @@ public class EntityProvider {
         if (targetedFaction == offeringFaction)
             return null;
 
-        SectorEntityToken spawnLocation = CoreWorldPicker.pickFactionHideout(targetedFaction);
+        SectorEntityToken spawnLocation = CoreWorldPicker.pickSafeHideout(targetedFaction);
         if (isNull(spawnLocation)) {
             log.warn(NO_HIDEOUT);
             return null;

@@ -3,6 +3,7 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcrim
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.FleetAssignment;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
@@ -29,7 +30,6 @@ import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 @Log4j
 public class WarCriminalManager extends BaseEventManager implements BaseBountyManager {
     public static final String FLEET_NAME = "War Criminal Fleet";
-    public static final String FLEET_ACTION_TEXT = "Avoiding taxes";
     public static final String KEY = "$bountiesExpanded_warCriminalManagerBountyManager";
     public static final String WAR_CRIMINAL_BOUNTY_FLEET_KEY = "$bountiesExpanded_warCriminalBountyFleet";
 
@@ -90,11 +90,16 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
 
         fleet.setName(FLEET_NAME);
         FleetGenerator.spawnFleet(fleet, spawnLocation);
+
+        WarCriminalIntel warCriminalIntel = new WarCriminalIntel(warCriminalEntity, fleet, person, spawnLocation, warCriminalEntity.getDropOffLocation());
+
         MemoryAPI fleetMemory = fleet.getMemoryWithoutUpdate();
-        fleet.getCurrentAssignment().setActionText(FLEET_ACTION_TEXT);
-        fleet.setTransponderOn(true);
         fleetMemory.set(EntityProvider.FLEET_IDENTIFIER_KEY, WAR_CRIMINAL_BOUNTY_FLEET_KEY);
         fleetMemory.set(WAR_CRIMINAL_BOUNTY_FLEET_KEY, warCriminalEntity);
+
+        fleet.clearAssignments();
+        fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, spawnLocation.getStarSystem().getStar(), warCriminalIntel.getDuration());
+        fleet.setTransponderOn(true);
 
         FleetMemberAPI flagship = fleet.getFlagship();
         switch (warCriminalEntity.getMissionHandler().getMissionType()) {
@@ -120,7 +125,7 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
 
         upgradeShips(fleet);
 
-        return new WarCriminalIntel(warCriminalEntity, fleet, person, spawnLocation, warCriminalEntity.getDropOffLocation());
+        return warCriminalIntel;
     }
 
     public void upgradeShips(CampaignFleetAPI bountyFleet) {

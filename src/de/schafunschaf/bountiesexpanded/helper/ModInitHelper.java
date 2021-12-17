@@ -7,6 +7,7 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import com.fs.starfarer.api.impl.campaign.intel.PersonBountyIntel;
 import com.fs.starfarer.api.impl.campaign.intel.PersonBountyManager;
 import data.scripts.VayraModPlugin;
+import data.scripts.campaign.intel.VayraPersonBountyIntel;
 import data.scripts.campaign.intel.VayraPersonBountyManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.intel.BountyEventData;
@@ -212,7 +213,7 @@ public class ModInitHelper {
 
         List<EveryFrameScript> activeBounties = personBountyManager.getActive();
         for (EveryFrameScript bounty : activeBounties) {
-            ((PersonBountyIntel) bounty).endImmediately();
+            ((VayraPersonBountyIntel) bounty).endImmediately();
             Global.getSector().removeScript(bounty);
         }
         Global.getSector().removeScript(personBountyManager);
