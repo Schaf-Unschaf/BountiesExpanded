@@ -7,6 +7,7 @@ import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.GuaranteedShipRecoveryFleetEncounterContext;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.interactions.encounters.NoShipRecoveryFleetEncounterContext;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static com.fs.starfarer.api.util.Misc.MAX_OFFICER_LEVEL;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
@@ -145,5 +147,42 @@ public class ShipUtils {
             shipVariant.addMod(HullMods.HARDENED_SUBSYSTEMS);
 
         fleetMember.setVariant(shipVariant, true, true);
+    }
+
+    public static float getFleetMemberStrength(FleetMemberAPI member, boolean withHull, boolean withQuality, boolean withCaptain) {
+        float str = member.getMemberStrength();
+        float min = 0.25f;
+        if (str < min) str = min;
+
+        float quality = 0.5f;
+        if (member.getFleetData() != null && member.getFleetData().getFleet() != null) {
+            float dmods = DModManager.getNumDMods(member.getVariant());
+            quality = 1f - 0.1f * dmods;
+            if (quality < 0)
+                quality = 0f;
+        }
+
+        if (member.isStation())
+            quality = 1f;
+
+        float captainMult = 1f;
+        if (member.getCaptain() != null) {
+            float captainLevel = (member.getCaptain().getStats().getLevel() - 1f);
+            if (member.isStation())
+                captainMult += captainLevel / (MAX_OFFICER_LEVEL * 2f);
+            else
+                captainMult += captainLevel / MAX_OFFICER_LEVEL;
+        }
+
+        if (withQuality)
+            str *= Math.max(0.25f, 0.5f + quality);
+
+        if (withHull)
+            str *= 0.5f + 0.5f * member.getStatus().getHullFraction();
+
+        if (withCaptain)
+            str *= captainMult;
+
+        return str;
     }
 }

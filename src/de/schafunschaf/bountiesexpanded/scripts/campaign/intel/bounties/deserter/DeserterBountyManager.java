@@ -12,6 +12,7 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
+import de.schafunschaf.bountiesexpanded.helper.location.LocationUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.EntityProvider;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.Difficulty;
 import lombok.extern.log4j.Log4j;
@@ -92,7 +93,15 @@ public class DeserterBountyManager extends BaseEventManager {
         fleet.clearAssignments();
         fleet.addAssignment(FleetAssignment.GO_TO_LOCATION, travelDestination, bountyIntel.getDuration(), fleetTravelingActionText, new Script() {
             public void run() {
-                fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, travelDestination.getStarSystem().getStar(), bountyIntel.getRemainingDuration());
+                fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, travelDestination.getStarSystem().getStar(), bountyIntel.getRemainingDuration(), new Script() {
+                    @Override
+                    public void run() {
+                        if (fleet.isInCurrentLocation())
+                            fleet.addAssignment(FleetAssignment.ORBIT_AGGRESSIVE, LocationUtils.getNearestLocation(fleet), 30f);
+                        else
+                            fleet.despawn();
+                    }
+                });
                 fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_PIRATE, true);
             }
         });

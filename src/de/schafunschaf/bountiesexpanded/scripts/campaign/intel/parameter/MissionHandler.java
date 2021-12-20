@@ -77,13 +77,7 @@ public class MissionHandler {
             return isPlayerInvolved && isFlagshipDestroyed;
         }
 
-        if (MissionType.DESTRUCTION == missionType) {
-            boolean isFlagshipDestroyed = isNull(fleet.getFlagship()) || fleet.getFlagship().getCaptain() != bountyIntel.getPerson();
-
-            return isPlayerInvolved && isFlagshipDestroyed;
-        }
-
-        if (MissionType.OBLITERATION == missionType) {
+        if (MissionType.OBLITERATION == missionType || MissionType.DESTRUCTION == missionType) {
             boolean isFleetDestroyed = isNull(fleet) || fleet.isEmpty() || fleet.getNumShips() <= 0;
 
             return isPlayerInvolved && isFleetDestroyed;
@@ -120,16 +114,10 @@ public class MissionHandler {
         return false;
     }
 
-    public void startRetrievalSecondStage(BaseBountyIntel bountyIntel, FleetMemberAPI retrievalShip) {
-        MissionType missionType = bountyIntel.getMissionHandler().getMissionType();
+    public void startRetrievalSecondStage(BaseBountyIntel bountyIntel, FleetMemberAPI retrievalShip, int remainingPayment) {
+        TriggeredMissionManager missionManager = TriggeredMissionManager.getInstance();
+        missionManager.createRetrievalMissionEvent(bountyIntel, retrievalShip, remainingPayment);
 
-        if (MissionType.RETRIEVAL == missionType) {
-            TriggeredMissionManager missionManager = TriggeredMissionManager.getInstance();
-            missionManager.createRetrievalMissionEvent(bountyIntel, retrievalShip);
-        } else {
-            String errorMessage = String.format("BountiesExpanded - Tried to start Retrieval Mission while MissionType was [%s]", missionType.missionType);
-            log.warn(errorMessage);
-        }
     }
 
     public void listShipsToRecover(Collection<FleetMemberAPI> shipList, TooltipMakerAPI info, float padding, Color color) {

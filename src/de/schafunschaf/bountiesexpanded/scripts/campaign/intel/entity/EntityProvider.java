@@ -164,8 +164,19 @@ public class EntityProvider {
         Difficulty difficulty = Difficulty.randomDifficulty();
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier(), 50f);
-        int payoutMult = missionHandler.getMissionType().equals(MissionType.OBLITERATION) ? 5 : 4;
-        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier()) * payoutMult;
+        float payoutMult = 1f;
+        switch (missionHandler.getMissionType()) {
+            case ASSASSINATION:
+            case DESTRUCTION:
+            case RETRIEVAL:
+                payoutMult = 4.5f;
+                break;
+            case OBLITERATION:
+                payoutMult = 6f;
+                break;
+        }
+
+        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier() * payoutMult);
         int rareFlagshipChance = difficulty.getFlatModifier();
 
         FactionAPI offeringFaction = ParticipatingFactionPicker.pickFaction(Blacklists.getDefaultBlacklist());
@@ -230,7 +241,8 @@ public class EntityProvider {
         Difficulty difficulty = Difficulty.randomDifficulty();
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier(), 30f);
-        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier()) * 3;
+        float payoutMult = 4f;
+        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier() * payoutMult);
         int rareFlagshipChance = difficulty.getFlatModifier();
         float fleetQuality = difficulty.getFlatModifier() * 0.2f + 0.2f;
 
@@ -283,7 +295,8 @@ public class EntityProvider {
         Difficulty difficulty = Difficulty.randomDifficulty();
         int level = Math.max(LevelPicker.pickLevel(0) + difficulty.getFlatModifier(), 0);
         float fp = FleetPointCalculator.getPlayerBasedFP(difficulty.getModifier(), 40f);
-        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier()) * 4;
+        float payoutMult = 5f;
+        int bountyCredits = CreditCalculator.getRewardByFP(fp, difficulty.getModifier() * payoutMult);
         int rareFlagshipChance = difficulty.getFlatModifier();
         float fleetQuality = difficulty.getFlatModifier() * 0.2f + 0.4f;
 

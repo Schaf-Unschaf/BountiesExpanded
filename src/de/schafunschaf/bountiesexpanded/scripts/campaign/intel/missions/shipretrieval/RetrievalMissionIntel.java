@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.util.Misc;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.missions.BEBaseMissionIntel;
@@ -14,6 +15,9 @@ import de.schafunschaf.bountiesexpanded.util.ShipPaymentPair;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+
+import static com.fs.starfarer.api.campaign.ReputationActionResponsePlugin.ReputationAdjustmentResult;
 
 public class RetrievalMissionIntel extends BEBaseMissionIntel {
     public static String RETRIEVAL_IMPORTANT_REASON = "bountiesExpanded_retrievalDelivery";
@@ -151,5 +155,42 @@ public class RetrievalMissionIntel extends BEBaseMissionIntel {
         textPanel.addPara(dialogTextPartTwo, contact.getFaction().getColor(), personNameWithRank);
 
         triggerMissionStatusUpdate(MissionState.CANCELLED, dialog);
+    }
+
+    @Override
+    protected ReputationAdjustmentResult generateMissionSuccessRepAdjustment() {
+        CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
+        float maxRepGain = 0.15f;
+        float neutralRepGain = 0.05f;
+        float repToPlayer = contact.getFaction().getRelToPlayer().getRel();
+
+        if (repToPlayer < 0f)
+            customRepImpact.delta = ((maxRepGain - neutralRepGain) * -repToPlayer + neutralRepGain);
+        else if (repToPlayer > 0f)
+            customRepImpact.delta = (neutralRepGain - repToPlayer * neutralRepGain);
+        else
+            customRepImpact.delta = neutralRepGain;
+
+        return Global.getSector().adjustPlayerReputation(
+                new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact,
+                        null, null, true, false),
+                contact.getFaction().getId());
+    }
+
+    @Override
+    protected ReputationAdjustmentResult generateMissionFailureRepAdjustment() {
+        Random random = new Random(contact.getId().hashCode());
+        if (missionEntity.getChanceForConsequences() <= random.nextFloat()) {
+            CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
+            float delta = (float) (random.nextInt(20) + 11) / 100;
+            customRepImpact.delta = -delta;
+
+            return Global.getSector().adjustPlayerReputation(
+                    new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact,
+                            null, null, true, false),
+                    contact.getFaction().getId());
+        }
+
+        return null;
     }
 }

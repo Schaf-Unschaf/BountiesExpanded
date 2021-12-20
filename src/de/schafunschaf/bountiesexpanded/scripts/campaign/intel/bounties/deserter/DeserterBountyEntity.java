@@ -147,7 +147,7 @@ public class DeserterBountyEntity implements BountyEntity {
 
             info.addSectionHeading("Fleet Intel", factionColor, baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, isRetrievalMission ? 0f : opad);
             DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, maxShipsOnIntel, 2, showShipsRemaining);
-            DescriptionUtils.addDifficultyText(info, opad, difficulty);
+            DescriptionUtils.generateThreatDescription(info, fleet, opad);
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:

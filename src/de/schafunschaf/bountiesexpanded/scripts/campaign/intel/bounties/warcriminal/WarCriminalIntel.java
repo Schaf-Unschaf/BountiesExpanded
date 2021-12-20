@@ -15,12 +15,13 @@ import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBoun
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResult;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyResultType;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BountyType;
-import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler;
 import lombok.Getter;
 
 import java.util.Random;
 
 import static de.schafunschaf.bountiesexpanded.helper.MiscBountyUtils.getUpdatedRep;
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.MissionType;
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.haveObjectivesBeenCompleted;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 
 @Getter
@@ -41,23 +42,32 @@ public class WarCriminalIntel extends BaseBountyIntel {
     public void reportBattleOccurred(CampaignFleetAPI fleet, CampaignFleetAPI primaryWinner, BattleAPI battle) {
         boolean isDone = isDone() || isNotNull(result);
         boolean isNotInvolved = !battle.isPlayerInvolved() || !battle.isInvolved(fleet) || battle.onPlayerSide(fleet);
-        boolean isNotComplete = !MissionHandler.haveObjectivesBeenCompleted(this, fleet, battle);
+        boolean isNotComplete = !haveObjectivesBeenCompleted(this, fleet, battle);
 
         if (isDone || isNotInvolved || isNotComplete)
             return;
 
         float targetRepAfterBattle = getUpdatedRep(warCriminalEntity.getTargetedFaction());
+        boolean isRetrievalMission = MissionType.RETRIEVAL == missionHandler.getMissionType();
+        int totalPayout = payment;
+        int remainingPayment = 0;
+        if (isRetrievalMission) {
+            totalPayout = Math.round(payment * 0.7f);
+            remainingPayment = payment - totalPayout;
+        }
 
-        Global.getSector().getPlayerFleet().getCargo().getCredits().add(payment);
+        Global.getSector().getPlayerFleet().getCargo().getCredits().add(totalPayout);
 
         ReputationActionResponsePlugin.ReputationAdjustmentResult rep = Global.getSector().adjustPlayerReputation(
                 new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false),
                 warCriminalEntity.getOfferingFaction().getId());
 
-        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep, targetRepAfterBattle);
+        result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, totalPayout, rep, targetRepAfterBattle);
         SharedData.getData().getPersonBountyEventData().reportSuccess();
-        if (Settings.retrievalEventActive)
-            missionHandler.startRetrievalSecondStage(warCriminalEntity.getBountyIntel(), warCriminalEntity.getRetrievalTargetShip());
+
+        if (isRetrievalMission)
+            if (Settings.retrievalEventActive)
+                missionHandler.startRetrievalSecondStage(warCriminalEntity.getBountyIntel(), warCriminalEntity.getRetrievalTargetShip(), remainingPayment);
 
         cleanUp(false);
     }

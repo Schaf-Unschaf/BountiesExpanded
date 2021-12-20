@@ -82,18 +82,6 @@ public class ModInitHelper {
             Global.getSector().getMemoryWithoutUpdate().unset(PirateBountyManager.KEY);
         }
 
-        if (Settings.skirmishActive) addSkirmishManager();
-        else {
-            uninstallManager(SkirmishBountyManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.KEY);
-        }
-
-        if (Settings.assassinationActive) addAssassinationManager();
-        else {
-            uninstallManager(AssassinationBountyManager.getInstance());
-            Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
-        }
-
         if (Settings.warCriminalActive) addWarCriminalManager();
         else {
             uninstallManager(WarCriminalManager.getInstance());
@@ -104,6 +92,18 @@ public class ModInitHelper {
         else {
             uninstallManager(DeserterBountyManager.getInstance());
             Global.getSector().getMemoryWithoutUpdate().unset(DeserterBountyManager.KEY);
+        }
+
+        if (Settings.skirmishActive) addSkirmishManager();
+        else {
+            uninstallManager(SkirmishBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(SkirmishBountyManager.KEY);
+        }
+
+        if (Settings.assassinationActive) addAssassinationManager();
+        else {
+            uninstallManager(AssassinationBountyManager.getInstance());
+            Global.getSector().getMemoryWithoutUpdate().unset(AssassinationBountyManager.KEY);
         }
 
         if (Settings.triggeredEventsActive) addTriggeredMissionManager();

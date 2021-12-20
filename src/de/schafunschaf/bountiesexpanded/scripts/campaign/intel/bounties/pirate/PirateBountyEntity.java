@@ -166,7 +166,7 @@ public class PirateBountyEntity implements BountyEntity {
 
             info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
             DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, maxShipsOnIntel, 2, showShipsRemaining);
-            DescriptionUtils.addDifficultyText(info, opad, difficulty);
+            DescriptionUtils.generateThreatDescription(info, fleet, opad);
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:

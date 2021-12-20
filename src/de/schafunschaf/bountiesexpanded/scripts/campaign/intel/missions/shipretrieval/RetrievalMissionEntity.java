@@ -48,11 +48,11 @@ public class RetrievalMissionEntity implements MissionEntity {
     private final MarketAPI missionMarket;
     private final ShipPaymentPair<FleetMemberAPI, Integer> shipWithPayment;
 
-    public RetrievalMissionEntity(BountyEntity bountyEntity, ShipPaymentPair<FleetMemberAPI, Integer> shipWithPayment) {
+    public RetrievalMissionEntity(BountyEntity bountyEntity, ShipPaymentPair<FleetMemberAPI, Integer> shipWithPayment, int remainingPayment) {
         this.offeringFaction = bountyEntity.getOfferingFaction();
         this.targetedFaction = bountyEntity.getTargetedFaction();
         this.missionContact = bountyEntity.getOfferingPerson();
-        this.baseReward = bountyEntity.getBaseReward();
+        this.baseReward = remainingPayment;
         this.chanceForConsequences = bountyEntity.getMissionHandler().getChanceForConsequences();
         this.missionMarket = bountyEntity.getTravelDestination().getMarket();
         this.shipWithPayment = shipWithPayment;
@@ -103,8 +103,10 @@ public class RetrievalMissionEntity implements MissionEntity {
                         missionMarket.getName(), missionMarket.getStarSystem().getName());
                 info.addPara("Contact %s", bulletPadding, bulletColor, missionMarket.getTextColorForFactionOrPlanet(),
                         missionContact.getNameString());
-                if (mode == ListInfoMode.IN_DESC)
-                    info.addPara("%s reward for ship in current condition (%s D-Mods)", bulletPadding, bulletColor, highlightColor, payoutForShip, numDMods);
+                if (mode == ListInfoMode.IN_DESC) {
+                    info.addPara("%s reward", bulletPadding, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
+                    info.addPara("%s bonus reward for ship in current condition (%s D-Mods)", bulletPadding, bulletColor, highlightColor, payoutForShip, numDMods);
+                }
 
                 missionIntel.addDays(info, "remaining", days, bulletColor, bulletPadding);
                 break;
@@ -137,7 +139,7 @@ public class RetrievalMissionEntity implements MissionEntity {
         String himOrHer = missionContact.getHimOrHer();
         String briefingText = String.format("You have successfully recovered the %s.\n\n" +
                         "The mission's contractor, %s, has contacted you after hearing the news and demands that you visit " + himOrHer + " on %s in the %s.\n\n" +
-                        "Once docked, contact " + himOrHer + " and transfer the ship for an additional reward, depending on how much damage the hull has taken.",
+                        "Once docked, contact " + himOrHer + " and transfer the ship for an additional reward depending on how much damage the hull has taken.",
                 (Object[]) briefingHighlights);
 
         Color highlightColor = Misc.getHighlightColor();
@@ -194,7 +196,7 @@ public class RetrievalMissionEntity implements MissionEntity {
     }
 
     public int getPayoutForShip() {
-        int shipValue = shipWithPayment.getPayment();
+        int shipValue = shipWithPayment.getPayment() / 2;
         int numDMods = DModManager.getNumDMods(shipWithPayment.getShip().getVariant());
 
         for (int i = 0; i < numDMods; i++)
