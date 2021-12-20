@@ -31,6 +31,7 @@ import lombok.Setter;
 import java.awt.*;
 
 import static com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode;
+import static de.schafunschaf.bountiesexpanded.scripts.campaign.intel.parameter.MissionHandler.MissionType;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 import static de.schafunschaf.bountiesexpanded.util.FormattingTools.singularOrPlural;
@@ -96,11 +97,30 @@ public class WarCriminalEntity implements BountyEntity {
         float elapsedDays = baseBountyIntel.getElapsedDays();
         int days = Math.max((int) (duration - elapsedDays), 1);
         boolean isUpdate = baseBountyIntel.getListInfoParam() != null;
+        MissionType missionType = baseBountyIntel.getMissionHandler().getMissionType();
 
         baseBountyIntel.bullet(info);
 
         if (isNull(result)) {
-            info.addPara("Target: %s", initPad, bulletColor, targetedFaction.getBaseUIColor(), targetedPerson.getNameString());
+            if (mode == ListInfoMode.IN_DESC) {
+                switch (missionType) {
+                    case ASSASSINATION:
+                        info.addPara("Objective: %s the commander", initPad, bulletColor, highlightColor, "Eliminate");
+                        break;
+                    case DESTRUCTION:
+                        info.addPara("Objective: %s all ships", initPad, bulletColor, highlightColor, "Destroy");
+                        break;
+                    case OBLITERATION:
+                        info.addPara("Objective: %s all ships (no recovery)", initPad, bulletColor, highlightColor, "Destroy", "no recovery");
+                        break;
+                    case RETRIEVAL:
+                        info.addPara("Objective: Recover the targeted ship", initPad, bulletColor, highlightColor, "Recover");
+                        break;
+                }
+            } else {
+                info.addPara("Target: %s", bulletPadding, bulletColor, targetedFaction.getBaseUIColor(), targetedFaction.getDisplayName());
+            }
+
             info.addPara("Reward: %s", bulletPadding, bulletColor, highlightColor, Misc.getDGSCredits(baseReward));
             info.addPara("Time left: %s", bulletPadding, bulletColor, highlightColor, days + singularOrPlural(days, " day"));
         } else {
@@ -127,7 +147,7 @@ public class WarCriminalEntity implements BountyEntity {
 
     @Override
     public void createSmallDescription(BaseBountyIntel baseBountyIntel, TooltipMakerAPI info, float width, float height) {
-        boolean isRetrievalMission = MissionHandler.MissionType.RETRIEVAL.equals(missionHandler.getMissionType());
+        boolean isRetrievalMission = MissionType.RETRIEVAL.equals(missionHandler.getMissionType());
         boolean hasRareFlagship = fleet.getMemoryWithoutUpdate().contains(RareFlagshipManager.RARE_FLAGSHIP_KEY);
         String targetRankAndName = targetedPerson.getRank() + " " + targetedPerson.getNameString();
         String hisOrHerOffering = offeringPerson.getHisOrHer();
@@ -173,7 +193,7 @@ public class WarCriminalEntity implements BountyEntity {
 
             info.addSectionHeading("Fleet Intel", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, isRetrievalMission ? 0f : opad);
             DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 3, false);
-            DescriptionUtils.addDifficultyText(info, opad, difficulty);
+            DescriptionUtils.generateThreatDescription(info, fleet, opad);
         } else {
             switch (result.type) {
                 case END_PLAYER_BOUNTY:
@@ -185,7 +205,7 @@ public class WarCriminalEntity implements BountyEntity {
 
                     if (isRetrievalMission) {
                         info.addPara("You have successfully completed the mission.\n\n" +
-                                        "Bring the %s back to %s in the %s and hand it over to %s for an additional reward.",
+                                        "Bring the %s back to %s in the %s and hand it over to %s for the remaining reward.",
                                 opad,
                                 new Color[]{highlightColor, offeringFactionColor, offeringFactionColor, offeringFactionColor},
                                 retrievalTargetShip.getShipName(),
@@ -204,8 +224,11 @@ public class WarCriminalEntity implements BountyEntity {
                     info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
                     info.addPara(briefingText, Misc.getGrayColor(), opad);
 
-                    info.addPara("This mission is no longer on offer.\n\n" +
-                            "The wanted ship is either destroyed or someone else recovered it.", opad);
+                    if (isRetrievalMission)
+                        info.addPara("This mission is no longer on offer.\n\n" +
+                                "The wanted ship is either destroyed or someone else recovered it.", opad);
+                    else
+                        info.addPara("This mission is no longer on offer.", opad);
                     break;
             }
         }

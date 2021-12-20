@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.LocationAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import de.schafunschaf.bountiesexpanded.helper.ship.ShipUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -84,5 +85,18 @@ public class FleetUtils {
         sortedList.remove(null);
 
         return sortedList;
+    }
+
+    public static float getFleetStrength(CampaignFleetAPI fleet){
+        return getFleetStrength(fleet, true, true, true);
+    }
+
+    public static float getFleetStrength(CampaignFleetAPI fleet, boolean withHull, boolean withQuality, boolean withCaptain) {
+        List<FleetMemberAPI> fleetMemberList = fleet.getFleetData().getMembersListCopy();
+        float totalStrength = 0f;
+        for (FleetMemberAPI fleetMember : fleetMemberList)
+            totalStrength += ShipUtils.getFleetMemberStrength(fleetMember, withHull, withQuality, withCaptain);
+
+        return totalStrength;
     }
 }

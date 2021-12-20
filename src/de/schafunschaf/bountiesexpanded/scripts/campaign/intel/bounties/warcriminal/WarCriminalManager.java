@@ -2,6 +2,7 @@ package de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.warcrim
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.Script;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
@@ -13,6 +14,7 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseEventManager;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetGenerator;
 import de.schafunschaf.bountiesexpanded.helper.fleet.FleetUpgradeHelper;
+import de.schafunschaf.bountiesexpanded.helper.location.LocationUtils;
 import de.schafunschaf.bountiesexpanded.helper.ship.HullModUtils;
 import de.schafunschaf.bountiesexpanded.helper.ship.ShipUtils;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.bounties.BaseBountyManager;
@@ -83,7 +85,7 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         if (isNull(warCriminalEntity))
             return null;
 
-        CampaignFleetAPI fleet = warCriminalEntity.getFleet();
+        final CampaignFleetAPI fleet = warCriminalEntity.getFleet();
         SectorEntityToken spawnLocation = warCriminalEntity.getSpawnLocation();
         PersonAPI person = warCriminalEntity.getTargetedPerson();
         Difficulty difficulty = warCriminalEntity.getDifficulty();
@@ -98,7 +100,15 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
         fleetMemory.set(WAR_CRIMINAL_BOUNTY_FLEET_KEY, warCriminalEntity);
 
         fleet.clearAssignments();
-        fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, spawnLocation.getStarSystem().getStar(), warCriminalIntel.getDuration());
+        fleet.addAssignment(FleetAssignment.PATROL_SYSTEM, spawnLocation.getStarSystem().getStar(), warCriminalIntel.getDuration(), new Script() {
+            @Override
+            public void run() {
+                if (fleet.isInCurrentLocation())
+                    fleet.addAssignment(FleetAssignment.DEFEND_LOCATION, LocationUtils.getNearestLocation(fleet), 30f);
+                else
+                    fleet.despawn();
+            }
+        });
         fleet.setTransponderOn(true);
 
         FleetMemberAPI flagship = fleet.getFlagship();

@@ -263,7 +263,7 @@ public class AssassinationBountyEntity implements BountyEntity {
                 info.addShipList(cols, rows, iconSize, Color.BLACK, flagshipCopy, opad);
             info.addPara("Intercepted communications suggest that " + targetedPerson.getHisOrHer() + " escort contains roughly %s additional " + singularOrPlural(obfuscatedFleetSize, "ship") + ".",
                     opad, highlightColor, String.valueOf(obfuscatedFleetSize));
-            DescriptionUtils.addDifficultyText(info, opad, difficulty);
+            DescriptionUtils.generateThreatDescription(info, fleet, opad);
 
             if (Settings.isDebugActive()) {
                 DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 1, false);

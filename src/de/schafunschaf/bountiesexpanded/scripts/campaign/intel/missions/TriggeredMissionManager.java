@@ -46,13 +46,13 @@ public class TriggeredMissionManager extends BaseEventManager {
      * @param bountyIntel BountyIntel that triggered the mission
      * @param retrievalShip The ship you have to return
      */
-    public void createRetrievalMissionEvent(BaseBountyIntel bountyIntel, FleetMemberAPI retrievalShip) {
+    public void createRetrievalMissionEvent(BaseBountyIntel bountyIntel, FleetMemberAPI retrievalShip, int remainingPayment) {
         float baseValue = retrievalShip.getHullSpec().getBaseValue();
         float mult = (float) (100 - new Random(retrievalShip.getId().hashCode()).nextInt(26)) / 100;
         int recoveryValue = (int) (baseValue * mult);
         ShipPaymentPair<FleetMemberAPI, Integer> shipWithPayment = new ShipPaymentPair<>(retrievalShip, recoveryValue);
 
-        RetrievalMissionEntity retrievalMissionEntity = new RetrievalMissionEntity(bountyIntel.getBountyEntity(), shipWithPayment);
+        RetrievalMissionEntity retrievalMissionEntity = new RetrievalMissionEntity(bountyIntel.getBountyEntity(), shipWithPayment, remainingPayment);
         RetrievalMissionIntel retrievalMissionIntel = new RetrievalMissionIntel(retrievalMissionEntity);
 
         Global.getSector().addScript(retrievalMissionIntel);

@@ -8,23 +8,21 @@ import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseMissionIntel;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import de.schafunschaf.bountiesexpanded.Settings;
 import de.schafunschaf.bountiesexpanded.scripts.campaign.intel.entity.MissionEntity;
-import de.schafunschaf.bountiesexpanded.util.ComparisonTools;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.Random;
 import java.util.Set;
 
 import static com.fs.starfarer.api.campaign.ReputationActionResponsePlugin.ReputationAdjustmentResult;
+import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNotNull;
 import static de.schafunschaf.bountiesexpanded.util.ComparisonTools.isNull;
 
 @Getter
@@ -137,49 +135,30 @@ public abstract class BEBaseMissionIntel extends BaseMissionIntel {
     protected void triggerMissionStatusUpdate(@NotNull MissionState newMissionState, @Nullable InteractionDialogAPI dialog) {
         TextPanelAPI textPanel = null;
 
-        if (ComparisonTools.isNotNull(dialog))
+        if (isNotNull(dialog))
             textPanel = dialog.getTextPanel();
 
         ReputationAdjustmentResult reputationAdjustmentResult = newMissionState
                 == MissionState.COMPLETED
-                ? generateMissionSuccessRepAdjustment(textPanel)
-                : generateMissionFailureRepAdjustment(textPanel);
+                ? generateMissionSuccessRepAdjustment()
+                : generateMissionFailureRepAdjustment();
 
         result.setMissionState(newMissionState);
         result.setOfferingFactionRepChange(reputationAdjustmentResult);
 
-        sendUpdate(newMissionState, textPanel);
+        if (isNull(dialog))
+            sendUpdateIfPlayerHasIntel(result, false);
+        else
+            sendUpdate(newMissionState, textPanel);
 
         endMission();
     }
 
-    private ReputationAdjustmentResult generateMissionSuccessRepAdjustment(@Nullable TextPanelAPI textPanel) {
-        CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
-        float maxRepGain = 0.15f;
-        float neutralRepGain = 0.05f;
-        float repToPlayer = contact.getFaction().getRelToPlayer().getRel();
-
-        if (repToPlayer < 0f)
-            customRepImpact.delta = ((maxRepGain - neutralRepGain) * -repToPlayer + neutralRepGain);
-        else if (repToPlayer > 0f)
-            customRepImpact.delta = (neutralRepGain - repToPlayer * neutralRepGain);
-        else
-            customRepImpact.delta = neutralRepGain;
-
-        return Global.getSector().adjustPlayerReputation(
-                new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact,
-                        null, null, true, false),
-                contact.getFaction().getId());
+    protected ReputationAdjustmentResult generateMissionSuccessRepAdjustment() {
+        return null;
     }
 
-    private ReputationAdjustmentResult generateMissionFailureRepAdjustment(@Nullable TextPanelAPI textPanel) {
-        CoreReputationPlugin.CustomRepImpact customRepImpact = new CoreReputationPlugin.CustomRepImpact();
-        float delta = (float) (new Random(contact.getId().hashCode()).nextInt(20) + 11) / 100;
-        customRepImpact.delta = -delta;
-
-        return Global.getSector().adjustPlayerReputation(
-                new CoreReputationPlugin.RepActionEnvelope(CoreReputationPlugin.RepActions.CUSTOM, customRepImpact,
-                        null, null, true, false),
-                contact.getFaction().getId());
+    protected ReputationAdjustmentResult generateMissionFailureRepAdjustment() {
+        return null;
     }
 }

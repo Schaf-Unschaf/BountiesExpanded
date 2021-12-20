@@ -229,7 +229,7 @@ public class SkirmishBountyEntity implements BountyEntity {
             info.addPara("Since this is an official military operation, %s transmitted a complete intel report.",
                     opad, offeringFaction.getBaseUIColor(), offeringFaction.getDisplayNameWithArticle());
             DescriptionUtils.generateShipListForIntel(info, width, opad, fleet, fleet.getNumShips(), 3, false);
-            DescriptionUtils.addDifficultyText(info, opad, difficulty);
+            DescriptionUtils.generateThreatDescription(info, fleet, opad);
         } else { // Bounty completed
             switch (result.type) {
                 case END_PLAYER_BOUNTY:

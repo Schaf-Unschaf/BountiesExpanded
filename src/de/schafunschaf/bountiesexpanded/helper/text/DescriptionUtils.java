@@ -292,4 +292,33 @@ public class DescriptionUtils {
 
         info.addPara(travelDescription, padding);
     }
+
+    public static void generateThreatDescription(TooltipMakerAPI info, CampaignFleetAPI enemyFleet, float padding) {
+        float playerFleetStrength = FleetUtils.getFleetStrength(Global.getSector().getPlayerFleet());
+        float enemyEffectiveStrength = FleetUtils.getFleetStrength(enemyFleet);
+        float playerStrengthDifference = enemyEffectiveStrength / playerFleetStrength;
+        String threatLevel = "cakewalk";
+        Color threatColor = new Color(0, 255, 150);
+
+        if (playerStrengthDifference > 2f) {
+            threatLevel = "deathtrap";
+            threatColor = new Color(255, 0, 0);
+        } else if (playerStrengthDifference > 1.75f) {
+            threatLevel = "significant danger";
+            threatColor = new Color(255, 70, 0);
+        } else if (playerStrengthDifference > 1.4f) {
+            threatLevel = "challenging encounter";
+            threatColor = new Color(255, 150, 0);
+        } else if (playerStrengthDifference > 1f) {
+            threatLevel = "moderate threat";
+            threatColor = new Color(200, 255, 0);
+        } else if (playerStrengthDifference > 0.7f) {
+            threatLevel = "small inconvenience";
+            threatColor = new Color(0, 170, 0);
+        }
+
+        String descriptionText = String.format("Your tactical officer ran some calculations and classified the target as a %s for our fleet.", threatLevel);
+
+        info.addPara(descriptionText, padding, threatColor, threatLevel);
+    }
 }
