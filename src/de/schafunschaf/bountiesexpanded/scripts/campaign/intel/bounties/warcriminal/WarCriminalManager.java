@@ -118,8 +118,6 @@ public class WarCriminalManager extends BaseEventManager implements BaseBountyMa
                 fleetMemory.set(RETRIEVAL_SHIP_KEY, flagship.getId());
                 ShipUtils.markMemberForRecovery(flagship);
                 break;
-            case DESTRUCTION:
-                ShipUtils.markShipsAsUnrecoverable(flagship);
             case OBLITERATION:
                 fleetMemory.set(MemFlags.MEMORY_KEY_NO_SHIP_RECOVERY, true);
                 break;
