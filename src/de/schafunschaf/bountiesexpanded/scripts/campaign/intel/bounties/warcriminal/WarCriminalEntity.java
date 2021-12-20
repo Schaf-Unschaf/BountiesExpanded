@@ -163,7 +163,7 @@ public class WarCriminalEntity implements BountyEntity {
 
             addBulletPoints(baseBountyIntel, info, ListInfoMode.IN_DESC);
 
-            DescriptionUtils.generatePatrolDescription(info, baseBountyIntel, spawnLocation, opad, true);
+            DescriptionUtils.generatePatrolDescription(info, baseBountyIntel, opad, true);
             DescriptionUtils.generateFancyFleetDescription(info, opad, fleet, targetedPerson);
 
             if (isRetrievalMission) {
@@ -183,15 +183,18 @@ public class WarCriminalEntity implements BountyEntity {
                     info.addSectionHeading("Briefing", baseBountyIntel.getFactionForUIColors().getBaseUIColor(), baseBountyIntel.getFactionForUIColors().getDarkUIColor(), Alignment.MID, opad);
                     info.addPara(briefingText, Misc.getGrayColor(), opad);
 
-                    info.addPara("You have successfully completed the mission.\n\n" +
-                                    "Bring the %s back to %s in the %s and hand it over to %s for an additional reward.",
-                            opad,
-                            new Color[]{highlightColor, offeringFactionColor, offeringFactionColor, offeringFactionColor},
-                            retrievalTargetShip.getShipName(),
-                            dropOffLocation.getName(),
-                            dropOffLocation.getStarSystem().getName(),
-                            offeringPerson.getNameString());
-                    MissionTextUtils.generateRetrievalConsequencesText(info, opad, retrievalTargetShip, offeringFaction, offeringPerson, missionHandler.getChanceForConsequences());
+                    if (isRetrievalMission) {
+                        info.addPara("You have successfully completed the mission.\n\n" +
+                                        "Bring the %s back to %s in the %s and hand it over to %s for an additional reward.",
+                                opad,
+                                new Color[]{highlightColor, offeringFactionColor, offeringFactionColor, offeringFactionColor},
+                                retrievalTargetShip.getShipName(),
+                                dropOffLocation.getName(),
+                                dropOffLocation.getStarSystem().getName(),
+                                offeringPerson.getNameString());
+                        MissionTextUtils.generateRetrievalConsequencesText(info, opad, retrievalTargetShip, offeringFaction, offeringPerson, missionHandler.getChanceForConsequences());
+                    } else
+                        info.addPara("You have successfully completed the mission.", opad);
                     break;
                 case END_PLAYER_NO_BOUNTY:
                 case END_PLAYER_NO_REWARD:

@@ -180,7 +180,7 @@ public class EntityProvider {
         if (targetedFaction == offeringFaction)
             return null;
 
-        SectorEntityToken spawnLocation = CoreWorldPicker.pickSafeHideout(targetedFaction);
+        SectorEntityToken spawnLocation = CoreWorldPicker.pickFactionHideout(targetedFaction);
         if (isNull(spawnLocation)) {
             log.warn(NO_HIDEOUT);
             return null;
