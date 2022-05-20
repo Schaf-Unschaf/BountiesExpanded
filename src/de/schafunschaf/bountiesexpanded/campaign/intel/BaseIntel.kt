@@ -1,10 +1,10 @@
-package de.schafunschaf.bountiesexpanded.intel
+package de.schafunschaf.bountiesexpanded.campaign.intel
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin
 import com.fs.starfarer.api.ui.IntelUIAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import de.schafunschaf.bountiesexpanded.intel.buttons.IntelButton
+import de.schafunschaf.bountiesexpanded.campaign.intel.buttons.IntelButton
 
 open class BaseIntel : BaseIntelPlugin() {
 

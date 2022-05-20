@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.intel.buttons
+package de.schafunschaf.bountiesexpanded.campaign.intel.buttons
 
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.IntelUIAPI

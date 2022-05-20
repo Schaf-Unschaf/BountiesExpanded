@@ -1,9 +1,9 @@
-package de.schafunschaf.bountiesexpanded.intel.buttons
+package de.schafunschaf.bountiesexpanded.campaign.intel.buttons
 
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import de.schafunschaf.bountiesexpanded.intel.BountyBoardIntel
+import de.schafunschaf.bountiesexpanded.campaign.intel.BountyBoardIntel
 
 class ReloadButton : DefaultButton() {
 

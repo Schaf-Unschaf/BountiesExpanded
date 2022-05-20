@@ -2,9 +2,12 @@ package de.schafunschaf.bountiesexpanded.plugins
 
 import com.fs.starfarer.api.BaseModPlugin
 import com.fs.starfarer.api.Global
-import de.schafunschaf.bountiesexpanded.intel.BountyBoardIntel
+import de.schafunschaf.bountiesexpanded.campaign.intel.BountyBoardIntel
+import de.schafunschaf.bountiesexpanded.campaign.intel.bounties.BountyManager
+import de.schafunschaf.bountiesexpanded.campaign.listeners.BE_CampaignListener
 
 class BountiesExpandedPlugin : BaseModPlugin() {
+
     override fun onApplicationLoad() {
         initBountiesExpanded()
     }
@@ -19,12 +22,22 @@ class BountiesExpandedPlugin : BaseModPlugin() {
 
     override fun onGameLoad(newGame: Boolean) {
         initIntel()
+        initManager()
+        initListener()
     }
 
     private fun initIntel() {
         val bountyBoardIntel = BountyBoardIntel.getInstance()
         bountyBoardIntel.isNew = false
         Global.getSector().intelManager.addIntel(bountyBoardIntel)
+    }
+
+    private fun initManager() {
+        BountyManager.init()
+    }
+
+    private fun initListener() {
+        BE_CampaignListener.init()
     }
 
     private fun removeIntel() {

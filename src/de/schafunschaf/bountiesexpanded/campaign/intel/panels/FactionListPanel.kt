@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.intel.panels
+package de.schafunschaf.bountiesexpanded.campaign.intel.panels
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.FactionAPI

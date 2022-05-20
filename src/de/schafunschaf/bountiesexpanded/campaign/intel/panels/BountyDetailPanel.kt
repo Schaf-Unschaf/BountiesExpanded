@@ -1,8 +1,8 @@
-package de.schafunschaf.bountiesexpanded.intel.panels
+package de.schafunschaf.bountiesexpanded.campaign.intel.panels
 
 import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.CustomPanelAPI
-import de.schafunschaf.bountiesexpanded.intel.buttons.ReloadButton
+import de.schafunschaf.bountiesexpanded.campaign.intel.buttons.ReloadButton
 
 class BountyDetailPanel(private val panel: CustomPanelAPI, val width: Float, val height: Float) {
 

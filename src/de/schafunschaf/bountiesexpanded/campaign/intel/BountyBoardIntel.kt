@@ -1,4 +1,4 @@
-package de.schafunschaf.bountiesexpanded.intel
+package de.schafunschaf.bountiesexpanded.campaign.intel
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
@@ -9,7 +9,7 @@ import com.fs.starfarer.api.ui.IntelUIAPI
 import com.fs.starfarer.api.ui.SectorMapAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
-import de.schafunschaf.bountiesexpanded.intel.panels.MainPanel
+import de.schafunschaf.bountiesexpanded.campaign.intel.panels.MainPanel
 import java.awt.Color
 
 class BountyBoardIntel : BaseIntel() {
