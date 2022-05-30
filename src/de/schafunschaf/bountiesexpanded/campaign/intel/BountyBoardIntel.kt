@@ -20,18 +20,11 @@ class BountyBoardIntel : BaseIntel() {
         fun getInstance(): BountyBoardIntel {
             val intelManager = Global.getSector().intelManager
 
-            val instance: BountyBoardIntel = if (intelManager.hasIntelOfClass(BountyBoardIntel::class.java)) {
+            return if (intelManager.hasIntelOfClass(BountyBoardIntel::class.java))
                 intelManager.getIntel(BountyBoardIntel::class.java).first() as BountyBoardIntel
-            } else {
+            else
                 BountyBoardIntel()
-            }
-
-            return instance
         }
-    }
-
-    override fun buttonPressConfirmed(buttonId: Any, ui: IntelUIAPI) {
-        ui.updateUIForItem(this)
     }
 
     override fun canTurnImportantOff(): Boolean {

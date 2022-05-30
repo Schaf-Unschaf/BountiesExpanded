@@ -10,14 +10,14 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import java.awt.Color
 
-class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPlugin() {
+open class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPlugin() {
 
     init {
         postedBounty.bountyIntel = this
     }
 
     override fun createSmallDescription(info: TooltipMakerAPI?, width: Float, height: Float) {
-        postedBounty.createSmallDescription(info, width, height)
+        postedBounty.createPreview(info!!, width, height)
     }
 
     override fun getSmallDescriptionTitle(): String {
@@ -50,7 +50,8 @@ class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPlugin(
 
         return if (isEnding && !isUpdate && mode != ListInfoMode.IN_DESC)
             Misc.getGrayColor()
-        else factionForUIColors.color
+        else
+            factionForUIColors.color
     }
 
     override fun getBulletColorForMode(mode: ListInfoMode?): Color {

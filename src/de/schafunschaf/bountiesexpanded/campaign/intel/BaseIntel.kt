@@ -36,8 +36,7 @@ open class BaseIntel : BaseIntelPlugin() {
         if (buttonId is IntelButton) {
             buttonId.buttonPressConfirmed(ui)
         }
-        Global.getSector().playerFleet.fleetData.setSyncNeeded()
-        Global.getSector().playerFleet.fleetData.syncMemberLists()
+
         ui.updateUIForItem(this)
     }
 

@@ -12,7 +12,8 @@
       "bountiesExpanded_deserter_flag": "graphics/icons/intel/deserter_bounty_flag.png",
       "bountiesExpanded_deserter_flag_silly": "graphics/icons/intel/deserter_bounty_flag_silly.png",
       "bountiesExpanded_warcriminal": "graphics/icons/intel/warcriminal_bounty.png",
-      "bountiesExpanded_warcriminal_silly": "graphics/icons/intel/warcriminal_bounty_silly.png"
+      "bountiesExpanded_warcriminal_silly": "graphics/icons/intel/warcriminal_bounty_silly.png",
+      "bountiesExpanded_star": "graphics/icons/intel/star.png"
     }
   }
 }

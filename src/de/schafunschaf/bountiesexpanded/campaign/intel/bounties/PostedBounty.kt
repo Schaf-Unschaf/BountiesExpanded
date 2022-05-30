@@ -1,6 +1,5 @@
 package de.schafunschaf.bountiesexpanded.campaign.intel.bounties
 
-import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.BattleAPI
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.CargoStackAPI
@@ -14,6 +13,7 @@ interface PostedBounty {
     val title: String
     val icon: String
     val duration: Int
+    val difficulty: Int
     val offeringFaction: FactionAPI
     val targetedFaction: FactionAPI
     val offeringPerson: PersonAPI
@@ -22,14 +22,11 @@ interface PostedBounty {
     val creditReward: Int
     val itemRewards: ArrayList<CargoStackAPI>?
     var bountyIntel: BaseBountyIntel?
+    var accepted: Boolean
 
-    fun acceptBounty() {
-        val bountyManager = Global.getSector().memoryWithoutUpdate.get(BountyManager.memoryID) as BountyManager
-        bountyManager.postBounty(this, constellation.systems.random().planets.random())
-    }
-
+    fun createPreview(info: TooltipMakerAPI, width: Float, height: Float)
+    fun acceptBounty()
     fun abortBounty(force: Boolean)
     fun endBounty(successful: Boolean)
-    fun createSmallDescription(info: TooltipMakerAPI?, width: Float, height: Float)
     fun reportBattleOccurred(primaryWinner: CampaignFleetAPI?, battle: BattleAPI?)
 }

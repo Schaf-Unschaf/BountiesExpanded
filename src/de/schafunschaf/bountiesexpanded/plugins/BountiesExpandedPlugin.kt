@@ -33,7 +33,7 @@ class BountiesExpandedPlugin : BaseModPlugin() {
     }
 
     private fun initManager() {
-        BountyManager.init()
+        BountyManager.getInstance()
     }
 
     private fun initListener() {

@@ -1,6 +1,7 @@
 package de.schafunschaf.bountiesexpanded.campaign.intel.bounties
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.FactionAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken
 
 class BountyManager {
@@ -11,9 +12,16 @@ class BountyManager {
         val memoryID = "\$_BE_bountyManager"
 
         @JvmStatic
-        fun init() {
-            if (!Global.getSector().memoryWithoutUpdate.contains(memoryID))
-                Global.getSector().memoryWithoutUpdate.set(memoryID, BountyManager())
+        fun getInstance(): BountyManager {
+            var instance = Global.getSector().memoryWithoutUpdate.get(memoryID)
+
+            if (instance == null) {
+                instance = BountyManager()
+                Global.getSector().memoryWithoutUpdate.set(memoryID, instance)
+
+            }
+
+            return instance as BountyManager
         }
     }
 
@@ -27,7 +35,9 @@ class BountyManager {
 
     fun postBounty(bounty: PostedBounty, location: SectorEntityToken) {
         postedBounties.add(bounty)
+    }
 
-        location.containingLocation.constellation
+    fun getPostedBy(offeringFaction: FactionAPI): List<PostedBounty> {
+        return postedBounties.filter { it.offeringFaction == offeringFaction }.toCollection(ArrayList())
     }
 }

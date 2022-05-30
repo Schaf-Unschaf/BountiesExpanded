@@ -12,9 +12,8 @@ class BE_CampaignListener(permaRegister: Boolean) : BaseCampaignEventListener(pe
 
         @JvmStatic
         fun init() {
-            if (!Global.getSector().listenerManager.hasListenerOfClass(BE_CampaignListener::class.java)) {
+            if (!Global.getSector().listenerManager.hasListenerOfClass(BE_CampaignListener::class.java))
                 Global.getSector().listenerManager.addListener(BE_CampaignListener(false), true)
-            }
         }
     }
 
