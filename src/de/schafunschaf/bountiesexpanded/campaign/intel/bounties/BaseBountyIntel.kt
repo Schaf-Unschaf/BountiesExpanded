@@ -10,14 +10,14 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import java.awt.Color
 
-open class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPlugin() {
+class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPlugin() {
 
     init {
         postedBounty.bountyIntel = this
     }
 
     override fun createSmallDescription(info: TooltipMakerAPI?, width: Float, height: Float) {
-        postedBounty.createPreview(info!!, width, height)
+        postedBounty.createPreviewPosting(info!!, width, height)
     }
 
     override fun getSmallDescriptionTitle(): String {
@@ -38,7 +38,7 @@ open class BaseBountyIntel(private val postedBounty: PostedBounty) : BaseIntelPl
     }
 
     override fun getMapLocation(map: SectorMapAPI?): SectorEntityToken {
-        return Global.getSector().hyperspace.createToken(postedBounty.constellation.location)
+        return Global.getSector().hyperspace.createToken(postedBounty.targetLocation.location)
     }
 
     override fun getFactionForUIColors(): FactionAPI {

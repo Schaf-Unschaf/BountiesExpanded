@@ -16,7 +16,6 @@ class BountyBoardIntel : BaseIntel() {
 
     companion object {
 
-        @JvmStatic
         fun getInstance(): BountyBoardIntel {
             val intelManager = Global.getSector().intelManager
 

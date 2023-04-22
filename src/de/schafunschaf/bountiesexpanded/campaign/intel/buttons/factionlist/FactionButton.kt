@@ -12,6 +12,7 @@ class FactionButton(val faction: FactionAPI) : DefaultButton() {
 
     override fun buttonPressConfirmed(ui: IntelUIAPI) {
         MainPanel.selectedFaction = faction
+        MainPanel.selectedBounty = null
     }
 
     override fun doesButtonHaveConfirmDialog(): Boolean {

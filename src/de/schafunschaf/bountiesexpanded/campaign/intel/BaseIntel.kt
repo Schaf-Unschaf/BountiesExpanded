@@ -5,8 +5,14 @@ import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin
 import com.fs.starfarer.api.ui.IntelUIAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import de.schafunschaf.bountiesexpanded.campaign.intel.buttons.IntelButton
+import de.schafunschaf.bountiesexpanded.campaign.intel.panels.MainPanel
 
 open class BaseIntel : BaseIntelPlugin() {
+
+    override fun reportPlayerClickedOn() {
+        MainPanel.selectedBounty = null
+        MainPanel.selectedFaction = null
+    }
 
     override fun doesButtonHaveConfirmDialog(buttonId: Any): Boolean {
         return if (buttonId is IntelButton) {

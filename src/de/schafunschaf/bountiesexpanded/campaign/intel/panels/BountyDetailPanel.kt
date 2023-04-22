@@ -8,14 +8,21 @@ class BountyDetailPanel(private val panel: CustomPanelAPI, val width: Float, val
 
     fun draw(): CustomPanelAPI {
         val customPanel = panel.createCustomPanel(width, height, null)
-        val uiElement = customPanel.createUIElement(width, height, false)
+        val uiElement = customPanel.createUIElement(width, height, true)
 
-        uiElement.addSectionHeading("description bla bla", Alignment.MID, 0f)
-        uiElement.addPara("Detailed long description and all that fluff", 3f)
-        ReloadButton().addButton(uiElement, 50f, 20f)
+        val bounty = MainPanel.selectedBounty
+        uiElement.addSectionHeading(
+            if (bounty == null) "No Bounty selected" else "${bounty.title} - ${bounty.targetedPerson.nameString}",
+            Alignment.MID,
+            0f
+        )
+
+        bounty?.createDetailedPosting(uiElement, width, height)
+
+        uiElement.addSectionHeading("", Alignment.MID, 0f).position.setSize(width, 1f).inBL(0f, 0f)
+        ReloadButton().addButton(uiElement, 50f, 20f)?.position?.setYAlignOffset(-22f)
 
         customPanel.addUIElement(uiElement)
         return customPanel
     }
-
 }

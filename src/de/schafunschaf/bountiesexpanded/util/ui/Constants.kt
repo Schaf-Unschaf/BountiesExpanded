@@ -1,9 +1,5 @@
 package de.schafunschaf.bountiesexpanded.util.ui
 
-class Constants {
-    companion object {
+const val SECTION_HEADER_HEIGHT = 21f
 
-        @JvmStatic
-        val sectionHeaderHeight = 21f
-    }
-}
+const val BULLET_CHAR = "•"

@@ -8,7 +8,6 @@ class MainPanel(private val panel: CustomPanelAPI, val width: Float, val height:
 
     companion object {
 
-        @JvmStatic
         var selectedFaction: FactionAPI? = null
         var selectedBounty: PostedBounty? = null
 
@@ -20,18 +19,16 @@ class MainPanel(private val panel: CustomPanelAPI, val width: Float, val height:
 
     private val headerHeight = 100f
     private val remainingHeight = height - headerHeight
-    private val factionInfoHeight = 100f
     private val padding = 5f
     private val factionListPanelWidth = 70f
-    private val bountyListPanelWidth = 300f - padding
+    private val bountyListPanelWidth = 400f - padding
     private val detailPanelWidth = width - factionListPanelWidth - bountyListPanelWidth - padding * 2
 
     fun drawPanels() {
         val headerPanel = HeaderPanel(panel, width, headerHeight).draw()
         val factionListPanel = FactionListPanel(panel, factionListPanelWidth, remainingHeight).draw()
         val bountyListPanel =
-            BountyListPanel(panel, bountyListPanelWidth, remainingHeight - factionInfoHeight - padding).draw()
-        val factionInfoPanel = FactionInfoPanel(panel, bountyListPanelWidth, factionInfoHeight).draw()
+            BountyListPanel(panel, bountyListPanelWidth, remainingHeight - padding).draw()
         val bountyDetailPanel = BountyDetailPanel(panel, detailPanelWidth, remainingHeight).draw()
 
         val uiElement = panel.createUIElement(width, headerHeight, false)
@@ -39,7 +36,6 @@ class MainPanel(private val panel: CustomPanelAPI, val width: Float, val height:
         uiElement.addCustom(headerPanel, 0f)
         uiElement.addCustom(factionListPanel, 0f)
         uiElement.addCustom(bountyListPanel, 0f).position.rightOfTop(factionListPanel, padding)
-        uiElement.addCustom(factionInfoPanel, 0f).position.belowLeft(bountyListPanel, padding)
         uiElement.addCustom(bountyDetailPanel, 0f).position.rightOfTop(bountyListPanel, padding)
 
         panel.addUIElement(uiElement).inTL(-5f, 0f)

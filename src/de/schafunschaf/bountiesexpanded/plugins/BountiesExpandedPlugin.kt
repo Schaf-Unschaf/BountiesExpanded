@@ -5,6 +5,10 @@ import com.fs.starfarer.api.Global
 import de.schafunschaf.bountiesexpanded.campaign.intel.BountyBoardIntel
 import de.schafunschaf.bountiesexpanded.campaign.intel.bounties.BountyManager
 import de.schafunschaf.bountiesexpanded.campaign.listeners.BE_CampaignListener
+import de.schafunschaf.bountiesexpanded.import.NAME_STRINGS_FILE
+import de.schafunschaf.bountiesexpanded.import.RARE_FLAGSHIPS_FILE
+import de.schafunschaf.bountiesexpanded.import.loadNameStringFiles
+import de.schafunschaf.bountiesexpanded.import.loadRareFlagshipData
 
 class BountiesExpandedPlugin : BaseModPlugin() {
 
@@ -45,5 +49,8 @@ class BountiesExpandedPlugin : BaseModPlugin() {
         Global.getSector().intelManager.removeIntel(bountyBoardIntel)
     }
 
-    private fun initBountiesExpanded() {}
+    private fun initBountiesExpanded() {
+        loadNameStringFiles(NAME_STRINGS_FILE)
+        loadRareFlagshipData(RARE_FLAGSHIPS_FILE)
+    }
 }

@@ -9,26 +9,13 @@ import de.schafunschaf.bountiesexpanded.campaign.intel.bounties.PostedBounty
 
 abstract class BaseBountyEntity : PostedBounty {
 
-    override fun createPreview(info: TooltipMakerAPI, width: Float, height: Float) {
-        val imageSize = 64f
-        val outerMargin = 2f
-        val padding = 3f
+    override fun createDetailedPosting(info: TooltipMakerAPI, width: Float, height: Float) {
 
-        info.addSpacer(0f).position.setXAlignOffset(-10 + outerMargin)
-        info.addImage(targetedPerson.portraitSprite, imageSize, padding)
-        info.addImage(offeringFaction.logo, 32f, 20f, -20f)
-        info.textWidthOverride = width - imageSize - outerMargin * 2
-        info.addPara(
-            "${offeringFaction.displayNameWithArticleWithoutArticle} VS ${targetedFaction.displayNameWithArticleWithoutArticle}",
-            -imageSize - padding
-        ).position.setXAlignOffset(imageSize + outerMargin * 2)
-        info.addPara("At: ${constellation.name}", padding)
-        info.addPara("Reward: $creditReward", padding)
     }
 
     override fun acceptBounty() {
         val bountyManager = Global.getSector().memoryWithoutUpdate.get(BountyManager.memoryID) as BountyManager
-        bountyManager.postBounty(this, constellation.systems.random().planets.random())
+        bountyManager.postBounty(this, targetLocation)
         accepted = true
     }
 
@@ -43,5 +30,4 @@ abstract class BaseBountyEntity : PostedBounty {
     override fun reportBattleOccurred(primaryWinner: CampaignFleetAPI?, battle: BattleAPI?) {
 
     }
-
 }

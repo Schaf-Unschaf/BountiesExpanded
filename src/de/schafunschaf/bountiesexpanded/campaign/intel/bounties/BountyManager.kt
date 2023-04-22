@@ -8,10 +8,8 @@ class BountyManager {
 
     companion object {
 
-        @JvmStatic
-        val memoryID = "\$_BE_bountyManager"
+        const val memoryID = "\$_BE_bountyManager"
 
-        @JvmStatic
         fun getInstance(): BountyManager {
             var instance = Global.getSector().memoryWithoutUpdate.get(memoryID)
 

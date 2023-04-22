@@ -3,7 +3,7 @@ package de.schafunschaf.bountiesexpanded.util.ui.plugins
 import de.schafunschaf.bountiesexpanded.util.ui.lwjgl.ShapeUtil
 import java.awt.Color
 
-class BorderPlugin(private val borderSize: Float, private var color: Color) : BasePanelPlugin() {
+open class BorderPlugin(private val borderSize: Float, private var color: Color) : BasePanelPlugin() {
 
     override fun render(alphaMult: Float) {
         if (p != null) {

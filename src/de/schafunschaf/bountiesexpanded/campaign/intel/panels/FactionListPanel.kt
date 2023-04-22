@@ -8,8 +8,8 @@ import com.fs.starfarer.api.util.Misc
 import de.schafunschaf.bountiesexpanded.campaign.intel.bounties.BountyManager
 import de.schafunschaf.bountiesexpanded.campaign.intel.bounties.PostedBounty
 import de.schafunschaf.bountiesexpanded.campaign.intel.buttons.factionlist.FactionButton
-import de.schafunschaf.bountiesexpanded.util.ui.Constants
 import de.schafunschaf.bountiesexpanded.util.ui.plugins.BorderPlugin
+import de.schafunschaf.bountiesexpanded.util.ui.SECTION_HEADER_HEIGHT
 
 class FactionListPanel(private val panel: CustomPanelAPI, val width: Float, val height: Float) {
 
@@ -23,8 +23,8 @@ class FactionListPanel(private val panel: CustomPanelAPI, val width: Float, val 
 
         uiElement.addSectionHeading("Factions", Alignment.MID, 0f)
 
-        val flagListPanel = panel.createCustomPanel(width - 5, height - Constants.sectionHeaderHeight, null)
-        val flagListUIElement = flagListPanel.createUIElement(width - 5, height - Constants.sectionHeaderHeight, true)
+        val flagListPanel = panel.createCustomPanel(width - 5, height - SECTION_HEADER_HEIGHT, null)
+        val flagListUIElement = flagListPanel.createUIElement(width - 5, height - SECTION_HEADER_HEIGHT, true)
         flagListUIElement.addSpacer(0f).position.setXAlignOffset(0f)
         var isFirst = false
         BountyManager.getInstance().postedBounties.map(PostedBounty::offeringFaction).distinct()
